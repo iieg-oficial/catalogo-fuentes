@@ -1,0 +1,14 @@
+CREATE INDEX IF NOT EXISTS idx_producto_proyecto_id ON producto(proyecto_id);
+CREATE INDEX IF NOT EXISTS idx_tabla_base_de_datos_id ON tabla(base_de_datos_id);
+CREATE INDEX IF NOT EXISTS idx_tabla_nombre ON tabla(nombre);
+CREATE INDEX IF NOT EXISTS idx_tabla_producto_tabla_id ON tabla_producto(tabla_id);
+CREATE INDEX IF NOT EXISTS idx_tabla_producto_producto_id ON tabla_producto(producto_id);
+CREATE INDEX IF NOT EXISTS idx_instrumento_base_de_datos_id ON instrumento(base_de_datos_id);
+CREATE INDEX IF NOT EXISTS idx_url_instrumento_id ON url(instrumento_id);
+CREATE INDEX IF NOT EXISTS idx_archivo_url_id ON archivo(url_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_proyecto_nombre ON proyecto(nombre);
+CREATE INDEX IF NOT EXISTS idx_producto_nombre ON producto(nombre);
+CREATE INDEX IF NOT EXISTS idx_base_de_datos_nombre ON base_de_datos(nombre);
+CREATE INDEX IF NOT EXISTS idx_instrumento_fecha_publicacion ON instrumento(fecha_publicacion);
+CREATE INDEX IF NOT EXISTS idx_archivo_fecha_publicacion ON archivo(fecha_publicacion);
