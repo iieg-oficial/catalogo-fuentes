@@ -156,6 +156,7 @@ export default function ProyectosPage() {
           <DataTable
             columns={columns}
             rows={filtered}
+            caption="Proyectos"
             getKey={(r) => r.id}
             onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
             onAdd={canWrite ? () => setAddingRow(true) : undefined}

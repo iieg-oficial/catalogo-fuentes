@@ -17,11 +17,18 @@ export default {
           hover:   '#e67600',
           light:   '#fff4e6',
         },
+        // brand-tinted neutral scale; Tailwind gray-* is kept for stock grays where
+        // precise neutral (non-tinted) values are needed in shared components.
         neutral: {
           50:  '#f3f4f6',
+          100: '#ede8f1',
           200: '#d1d5db',
+          300: '#bab5c0',
           400: '#6b7280',
           500: '#465055',
+          600: '#4a4255',
+          700: '#383246',
+          800: '#272035',
           900: '#1f2937',
         },
         error: {

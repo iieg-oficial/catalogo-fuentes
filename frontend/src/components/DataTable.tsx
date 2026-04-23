@@ -9,6 +9,7 @@ export interface Column<T> {
 interface DataTableProps<T> {
   columns: Column<T>[]
   rows: T[]
+  caption?: string
   onRowClick?: (row: T) => void
   getKey: (row: T) => string
   // Inline add row
@@ -28,6 +29,7 @@ interface DataTableProps<T> {
 export default function DataTable<T>({
   columns,
   rows,
+  caption,
   onRowClick,
   getKey,
   onAdd,
@@ -52,6 +54,7 @@ export default function DataTable<T>({
   return (
     <div className="w-full overflow-x-auto rounded border border-gray-200">
       <table className="min-w-full text-sm">
+        {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr className="bg-gray-800 text-gray-100 text-left text-xs uppercase tracking-wider">
             {columns.map((col, i) => (
@@ -68,6 +71,7 @@ export default function DataTable<T>({
                       onClick={() => onDeleteColumn(key)}
                       className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 leading-none text-sm"
                       title="Quitar columna"
+                      aria-label={`Quitar columna ${key}`}
                     >
                       ×
                     </button>
@@ -81,6 +85,7 @@ export default function DataTable<T>({
                   onClick={onAddColumn}
                   className="text-gray-400 hover:text-white font-bold text-base leading-none"
                   title="Agregar campo"
+                  aria-label="Agregar campo"
                 >
                   +
                 </button>
@@ -101,7 +106,14 @@ export default function DataTable<T>({
             <tr
               key={getKey(row)}
               onClick={() => onRowClick?.(row)}
-              className={`group ${onRowClick ? 'cursor-pointer hover:bg-brand-50' : ''} ${ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+              onKeyDown={onRowClick ? (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onRowClick(row)
+                }
+              } : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+              className={`group ${onRowClick ? 'cursor-pointer hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500' : ''} ${ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
             >
               {columns.map((col, ci) => (
                 <td key={ci} className={`px-3 py-2 align-top ${col.className ?? ''}`}>
@@ -153,6 +165,7 @@ export default function DataTable<T>({
                     onClick={() => onDeleteRow?.(row)}
                     className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 text-base leading-none transition-opacity"
                     title="Eliminar"
+                    aria-label="Eliminar fila"
                   >
                     ×
                   </button>
@@ -163,7 +176,7 @@ export default function DataTable<T>({
 
           {/* Inline add row */}
           {addRowCells && (
-            <tr className="bg-blue-50 border-t-2 border-brand-200">
+            <tr className="bg-brand-50 border-t-2 border-brand-200">
               {addRowCells}
               {metaColumns?.map((k) => <td key={k} className="px-3 py-1.5" />)}
               {onAddColumn && <td />}
