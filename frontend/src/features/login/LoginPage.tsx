@@ -59,7 +59,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-4">
         <main className="bg-white rounded-xl shadow-sm border border-neutral-200 border-t-4 border-t-brand-600 p-8">
           <div className="mb-8">
@@ -71,23 +71,24 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-neutral-700 mb-1">
+              <label htmlFor="email" className="block text-xs font-medium text-neutral-900 mb-1">
                 Correo electrónico
               </label>
               <input
                 id="email"
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 placeholder="usuario@iieg.gob.mx"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-xs font-medium text-neutral-700">
+                <label htmlFor="password" className="block text-xs font-medium text-neutral-900">
                   Contraseña
                 </label>
                 <button
@@ -102,35 +103,38 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 placeholder="••••••••"
               />
-              {showRecovery && (
-                <p className="mt-2 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-md px-3 py-2">
-                  Contacta al administrador del sistema para restablecer tu contraseña:{' '}
-                  <a href="mailto:admin@iieg.gob.mx" className="text-brand-600 hover:underline">
-                    admin@iieg.gob.mx
-                  </a>
-                </p>
-              )}
+              <div aria-live="polite">
+                {showRecovery && (
+                  <p className="mt-2 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-md px-3 py-2">
+                    Contacta al administrador para restablecer tu contraseña:{' '}
+                    <a href="mailto:admin@iieg.gob.mx" className="text-brand-600 hover:underline">
+                      admin@iieg.gob.mx
+                    </a>
+                  </p>
+                )}
+              </div>
             </div>
 
             {error && (
-              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              <p role="alert" className="text-xs text-error-600 bg-error-50 border border-error-200 rounded-md px-3 py-2">
                 {error}
               </p>
             )}
 
             <div className="pt-1 space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
+              <label className="flex items-center gap-2 py-1 cursor-pointer select-none">
                 <input
                   id="remember"
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
+                  className="h-4 w-4 rounded border-neutral-200 text-brand-600 focus:ring-brand-500"
                 />
                 <span className="text-xs text-neutral-500">Recordar mi usuario en este navegador</span>
               </label>
@@ -138,7 +142,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-brand-600 text-white text-sm font-medium rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 bg-brand-600 text-white text-sm font-medium rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
                   <>
@@ -153,7 +157,7 @@ export default function LoginPage() {
           </form>
         </main>
 
-        <p className="text-center text-xs text-neutral-400">
+        <p className="text-center text-xs text-neutral-500">
           ¿Problemas para acceder?{' '}
           <a href="mailto:admin@iieg.gob.mx" className="text-neutral-500 hover:text-brand-600 hover:underline">
             Contacta al administrador
