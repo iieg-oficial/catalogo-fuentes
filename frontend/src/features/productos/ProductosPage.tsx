@@ -12,6 +12,7 @@ import { getProductos, createProducto, updateProducto, deleteProducto } from './
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
 
 const inputCls = 'w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+const selectCls = 'px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700'
 
 const columns: Column<Producto>[] = [
   {
@@ -42,6 +43,7 @@ export default function ProductosPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
+  const [filterProyectoId, setFilterProyectoId] = useState('')
   const [showColForm, setShowColForm] = useState(false)
   const [colName, setColName] = useState('')
   const [addingRow, setAddingRow] = useState(false)
@@ -111,7 +113,8 @@ export default function ProductosPage() {
   }
 
   const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()),
+    i.nombre.toLowerCase().includes(search.toLowerCase()) &&
+    (!filterProyectoId || i.proyecto.id === filterProyectoId),
   )
 
   const addRowCells = (
@@ -173,7 +176,17 @@ export default function ProductosPage() {
 
   return (
     <>
-      <Topbar title="Productos" search={search} onSearch={setSearch} />
+      <Topbar
+        title="Productos"
+        search={search}
+        onSearch={setSearch}
+        filters={
+          <select value={filterProyectoId} onChange={(e) => setFilterProyectoId(e.target.value)} className={selectCls}>
+            <option value="">Todos los proyectos</option>
+            {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          </select>
+        }
+      />
       <div className="flex-1 p-4 overflow-y-auto">
         {loading ? (
           <LoadingSpinner />
