@@ -22,10 +22,13 @@ export default function Sidebar({ user, onLogout }: Props) {
       `}
     >
       <div className="px-4 py-5 border-b border-brand-700 flex items-center justify-between">
-        <div>
+        <button
+          onClick={() => { navigate('/'); closeSidebar() }}
+          className="text-left hover:opacity-80 transition-opacity"
+        >
           <h1 className="text-sm font-bold uppercase tracking-widest text-brand-100">IIEG</h1>
           <p className="text-xs text-brand-100/60 mt-0.5">Dashboard Tracking</p>
-        </div>
+        </button>
         <button
           onClick={closeSidebar}
           className="md:hidden p-1 rounded text-brand-100/70 hover:text-white transition-colors"
