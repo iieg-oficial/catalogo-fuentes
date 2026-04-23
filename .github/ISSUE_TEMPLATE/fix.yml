@@ -1,0 +1,64 @@
+name: Fix
+description: Reporta un error o problema que necesita ser corregido
+title: "[FIX]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Completa los campos a continuación para describir el problema y su alcance.
+
+  - type: input
+    id: titulo
+    attributes:
+      label: Título
+      description: Nombre corto y descriptivo del problema
+      placeholder: "ej. Error al cargar indicadores en el catálogo"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción
+      description: Describe el problema con detalle. Incluye pasos para reproducirlo y el comportamiento actual vs. el esperado.
+      placeholder: |
+        Pasos para reproducir:
+        1. ...
+        2. ...
+
+        Comportamiento actual:
+        Comportamiento esperado:
+    validations:
+      required: true
+
+  - type: textarea
+    id: que_reparar
+    attributes:
+      label: ¿Qué se desea reparar?
+      description: Describe concretamente qué debe corregirse, sin ambigüedad.
+      placeholder: "ej. La función de paginación regresa siempre la primera página sin importar el parámetro enviado."
+    validations:
+      required: true
+
+  - type: textarea
+    id: modulos_afectados
+    attributes:
+      label: Módulos o partes afectadas
+      description: Indica qué módulos, rutas, componentes o servicios están involucrados.
+      placeholder: |
+        ej.
+        - Módulo: Catálogo de indicadores
+        - Ruta API: GET /api/v1/indicators
+        - Componente: IndicatorTable
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: alcance
+    attributes:
+      label: Alcance del fix
+      description: Marca las capas que requieren cambios.
+      options:
+        - label: Backend
+        - label: Frontend
