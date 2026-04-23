@@ -10,6 +10,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
+  const [filterRole, setFilterRole] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formEmail, setFormEmail] = useState('')
   const [formPassword, setFormPassword] = useState('')
@@ -59,7 +60,8 @@ export default function UsersPage() {
   }
 
   const filtered = users.filter((u) =>
-    u.email.toLowerCase().includes(search.toLowerCase()),
+    u.email.toLowerCase().includes(search.toLowerCase()) &&
+    (!filterRole || u.role === filterRole),
   )
 
   const roleColor: Record<UserRole, string> = {
@@ -70,7 +72,23 @@ export default function UsersPage() {
 
   return (
     <>
-      <Topbar title="Usuarios" search={search} onSearch={setSearch} />
+      <Topbar
+        title="Usuarios"
+        search={search}
+        onSearch={setSearch}
+        filters={
+          <select
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700"
+          >
+            <option value="">Todos los roles</option>
+            <option value="admin">Admin</option>
+            <option value="maintainer">Maintainer</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        }
+      />
       <div className="flex-1 p-6">
         <div className="flex justify-end mb-4">
           <button
