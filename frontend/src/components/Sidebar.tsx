@@ -34,6 +34,19 @@ export default function Sidebar({ user, onLogout }: Props) {
           </NavLink>
         ))}
 
+        <NavLink
+          to="/entidades"
+          className={({ isActive }) =>
+            `flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors mt-4 border-t border-brand-700 pt-4 ${
+              isActive
+                ? 'bg-brand-600 text-white font-medium'
+                : 'text-brand-100/80 hover:bg-brand-700 hover:text-white'
+            }`
+          }
+        >
+          Entidades
+        </NavLink>
+
         {user?.role === 'admin' && (
           <NavLink
             to="/users"

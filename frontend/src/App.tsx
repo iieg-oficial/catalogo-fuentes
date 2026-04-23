@@ -18,6 +18,7 @@ import UrlDetailPage from '@/features/urls/UrlDetailPage'
 import ArchivosPage from '@/features/archivos/ArchivosPage'
 import ArchivoDetailPage from '@/features/archivos/ArchivoDetailPage'
 import UsersPage from '@/features/users/UsersPage'
+import EntidadesPage from '@/features/entidades/EntidadesPage'
 
 function CatalogRoutes() {
   const { user, logout } = useAuthContext()
@@ -39,6 +40,7 @@ function CatalogRoutes() {
         <Route path="urls/:id" element={<UrlDetailPage />} />
         <Route path="archivos" element={<ArchivosPage />} />
         <Route path="archivos/:id" element={<ArchivoDetailPage />} />
+        <Route path="entidades" element={<EntidadesPage />} />
         {user?.role === 'admin' && <Route path="users" element={<UsersPage />} />}
         <Route index element={<Navigate to="proyectos" replace />} />
       </Routes>
