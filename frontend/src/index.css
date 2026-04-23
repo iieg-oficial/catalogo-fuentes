@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .drawer-overlay {
+    @apply fixed inset-0 bg-black/40 z-40 transition-opacity;
+  }
+
+  .drawer-panel {
+    @apply fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 transform transition-transform duration-300;
+  }
+}
