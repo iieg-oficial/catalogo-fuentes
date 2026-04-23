@@ -13,7 +13,6 @@ const TYPE_BADGE: Record<string, string> = {
   archivo:       'bg-rose-50 text-rose-700',
 }
 
-// One intentional color per catalog level — solid, no gradients
 const CARD_BG: Record<string, string> = {
   proyectos:        'bg-brand-600',
   productos:        'bg-violet-600',
@@ -149,11 +148,12 @@ export default function HomePage() {
                 <button
                   key={level.key}
                   onClick={() => navigate(level.path)}
+                  aria-label={level.label}
                   className={`group flex flex-col items-center justify-center gap-3
                                p-5 h-[156px] rounded-xl text-white text-center
                                ${bg} hover:opacity-90 hover:-translate-y-1 hover:shadow-lg
-                               shadow-sm transition-all duration-150 focus:outline-none
-                               focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2`}
+                               shadow-sm transition duration-150 focus:outline-none
+                               focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2`}
                 >
                   {/* Icon bubble */}
                   <div className="p-2.5 rounded-xl bg-white/20">
@@ -174,7 +174,7 @@ export default function HomePage() {
                           {count ?? 0}
                         </span>
                       ) : (
-                        <span className="inline-block h-7 w-8 bg-white/20 rounded animate-pulse" />
+                        <span className="inline-block h-7 w-12 bg-white/20 rounded animate-pulse" />
                       )}
                     </div>
                   </div>
@@ -184,8 +184,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Search — below cards */}
-        <section className="max-w-2xl">
+        {/* Search — below cards, centered */}
+        <section className="flex flex-col items-center">
           <p
             className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-4"
             style={{ fontFamily: '"Red Hat Display", system-ui, sans-serif' }}
@@ -193,10 +193,10 @@ export default function HomePage() {
             Búsqueda global
           </p>
 
-          <div className="relative">
+          <div className="relative w-full max-w-3xl">
             <svg
-              className="absolute left-3.5 top-3.5 text-gray-400 pointer-events-none"
-              width="16" height="16" viewBox="0 0 16 16" fill="none"
+              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              width="22" height="22" viewBox="0 0 16 16" fill="none"
               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
             >
               <circle cx="7" cy="7" r="4.5" />
@@ -212,16 +212,16 @@ export default function HomePage() {
               placeholder={ready ? 'Buscar proyectos, productos, tablas, instrumentos…' : 'Cargando catálogo…'}
               disabled={!ready}
               autoComplete="off"
-              className="w-full h-12 pl-10 pr-16 text-sm border-2 border-gray-200 rounded-xl
+              className="w-full h-16 pl-14 pr-20 text-lg border-2 border-gray-200 rounded-2xl
                          bg-white placeholder-gray-400 text-gray-900
-                         focus:outline-none focus:border-brand-600
+                         focus:outline-none focus:border-brand-600 focus:shadow-md
                          disabled:bg-gray-50 disabled:cursor-wait
-                         shadow-sm transition-colors duration-150"
+                         shadow-sm transition-all duration-150"
             />
 
             {!hasQuery && (
-              <kbd className="absolute right-3.5 top-3 flex items-center px-1.5 py-0.5
-                              text-[10px] text-gray-400 border border-gray-200 rounded font-mono bg-white">
+              <kbd className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center px-2 py-1
+                              text-xs text-gray-400 border border-gray-200 rounded font-mono bg-white">
                 ⌘K
               </kbd>
             )}
@@ -229,10 +229,10 @@ export default function HomePage() {
             {hasQuery && (
               <button
                 onClick={() => { setQuery(''); inputRef.current?.focus() }}
-                className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Limpiar búsqueda"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <svg width="18" height="18" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M3 3l8 8M11 3L3 11" />
                 </svg>
               </button>
@@ -240,9 +240,9 @@ export default function HomePage() {
           </div>
 
           {hasQuery && (
-            <div className="mt-1 border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm">
+            <div className="mt-1 w-full max-w-3xl border-2 border-gray-200 rounded-2xl bg-white overflow-hidden shadow-md">
               {results.length === 0 ? (
-                <div className="px-4 py-5 text-center">
+                <div className="px-4 py-6 text-center">
                   <p className="text-sm text-gray-500">
                     Sin resultados para <span className="font-medium text-gray-700">"{query}"</span>
                   </p>
@@ -255,7 +255,7 @@ export default function HomePage() {
                   <button
                     key={`${result.type}-${result.id}`}
                     onClick={() => navigate(result.path)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-left
+                    className={`w-full flex items-center gap-3 px-5 py-3 text-left
                                 border-b border-gray-100 last:border-0 transition-colors duration-75
                                 ${i === selected ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
                   >
