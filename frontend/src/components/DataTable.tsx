@@ -22,6 +22,9 @@ interface DataTableProps<T> {
   onAddColumn?: () => void
   onDeleteColumn?: (key: string) => void
   onEditMetaCell?: (row: T, key: string, value: string) => void
+  // Meta inputs for add row (controlled by parent)
+  addRowMetaValues?: Record<string, string>
+  onAddRowMetaChange?: (key: string, value: string) => void
   // Row deletion
   onDeleteRow?: (row: T) => void
 }
@@ -40,6 +43,8 @@ export default function DataTable<T>({
   onAddColumn,
   onDeleteColumn,
   onEditMetaCell,
+  addRowMetaValues,
+  onAddRowMetaChange,
   onDeleteRow,
 }: DataTableProps<T>) {
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
@@ -178,7 +183,18 @@ export default function DataTable<T>({
           {addRowCells && (
             <tr className="bg-brand-50 border-t-2 border-brand-200">
               {addRowCells}
-              {metaColumns?.map((k) => <td key={k} className="px-3 py-1.5" />)}
+              {metaColumns?.map((k) => (
+                <td key={k} className="px-3 py-1.5">
+                  {onAddRowMetaChange && (
+                    <input
+                      value={addRowMetaValues?.[k] ?? ''}
+                      onChange={(e) => onAddRowMetaChange(k, e.target.value)}
+                      placeholder={k + '…'}
+                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white"
+                    />
+                  )}
+                </td>
+              ))}
               {onAddColumn && <td />}
               {hasActionsCol && (
                 <td className="px-2 py-1.5 text-center whitespace-nowrap">

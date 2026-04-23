@@ -55,6 +55,7 @@ export default function InstrumentosPage() {
   const [newFecha, setNewFecha] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -79,18 +80,22 @@ export default function InstrumentosPage() {
     setNewBdId('')
     setNewFecha('')
     setNewDesc('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newBdId) return
     setSaving(true)
     try {
-      await createInstrumento({
+      const created = await createInstrumento({
         nombre: newNombre,
         base_de_datos_id: newBdId,
         fecha_publicacion: newFecha || undefined,
         descripcion: newDesc || undefined,
       })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateInstrumento(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -177,8 +182,8 @@ export default function InstrumentosPage() {
     <>
       <button
         onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
+        disabled={saving || !newNombre.trim() || !newBdId}
+        className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         title="Guardar"
       >
         ✓
@@ -226,6 +231,8 @@ export default function InstrumentosPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

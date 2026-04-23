@@ -79,6 +79,7 @@ export default function ArchivosPage() {
   const [newPubFecha, setNewPubFecha] = useState('')
   const [newUrlId, setNewUrlId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -103,18 +104,22 @@ export default function ArchivosPage() {
     setNewFuenteFecha('')
     setNewPubFecha('')
     setNewUrlId('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newUrlId) return
     setSaving(true)
     try {
-      await createArchivo({
+      const created = await createArchivo({
         url_id: newUrlId,
         descripcion: newDesc || undefined,
         fecha_fuente: newFuenteFecha || undefined,
         fecha_publicacion: newPubFecha || undefined,
       })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateArchivo(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -213,8 +218,8 @@ export default function ArchivosPage() {
     <>
       <button
         onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
+        disabled={saving || !newUrlId}
+        className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         title="Guardar"
       >
         ✓
@@ -262,6 +267,8 @@ export default function ArchivosPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

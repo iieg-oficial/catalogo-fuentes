@@ -53,6 +53,7 @@ export default function BasesDeDatosPage() {
   const [newFrecuencia, setNewFrecuencia] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -75,18 +76,22 @@ export default function BasesDeDatosPage() {
     setNewTema('')
     setNewFrecuencia('')
     setNewDesc('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     setSaving(true)
     try {
-      await createBaseDeDatos({
+      const created = await createBaseDeDatos({
         nombre: newNombre,
         tema: newTema || undefined,
         frecuencia_actualizacion: newFrecuencia || undefined,
         descripcion: newDesc || undefined,
       })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateBaseDeDatos(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -221,6 +226,8 @@ export default function BasesDeDatosPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

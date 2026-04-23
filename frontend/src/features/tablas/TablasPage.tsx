@@ -59,6 +59,7 @@ export default function TablasPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newBdId, setNewBdId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -81,13 +82,17 @@ export default function TablasPage() {
   const resetFields = () => {
     setNewNombre('')
     setNewBdId('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newBdId) return
     setSaving(true)
     try {
-      await createTabla({ nombre: newNombre, base_de_datos_id: newBdId })
+      const created = await createTabla({ nombre: newNombre, base_de_datos_id: newBdId })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateTabla(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -157,8 +162,8 @@ export default function TablasPage() {
     <>
       <button
         onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
+        disabled={saving || !newNombre.trim() || !newBdId}
+        className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         title="Guardar"
       >
         ✓
@@ -206,6 +211,8 @@ export default function TablasPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

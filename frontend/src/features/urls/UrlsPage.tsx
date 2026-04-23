@@ -60,6 +60,7 @@ export default function UrlsPage() {
   const [newUrl, setNewUrl] = useState('')
   const [newInstrumentoId, setNewInstrumentoId] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -82,13 +83,17 @@ export default function UrlsPage() {
   const resetFields = () => {
     setNewUrl('')
     setNewInstrumentoId('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newUrl.trim() || !newInstrumentoId) return
     setSaving(true)
     try {
-      await createUrl({ url: newUrl, instrumento_id: newInstrumentoId })
+      const created = await createUrl({ url: newUrl, instrumento_id: newInstrumentoId })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateUrl(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -158,8 +163,8 @@ export default function UrlsPage() {
     <>
       <button
         onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
+        disabled={saving || !newUrl.trim() || !newInstrumentoId}
+        className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         title="Guardar"
       >
         ✓
@@ -207,6 +212,8 @@ export default function UrlsPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

@@ -37,6 +37,7 @@ export default function ProyectosPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -57,13 +58,17 @@ export default function ProyectosPage() {
   const resetFields = () => {
     setNewNombre('')
     setNewDesc('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     setSaving(true)
     try {
-      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined })
+      const created = await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateProyecto(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -168,6 +173,8 @@ export default function ProyectosPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>

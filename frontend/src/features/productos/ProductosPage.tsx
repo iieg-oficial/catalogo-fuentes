@@ -51,6 +51,7 @@ export default function ProductosPage() {
   const [newProyectoId, setNewProyectoId] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
+  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
 
@@ -74,13 +75,17 @@ export default function ProductosPage() {
     setNewNombre('')
     setNewProyectoId('')
     setNewDesc('')
+    setAddRowMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newProyectoId) return
     setSaving(true)
     try {
-      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined })
+      const created = await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined })
+      if (Object.values(addRowMeta).some(Boolean)) {
+        await updateProducto(created.id, { meta: addRowMeta })
+      }
       setAddingRow(false)
       resetFields()
       await load()
@@ -158,8 +163,8 @@ export default function ProductosPage() {
     <>
       <button
         onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
+        disabled={saving || !newNombre.trim() || !newProyectoId}
+        className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
         title="Guardar"
       >
         ✓
@@ -207,6 +212,8 @@ export default function ProductosPage() {
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+            addRowMetaValues={addRowMeta}
+            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
           />
         )}
       </div>
