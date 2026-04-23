@@ -1,0 +1,77 @@
+name: Nueva funcionalidad
+description: Propón una nueva funcionalidad o mejora para el proyecto
+title: "[FEATURE]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por tomarte el tiempo de proponer una mejora. Por favor completa los campos a continuación con el mayor detalle posible.
+
+  - type: input
+    id: titulo
+    attributes:
+      label: Título
+      description: Nombre corto y descriptivo de la funcionalidad propuesta
+      placeholder: "ej. Filtro por rango de fechas en el catálogo de indicadores"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción
+      description: Describe detalladamente qué se quiere agregar o cambiar, incluyendo el comportamiento esperado.
+      placeholder: |
+        ¿Qué debe hacer esta funcionalidad?
+        ¿Qué pantallas o módulos están involucrados?
+        ¿Cómo debería verse o comportarse?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivacion
+    attributes:
+      label: Motivación
+      description: Explica por qué se necesita este cambio o adición. ¿Qué problema resuelve o qué valor aporta?
+      placeholder: |
+        ¿Qué problema actual soluciona?
+        ¿Qué usuarios o flujos de trabajo se benefician?
+        ¿Existe alguna limitación o inconveniente sin esta funcionalidad?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Alcance
+      description: ¿Qué parte del sistema se ve afectada?
+      options:
+        - backend
+        - frontend
+        - backend + frontend
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad
+      description: ¿Qué tan urgente es esta funcionalidad?
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: textarea
+    id: comentarios
+    attributes:
+      label: Comentarios adicionales
+      description: Cualquier información extra, referencias, capturas de pantalla, alternativas consideradas o notas técnicas relevantes.
+      placeholder: |
+        Referencias, mockups, ejemplos de otras herramientas, consideraciones técnicas, etc.
+    validations:
+      required: false

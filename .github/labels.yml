@@ -1,0 +1,47 @@
+# Types
+- name: feature
+  color: "0075ca"
+  description: Nueva funcionalidad o mejora
+
+- name: bug
+  color: "d73a4a"
+  description: Algo no funciona correctamente
+
+- name: module
+  color: "7057ff"
+  description: Cambio o adición de un módulo completo
+
+# Scope
+- name: backend
+  color: "e6832a"
+  description: Afecta exclusivamente al backend (FastAPI / Python)
+
+- name: frontend
+  color: "0e8a16"
+  description: Afecta exclusivamente al frontend (React / TypeScript)
+
+# Priority
+- name: priority:critical
+  color: "b60205"
+  description: Bloquea el sistema o usuarios; requiere atención inmediata
+
+- name: priority:high
+  color: "e4514e"
+  description: Impacto alto; debe resolverse en el sprint actual
+
+- name: priority:medium
+  color: "fbca04"
+  description: Impacto moderado; puede esperar al siguiente sprint
+
+- name: priority:low
+  color: "c5def5"
+  description: Mejora menor; sin urgencia
+
+# Status
+- name: status:active
+  color: "2ea44f"
+  description: En progreso o asignado activamente
+
+- name: status:backlog
+  color: "cfd3d7"
+  description: Registrado pero aún sin priorizar
