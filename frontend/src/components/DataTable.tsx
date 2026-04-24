@@ -352,6 +352,8 @@ export default function DataTable<T>({
                                 ? <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${opt.color}28`, color: opt.color }}>{currentVal}</span>
                                 : <span>{currentVal}</span>
                             })()
+                          ) : currentVal && def.color ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${def.color}28`, color: def.color }}>{currentVal}</span>
                           ) : (
                             currentVal || '—'
                           )}

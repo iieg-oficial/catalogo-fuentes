@@ -29,6 +29,7 @@ export default function InstrumentosPage() {
   const [colName, setColName] = useState('')
   const [colType, setColType] = useState<ColumnType>('text')
   const [colListOptions, setColListOptions] = useState<ListOption[]>([])
+  const [colColor, setColColor] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newBdId, setNewBdId] = useState('')
@@ -139,21 +140,24 @@ export default function InstrumentosPage() {
     setColName(def.label ?? def.key)
     setColType(def.type)
     setColListOptions(def.options ?? [])
+    setColColor(def.color ?? '')
     setShowColForm(true)
   }
 
   const handleAddColumn = (e: React.FormEvent) => {
     e.preventDefault()
     const validOptions = colListOptions.filter((o) => o.label.trim())
+    const color = colType !== 'list' ? colColor || undefined : undefined
     if (editingColKey) {
-      updateColumn(editingColKey, colType, validOptions.length ? validOptions : undefined, colName)
+      updateColumn(editingColKey, colType, validOptions.length ? validOptions : undefined, colName, color)
       setEditingColKey(null)
     } else {
-      addColumn(colName, colType, validOptions.length ? validOptions : undefined)
+      addColumn(colName, colType, validOptions.length ? validOptions : undefined, color)
     }
     setColName('')
     setColType('text')
     setColListOptions([])
+    setColColor('')
     setShowColForm(false)
   }
 
@@ -242,7 +246,7 @@ export default function InstrumentosPage() {
         )}
       </div>
 
-      <Modal open={showColForm} title={editingColKey ? 'Editar columna' : 'Nueva columna'} onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]) }}>
+      <Modal open={showColForm} title={editingColKey ? 'Editar columna' : 'Nueva columna'} onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }}>
         <form onSubmit={handleAddColumn} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">Nombre *</label>
@@ -258,6 +262,26 @@ export default function InstrumentosPage() {
               <option value="boolean">Booleano</option>
               <option value="list">Lista</option>
             </select>
+          </div>
+          <div className={`flex items-center gap-3 ${colType === 'list' ? 'opacity-40' : ''}`}>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!colColor && colType !== 'list'}
+              onClick={() => { if (!colColor) setColColor('#3b82f6'); else setColColor('') }}
+              disabled={colType === 'list'}
+              className={`relative w-8 h-4 rounded-full transition-colors duration-150 shrink-0 ${colColor && colType !== 'list' ? 'bg-brand-600' : 'bg-neutral-200'} ${colType !== 'list' ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform duration-150 ${colColor && colType !== 'list' ? 'translate-x-4' : ''}`} />
+            </button>
+            <span className="text-sm font-medium text-neutral-700">Color</span>
+            {colColor && colType !== 'list' && (
+              <label className="cursor-pointer shrink-0" title="Cambiar color">
+                <div className="w-5 h-5 rounded-full shadow-sm border border-neutral-200" style={{ backgroundColor: colColor }} />
+                <input type="color" value={colColor} onChange={(e) => setColColor(e.target.value)} className="sr-only" />
+              </label>
+            )}
+            {colType === 'list' && <span className="text-xs text-neutral-300">Las listas usan colores por opción</span>}
           </div>
           {colType === 'list' && (
             <div>
@@ -300,7 +324,7 @@ export default function InstrumentosPage() {
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]) }} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
+            <button type="button" onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
             <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">Crear</button>
           </div>
         </form>
