@@ -32,6 +32,7 @@ export async function createTabla(payload: {
 }
 
 export async function updateTabla(id: string, payload: {
+  nombre?: string
   campos?: Array<Record<string, unknown>>
   producto_ids?: string[]
   meta?: Record<string, unknown>

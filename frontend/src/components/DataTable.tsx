@@ -1,9 +1,12 @@
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
+import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
 
 export interface Column<T> {
   header: string
   render: (row: T) => ReactNode
   className?: string
+  onEdit?: (row: T, newValue: string) => void
+  getValue?: (row: T) => string
 }
 
 interface DataTableProps<T> {
@@ -12,15 +15,17 @@ interface DataTableProps<T> {
   caption?: string
   onRowClick?: (row: T) => void
   getKey: (row: T) => string
+  isEditing?: boolean
   // Inline add row
   onAdd?: () => void
   addRowCells?: ReactNode
   addRowActions?: ReactNode
   // Meta columns
-  metaColumns?: string[]
+  metaColumnDefs?: MetaColumnDef[]
   getMeta?: (row: T) => Record<string, unknown>
   onAddColumn?: () => void
   onDeleteColumn?: (key: string) => void
+  onRenameColumn?: (key: string, newLabel: string) => void
   onEditMetaCell?: (row: T, key: string, value: string) => void
   // Meta inputs for add row (controlled by parent)
   addRowMetaValues?: Record<string, string>
@@ -32,30 +37,147 @@ interface DataTableProps<T> {
 const thBase = 'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] whitespace-nowrap'
 const tdBase = 'px-4 py-2.5 align-top'
 
+const inlineCls =
+  'w-full px-1.5 py-0.5 text-sm border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+
+const TYPE_ICON: Record<string, ReactNode> = {
+  text:    <span className="font-bold opacity-40 mr-1">T</span>,
+  number:  <span className="font-bold opacity-40 mr-1">#</span>,
+  url:     <span className="font-bold opacity-40 mr-1">↔</span>,
+  date:    <span className="font-bold opacity-40 mr-1">D</span>,
+  boolean: <span className="font-bold opacity-40 mr-1">✓</span>,
+  list:    <span className="font-bold opacity-40 mr-1">≡</span>,
+}
+
+function ColMenu({
+  colKey,
+  open,
+  onOpen,
+  onClose,
+  onDelete,
+  onRename,
+}: {
+  colKey: string
+  open: boolean
+  onOpen: () => void
+  onClose: () => void
+  onDelete: () => void
+  onRename: (label: string) => void
+}) {
+  const [renaming, setRenaming] = useState(false)
+  const [val, setVal] = useState('')
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) onClose()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open, onClose])
+
+  const commitRename = () => {
+    onRename(val)
+    setRenaming(false)
+    setVal('')
+    onClose()
+  }
+
+  return (
+    <div className="relative inline-block" ref={menuRef}>
+      <button
+        onClick={(e) => { e.stopPropagation(); open ? onClose() : onOpen() }}
+        className="opacity-0 group-hover:opacity-100 ml-1 text-neutral-300 hover:text-neutral-500
+                   transition-opacity duration-150 leading-none align-middle"
+        title="Opciones de columna"
+        aria-label="Opciones de columna"
+      >
+        ···
+      </button>
+      {open && !renaming && (
+        <div className="absolute left-0 top-5 z-20 w-36 bg-white border border-neutral-200 rounded-lg shadow-lg overflow-hidden text-left">
+          <button
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-50 transition-colors"
+            onClick={(e) => { e.stopPropagation(); setRenaming(true) }}
+          >
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" />
+            </svg>
+            Editar columna
+          </button>
+          <button
+            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDelete(); onClose() }}
+          >
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
+            </svg>
+            Borrar columna
+          </button>
+        </div>
+      )}
+      {open && renaming && (
+        <div className="absolute left-0 top-5 z-20 w-44 bg-white border border-neutral-200 rounded-lg shadow-lg p-2 space-y-1.5">
+          <input
+            autoFocus
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename()
+              if (e.key === 'Escape') { setRenaming(false); onClose() }
+            }}
+            placeholder={colKey}
+            className="w-full px-2 py-1 text-xs border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <div className="flex justify-end gap-1">
+            <button
+              className="px-2 py-0.5 text-xs text-neutral-400 hover:text-neutral-600"
+              onClick={(e) => { e.stopPropagation(); setRenaming(false); onClose() }}
+            >
+              Cancelar
+            </button>
+            <button
+              className="px-2 py-0.5 text-xs bg-brand-600 text-white rounded hover:bg-brand-700"
+              onClick={(e) => { e.stopPropagation(); commitRename() }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function DataTable<T>({
   columns,
   rows,
   caption,
   onRowClick,
   getKey,
+  isEditing = false,
   onAdd,
   addRowCells,
   addRowActions,
-  metaColumns,
+  metaColumnDefs,
   getMeta,
   onAddColumn,
   onDeleteColumn,
+  onRenameColumn,
   onEditMetaCell,
   addRowMetaValues,
   onAddRowMetaChange,
   onDeleteRow,
 }: DataTableProps<T>) {
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
+  const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const hasActionsCol = !!onDeleteRow
 
   const totalCols =
     columns.length +
-    (metaColumns?.length ?? 0) +
+    (metaColumnDefs?.length ?? 0) +
     (onAddColumn ? 1 : 0) +
     (hasActionsCol ? 1 : 0)
 
@@ -71,20 +193,20 @@ export default function DataTable<T>({
                 {col.header}
               </th>
             ))}
-            {metaColumns?.map((key) => (
-              <th key={key} className={`group ${thBase} text-neutral-300`}>
-                <span className="inline-flex items-center gap-1">
-                  {key}
-                  {onDeleteColumn && (
-                    <button
-                      onClick={() => onDeleteColumn(key)}
-                      className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-red-400
-                                 transition-opacity duration-150 leading-none"
-                      title="Quitar columna"
-                      aria-label={`Quitar columna ${key}`}
-                    >
-                      ×
-                    </button>
+            {metaColumnDefs?.map((def) => (
+              <th key={def.key} className={`group ${thBase} text-neutral-300`}>
+                <span className="inline-flex items-center gap-0.5">
+                  {TYPE_ICON[def.type]}
+                  {def.label ?? def.key}
+                  {(onDeleteColumn || onRenameColumn) && (
+                    <ColMenu
+                      colKey={def.key}
+                      open={openColMenu === def.key}
+                      onOpen={() => setOpenColMenu(def.key)}
+                      onClose={() => setOpenColMenu(null)}
+                      onDelete={() => onDeleteColumn?.(def.key)}
+                      onRename={(label) => onRenameColumn?.(def.key, label)}
+                    />
                   )}
                 </span>
               </th>
@@ -125,103 +247,220 @@ export default function DataTable<T>({
             </tr>
           )}
 
-          {rows.map((row) => (
-            <tr
-              key={getKey(row)}
-              onClick={() => onRowClick?.(row)}
-              onKeyDown={onRowClick ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  onRowClick(row)
-                }
-              } : undefined}
-              tabIndex={onRowClick ? 0 : undefined}
-              className={`group bg-white ${
-                onRowClick
-                  ? 'cursor-pointer hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500'
-                  : ''
-              }`}
-            >
-              {columns.map((col, ci) => (
-                <td key={ci} className={`${tdBase} ${col.className ?? ''}`}>
-                  {col.render(row)}
-                </td>
-              ))}
-
-              {metaColumns?.map((key) => {
-                const isEditing = editingCell?.rowKey === getKey(row) && editingCell?.colKey === key
-                const currentVal = String(getMeta?.(row)?.[key] ?? '')
-                return (
-                  <td
-                    key={key}
-                    className={`${tdBase} text-xs text-neutral-400`}
-                    onClick={(e) => {
-                      if (onEditMetaCell) {
+          {rows.map((row) => {
+            const rowKey = getKey(row)
+            return (
+              <tr
+                key={rowKey}
+                onClick={() => { if (!isEditing) onRowClick?.(row) }}
+                onKeyDown={!isEditing && onRowClick ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onRowClick(row)
+                  }
+                } : undefined}
+                tabIndex={!isEditing && onRowClick ? 0 : undefined}
+                className={`group bg-white ${
+                  !isEditing && onRowClick
+                    ? 'cursor-pointer hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500'
+                    : isEditing ? 'cursor-default' : ''
+                }`}
+              >
+                {columns.map((col, ci) => {
+                  const isEditingPrimary =
+                    isEditing &&
+                    !!col.onEdit &&
+                    editingCell?.rowKey === rowKey &&
+                    editingCell?.colKey === `__col_${ci}`
+                  return (
+                    <td
+                      key={ci}
+                      className={`${tdBase} ${col.className ?? ''}`}
+                      onClick={isEditing && col.onEdit ? (e) => {
                         e.stopPropagation()
-                        setEditingCell({ rowKey: getKey(row), colKey: key, value: currentVal === '—' ? '' : currentVal })
-                      }
-                    }}
-                  >
-                    {isEditing ? (
-                      <input
-                        autoFocus
-                        value={editingCell!.value}
-                        onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
-                        onBlur={() => {
-                          onEditMetaCell?.(row, key, editingCell!.value)
-                          setEditingCell(null)
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { onEditMetaCell?.(row, key, editingCell!.value); setEditingCell(null) }
-                          if (e.key === 'Escape') setEditingCell(null)
-                        }}
-                        className="w-full px-1.5 py-0.5 text-xs border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <span className={onEditMetaCell ? 'cursor-text hover:bg-brand-50 rounded px-0.5 transition-colors duration-100' : ''}>
-                        {currentVal || '—'}
-                      </span>
-                    )}
+                        const currentVal = col.getValue?.(row) ?? ''
+                        setEditingCell({ rowKey, colKey: `__col_${ci}`, value: currentVal })
+                      } : undefined}
+                    >
+                      {isEditingPrimary ? (
+                        <input
+                          autoFocus
+                          value={editingCell!.value}
+                          onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
+                          onBlur={() => {
+                            col.onEdit?.(row, editingCell!.value)
+                            setEditingCell(null)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }
+                            if (e.key === 'Escape') setEditingCell(null)
+                          }}
+                          className={inlineCls}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className={isEditing && col.onEdit ? 'cursor-text hover:bg-brand-50 rounded px-0.5 transition-colors duration-100 block' : ''}>
+                          {col.render(row)}
+                        </span>
+                      )}
+                    </td>
+                  )
+                })}
+
+                {metaColumnDefs?.map((def) => {
+                  const isEditingMeta = editingCell?.rowKey === rowKey && editingCell?.colKey === def.key
+                  const rawVal = getMeta?.(row)?.[def.key]
+                  const currentVal = rawVal != null ? String(rawVal) : ''
+                  return (
+                    <td
+                      key={def.key}
+                      className={`${tdBase} text-xs text-neutral-400 ${def.type === 'number' ? 'text-right' : ''}`}
+                      onClick={(e) => {
+                        if (onEditMetaCell) {
+                          e.stopPropagation()
+                          setEditingCell({ rowKey, colKey: def.key, value: currentVal })
+                        }
+                      }}
+                    >
+                      {isEditingMeta ? (
+                        def.type === 'boolean' ? (
+                          <select
+                            autoFocus
+                            value={editingCell!.value}
+                            onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
+                            onBlur={() => setEditingCell(null)}
+                            className={`${inlineCls} bg-white`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <option value="">—</option>
+                            <option value="true">Sí</option>
+                            <option value="false">No</option>
+                          </select>
+                        ) : def.type === 'list' && def.options?.length ? (
+                          <select
+                            autoFocus
+                            value={editingCell!.value}
+                            onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
+                            onBlur={() => setEditingCell(null)}
+                            className={`${inlineCls} bg-white`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <option value="">—</option>
+                            {def.options.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            autoFocus
+                            type={def.type === 'date' ? 'date' : 'text'}
+                            value={editingCell!.value}
+                            onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
+                            onBlur={() => {
+                              onEditMetaCell?.(row, def.key, editingCell!.value)
+                              setEditingCell(null)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') { onEditMetaCell?.(row, def.key, editingCell!.value); setEditingCell(null) }
+                              if (e.key === 'Escape') setEditingCell(null)
+                            }}
+                            className={inlineCls}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )
+                      ) : (
+                        <span className={onEditMetaCell ? 'cursor-text hover:bg-brand-50 rounded px-0.5 transition-colors duration-100' : ''}>
+                          {currentVal && def.type === 'url' ? (
+                            <a
+                              href={currentVal}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-brand-600 hover:text-brand-700 underline underline-offset-2 inline-flex items-center gap-0.5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {currentVal}
+                              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                                <path d="M3 1h6v6M9 1 1 9" />
+                              </svg>
+                            </a>
+                          ) : def.type === 'boolean' ? (
+                            currentVal === 'true'
+                              ? <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-brand-100 text-brand-700">Sí</span>
+                              : currentVal === 'false'
+                                ? <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-neutral-100 text-neutral-500">No</span>
+                                : <span>—</span>
+                          ) : def.type === 'list' && currentVal ? (
+                            (() => {
+                              const opt = (def.options as ListOption[] | undefined)?.find((o) => o.label === currentVal)
+                              return opt?.color
+                                ? <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${opt.color}28`, color: opt.color }}>{currentVal}</span>
+                                : <span>{currentVal}</span>
+                            })()
+                          ) : (
+                            currentVal || '—'
+                          )}
+                        </span>
+                      )}
+                    </td>
+                  )
+                })}
+
+                {onAddColumn && <td />}
+
+                {hasActionsCol && (
+                  <td className="px-3 py-2.5 w-8 text-center" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => onDeleteRow?.(row)}
+                      className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-red-500
+                                 transition-all duration-150"
+                      title="Eliminar"
+                      aria-label="Eliminar fila"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
+                      </svg>
+                    </button>
                   </td>
-                )
-              })}
-
-              {onAddColumn && <td />}
-
-              {hasActionsCol && (
-                <td className="px-3 py-2.5 w-8 text-center" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => onDeleteRow?.(row)}
-                    className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-red-500
-                               transition-all duration-150"
-                    title="Eliminar"
-                    aria-label="Eliminar fila"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
-                    </svg>
-                  </button>
-                </td>
-              )}
-            </tr>
-          ))}
+                )}
+              </tr>
+            )
+          })}
 
           {/* Inline add row */}
           {addRowCells && (
             <tr className="bg-brand-50/60 border-t border-brand-100">
               {addRowCells}
-              {metaColumns?.map((k) => (
-                <td key={k} className="px-4 py-2">
+              {metaColumnDefs?.map((def) => (
+                <td key={def.key} className="px-4 py-2">
                   {onAddRowMetaChange && (
-                    <input
-                      value={addRowMetaValues?.[k] ?? ''}
-                      onChange={(e) => onAddRowMetaChange(k, e.target.value)}
-                      placeholder={k + '…'}
-                      className="w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md
-                                 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400
-                                 bg-white placeholder-neutral-300 transition-colors duration-150"
-                    />
+                    def.type === 'boolean' ? (
+                      <select
+                        value={addRowMetaValues?.[def.key] ?? ''}
+                        onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white transition-colors duration-150"
+                      >
+                        <option value="">—</option>
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                      </select>
+                    ) : def.type === 'list' && def.options?.length ? (
+                      <select
+                        value={addRowMetaValues?.[def.key] ?? ''}
+                        onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white transition-colors duration-150"
+                      >
+                        <option value="">—</option>
+                        {def.options.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        type={def.type === 'date' ? 'date' : 'text'}
+                        value={addRowMetaValues?.[def.key] ?? ''}
+                        onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
+                        placeholder={(def.label ?? def.key) + '…'}
+                        className="w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md
+                                   focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400
+                                   bg-white placeholder-neutral-300 transition-colors duration-150"
+                      />
+                    )
                   )}
                 </td>
               ))}

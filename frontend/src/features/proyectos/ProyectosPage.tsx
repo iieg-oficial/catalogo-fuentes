@@ -6,23 +6,12 @@ import Modal from '@/components/Modal'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
-import { useMetaColumns } from '@/hooks/useMetaColumns'
+import { useMetaColumns, type ColumnType, type ListOption, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
-
-const columns: Column<Proyecto>[] = [
-  {
-    header: 'Nombre',
-    render: (r) => <span className="font-medium text-gray-900">{r.nombre}</span>,
-    className: 'w-64',
-  },
-  {
-    header: 'Descripción',
-    render: (r) => <span className="text-gray-600">{r.descripcion ?? '—'}</span>,
-  },
-]
+const modalInputCls = 'w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
 
 export default function ProyectosPage() {
   const navigate = useNavigate()
@@ -31,15 +20,18 @@ export default function ProyectosPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
   const [showColForm, setShowColForm] = useState(false)
   const [colName, setColName] = useState('')
+  const [colType, setColType] = useState<ColumnType>('text')
+  const [colListOptions, setColListOptions] = useState<ListOption[]>([])
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, getMeta } = useMetaColumns(items)
+  const { allMetaCols, addColumn, deleteColumn, renameColumn, getMeta } = useMetaColumns(items, 'proyectos')
 
   const load = async () => {
     setLoading(true)
@@ -82,11 +74,32 @@ export default function ProyectosPage() {
     setItems((prev) => prev.filter((i) => i.id !== row.id))
   }
 
+  const handleEditPrimaryCell = (row: Proyecto, field: 'nombre' | 'descripcion', value: string) => {
+    updateProyecto(row.id, { [field]: value })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
+  }
+
   const handleEditMetaCell = (row: Proyecto, key: string, value: string) => {
     const nm = { ...row.meta, [key]: value }
     updateProyecto(row.id, { meta: nm })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
+
+  const columns: Column<Proyecto>[] = [
+    {
+      header: 'Nombre',
+      render: (r) => <span className="font-medium text-gray-900">{r.nombre}</span>,
+      className: 'w-64',
+      getValue: (r) => r.nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+    },
+    {
+      header: 'Descripción',
+      render: (r) => <span className="text-gray-600">{r.descripcion ?? '—'}</span>,
+      getValue: (r) => r.descripcion ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+    },
+  ]
 
   const kd = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSaveRow()
@@ -95,8 +108,11 @@ export default function ProyectosPage() {
 
   const handleAddColumn = (e: React.FormEvent) => {
     e.preventDefault()
-    addColumn(colName)
+    const validOptions = colListOptions.filter((o) => o.label.trim())
+    addColumn(colName, colType, validOptions.length ? validOptions : undefined)
     setColName('')
+    setColType('text')
+    setColListOptions([])
     setShowColForm(false)
   }
 
@@ -107,51 +123,35 @@ export default function ProyectosPage() {
   const addRowCells = (
     <>
       <td className="px-3 py-1.5">
-        <input
-          autoFocus
-          required
-          value={newNombre}
-          onChange={(e) => setNewNombre(e.target.value)}
-          onKeyDown={kd}
-          placeholder="Nombre…"
-          className={inputCls}
-        />
+        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre…" className={inputCls} />
       </td>
       <td className="px-3 py-1.5">
-        <input
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          onKeyDown={kd}
-          placeholder="Descripción…"
-          className={inputCls}
-        />
+        <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripción…" className={inputCls} />
       </td>
     </>
   )
 
   const addRowActions = (
     <>
-      <button
-        onClick={handleSaveRow}
-        disabled={saving}
-        className="text-brand-600 hover:text-brand-700 mr-2 font-bold"
-        title="Guardar"
-      >
-        ✓
-      </button>
-      <button
-        onClick={() => { setAddingRow(false); resetFields() }}
-        className="text-gray-400 hover:text-gray-600"
-        title="Cancelar"
-      >
-        ✕
-      </button>
+      <button onClick={handleSaveRow} disabled={saving} className="text-brand-600 hover:text-brand-700 mr-2 font-bold" title="Guardar">✓</button>
+      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-gray-400 hover:text-gray-600" title="Cancelar">✕</button>
     </>
   )
 
+  const editBtn = canWrite ? (
+    <button
+      onClick={() => setIsEditing((v) => !v)}
+      className={isEditing
+        ? 'px-3 py-1.5 text-xs font-medium rounded-md bg-brand-600 text-white'
+        : 'px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-200 text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 transition-colors duration-150'}
+    >
+      {isEditing ? 'Listo' : 'Editar'}
+    </button>
+  ) : undefined
+
   return (
     <>
-      <Topbar title="Proyectos" search={search} onSearch={setSearch} />
+      <Topbar title="Proyectos" search={search} onSearch={setSearch} actions={editBtn} />
       <div className="flex-1 p-4 overflow-y-auto">
         {loading ? (
           <LoadingSpinner />
@@ -163,15 +163,17 @@ export default function ProyectosPage() {
             rows={filtered}
             caption="Proyectos"
             getKey={(r) => r.id}
+            isEditing={isEditing}
             onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
             onAdd={canWrite ? () => setAddingRow(true) : undefined}
             addRowCells={canWrite && addingRow ? addRowCells : undefined}
             addRowActions={canWrite && addingRow ? addRowActions : undefined}
             onDeleteRow={canWrite ? handleDeleteRow : undefined}
-            metaColumns={allMetaCols}
+            metaColumnDefs={allMetaCols}
             getMeta={getMeta}
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
+            onRenameColumn={canWrite ? renameColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
             addRowMetaValues={addRowMeta}
             onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
@@ -179,26 +181,66 @@ export default function ProyectosPage() {
         )}
       </div>
 
-      <Modal open={showColForm} title="Agregar columna" onClose={() => setShowColForm(false)}>
+      <Modal open={showColForm} title="Nueva columna" onClose={() => setShowColForm(false)}>
         <form onSubmit={handleAddColumn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del campo *</label>
-            <input
-              required
-              value={colName}
-              onChange={(e) => setColName(e.target.value)}
-              placeholder="e.g. proposito"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
-            />
-            <p className="mt-1 text-xs text-gray-400">Muestra el metadato con esa clave para cada registro.</p>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Nombre *</label>
+            <input required value={colName} onChange={(e) => setColName(e.target.value)} placeholder="ej. proposito" className={modalInputCls} />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+            <select value={colType} onChange={(e) => setColType(e.target.value as ColumnType)} className={`${modalInputCls} bg-white`}>
+              <option value="text">Texto</option>
+              <option value="number">Número</option>
+              <option value="url">URL</option>
+              <option value="date">Fecha</option>
+              <option value="boolean">Booleano</option>
+              <option value="list">Lista</option>
+            </select>
+          </div>
+          {colType === 'list' && (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">Opciones</label>
+              <div className="space-y-1.5">
+                {colListOptions.map((opt, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <label className="shrink-0 cursor-pointer" title="Cambiar color">
+                      <div className="w-5 h-5 rounded-full shadow-sm" style={{ backgroundColor: opt.color ?? '#94a3b8' }} />
+                      <input
+                        type="color"
+                        value={opt.color ?? '#94a3b8'}
+                        onChange={(e) => setColListOptions((prev) => prev.map((o, i) => i === idx ? { ...o, color: e.target.value } : o))}
+                        className="sr-only"
+                      />
+                    </label>
+                    <input
+                      value={opt.label}
+                      onChange={(e) => setColListOptions((prev) => prev.map((o, i) => i === idx ? { ...o, label: e.target.value } : o))}
+                      placeholder="Opción…"
+                      className="flex-1 px-2.5 py-1 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setColListOptions((prev) => prev.filter((_, i) => i !== idx))}
+                      className="text-neutral-300 hover:text-red-400 transition-colors text-lg leading-none"
+                      aria-label="Quitar opción"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setColListOptions((prev) => [...prev, { label: '', color: LIST_COLOR_PALETTE[prev.length % LIST_COLOR_PALETTE.length] }])}
+                className="mt-2 flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M5 1v8M1 5h8"/></svg>
+                Agregar opción
+              </button>
+            </div>
+          )}
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setShowColForm(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
-              Cancelar
-            </button>
-            <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">
-              Agregar
-            </button>
+            <button type="button" onClick={() => setShowColForm(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
+            <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">Crear</button>
           </div>
         </form>
       </Modal>

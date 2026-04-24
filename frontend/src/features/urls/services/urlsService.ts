@@ -20,7 +20,7 @@ export async function createUrl(payload: {
   return data
 }
 
-export async function updateUrl(id: string, payload: { meta?: Record<string, unknown> }): Promise<Url> {
+export async function updateUrl(id: string, payload: { url?: string; meta?: Record<string, unknown> }): Promise<Url> {
   const { data } = await apiClient.put<Url>(`/urls/${id}`, payload)
   return data
 }
