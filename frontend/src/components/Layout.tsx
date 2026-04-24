@@ -12,7 +12,7 @@ function LayoutInner({ user, onLogout, children }: Props) {
   const { open, closeSidebar } = useSidebar()
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-30 md:hidden"
@@ -21,7 +21,7 @@ function LayoutInner({ user, onLogout, children }: Props) {
         />
       )}
       <Sidebar user={user} onLogout={onLogout} />
-      <main className="flex-1 flex flex-col min-w-0">{children}</main>
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">{children}</main>
     </div>
   )
 }

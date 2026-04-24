@@ -32,6 +32,7 @@ interface DataTableProps<T> {
   onAddRowMetaChange?: (key: string, value: string) => void
   // Row deletion
   onDeleteRow?: (row: T) => void
+  className?: string
 }
 
 const thBase = 'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] whitespace-nowrap'
@@ -85,9 +86,9 @@ function ColMenu({
         ···
       </button>
       {open && (
-        <div className="absolute left-0 top-5 z-20 w-36 bg-white border border-neutral-200 rounded-lg shadow-lg overflow-hidden text-left">
+        <div className="absolute left-0 top-6 z-20 w-40 bg-white border border-neutral-100 rounded-xl shadow-md shadow-neutral-200/60 overflow-hidden text-left py-1">
           <button
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs text-neutral-600 hover:bg-neutral-50 hover:text-brand-600 transition-colors duration-100"
             onClick={(e) => { e.stopPropagation(); onEdit(); onClose() }}
           >
             <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -95,8 +96,9 @@ function ColMenu({
             </svg>
             Editar columna
           </button>
+          <div className="mx-3 border-t border-neutral-100" />
           <button
-            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs text-red-400 hover:bg-red-50 hover:text-red-500 transition-colors duration-100"
             onClick={(e) => { e.stopPropagation(); onDelete(); onClose() }}
           >
             <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -129,6 +131,7 @@ export default function DataTable<T>({
   addRowMetaValues,
   onAddRowMetaChange,
   onDeleteRow,
+  className,
 }: DataTableProps<T>) {
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
@@ -141,7 +144,7 @@ export default function DataTable<T>({
     (hasActionsCol ? 1 : 0)
 
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-neutral-200 shadow-sm">
+    <div className={`overflow-auto rounded-lg border border-neutral-200 shadow-sm ${className ?? 'w-full'}`}>
       <table className="min-w-full text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
 
@@ -331,10 +334,10 @@ export default function DataTable<T>({
                               href={currentVal}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-brand-600 hover:text-brand-700 underline underline-offset-2 inline-flex items-center gap-0.5"
+                              className="text-brand-600 hover:text-brand-700 underline underline-offset-2 inline-flex items-center gap-0.5 whitespace-nowrap"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {currentVal}
+                              {currentVal.length > 50 ? currentVal.slice(0, 50) + '…' : currentVal}
                               <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                                 <path d="M3 1h6v6M9 1 1 9" />
                               </svg>
