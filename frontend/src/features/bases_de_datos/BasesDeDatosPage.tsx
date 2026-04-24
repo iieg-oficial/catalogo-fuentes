@@ -167,10 +167,13 @@ export default function BasesDeDatosPage() {
 
   const temas = [...new Set(items.map((i) => i.tema).filter(Boolean))] as string[]
 
-  const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()) &&
-    (!filterTema || i.tema === filterTema),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.nombre, i.descripcion, i.tema, i.frecuencia_actualizacion, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterTema || i.tema === filterTema)
+  })
 
   const addRowCells = (
     <>

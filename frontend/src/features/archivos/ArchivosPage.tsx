@@ -195,10 +195,13 @@ export default function ArchivosPage() {
     ).values(),
   ]
 
-  const filtered = items.filter((i) =>
-    (i.descripcion ?? '').toLowerCase().includes(search.toLowerCase()) &&
-    (!filterInstrumentoId || i.url_ref?.instrumento?.id === filterInstrumentoId),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.descripcion, i.fecha_publicacion, i.fecha_fuente, i.url_ref?.url, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterInstrumentoId || i.url_ref?.instrumento?.id === filterInstrumentoId)
+  })
 
   const addRowCells = (
     <>

@@ -167,10 +167,13 @@ export default function UrlsPage() {
     setShowColForm(false)
   }
 
-  const filtered = items.filter((i) =>
-    i.url.toLowerCase().includes(search.toLowerCase()) &&
-    (!filterInstrumentoId || i.instrumento?.id === filterInstrumentoId),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.url, i.instrumento?.nombre, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterInstrumentoId || i.instrumento?.id === filterInstrumentoId)
+  })
 
   const addRowCells = (
     <>

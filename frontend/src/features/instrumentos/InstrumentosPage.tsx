@@ -170,10 +170,13 @@ export default function InstrumentosPage() {
     setShowColForm(false)
   }
 
-  const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()) &&
-    (!filterBdId || i.base_de_datos?.id === filterBdId),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.nombre, i.descripcion, i.fecha_publicacion, i.base_de_datos?.nombre, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterBdId || i.base_de_datos?.id === filterBdId)
+  })
 
   const addRowCells = (
     <>

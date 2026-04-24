@@ -134,9 +134,12 @@ export default function ProyectosPage() {
     setShowColForm(false)
   }
 
-  const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    return !q || [i.nombre, i.descripcion, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+  })
 
   const addRowCells = (
     <>
