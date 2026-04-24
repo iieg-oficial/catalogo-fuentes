@@ -17,3 +17,26 @@
     @apply fixed inset-y-0 right-0 w-full max-w-lg bg-white shadow-2xl z-50 transform transition-transform duration-300;
   }
 }
+
+@layer utilities {
+  .nav-item-enter {
+    animation: nav-slide-in 0.22s ease-out both;
+  }
+
+  @keyframes nav-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-item-enter {
+      animation: none;
+    }
+  }
+}
