@@ -110,13 +110,11 @@ export default function TablasPage() {
     },
     {
       header: 'Base de datos',
-      render: (r) => (
-        <span className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">
-          {r.base_de_datos.nombre}
-        </span>
-      ),
+      render: (r) => r.base_de_datos
+        ? <span className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">{r.base_de_datos.nombre}</span>
+        : <span className="text-neutral-400">—</span>,
       className: 'w-48',
-      getValue: (r) => r.base_de_datos.id,
+      getValue: (r) => r.base_de_datos?.id ?? '',
       onEdit: handleEditBaseDeDatos,
       selectOptions: bases.map((b) => ({ value: b.id, label: b.nombre })),
     },
@@ -166,10 +164,13 @@ export default function TablasPage() {
     setShowColForm(false)
   }
 
-  const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()) &&
-    (!filterBdId || i.base_de_datos.id === filterBdId),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.nombre, i.base_de_datos?.nombre, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterBdId || i.base_de_datos?.id === filterBdId)
+  })
 
   const addRowCells = (
     <>

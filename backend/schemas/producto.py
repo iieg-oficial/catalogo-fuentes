@@ -25,9 +25,10 @@ class ProductoUpdate(BaseModel):
 
 class ProductoRead(ProductoBase):
     id: uuid.UUID
+    proyecto_id: uuid.UUID | None = None
 
     model_config = {"from_attributes": True}
 
 
 class ProductoWithProyecto(ProductoRead):
-    proyecto: ProyectoRead
+    proyecto: ProyectoRead | None = None

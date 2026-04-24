@@ -28,6 +28,7 @@ class ArchivoUpdate(BaseModel):
 
 class ArchivoRead(ArchivoBase):
     id: uuid.UUID
+    url_id: uuid.UUID | None = None
     url_ref: UrlRead | None = None
 
     model_config = {"from_attributes": True}

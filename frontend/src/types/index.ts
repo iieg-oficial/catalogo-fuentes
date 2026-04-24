@@ -16,11 +16,11 @@ export interface Proyecto {
 
 export interface Producto {
   id: string
-  proyecto_id: string
+  proyecto_id: string | null
   nombre: string
   descripcion: string | null
   meta: Record<string, unknown>
-  proyecto: Proyecto
+  proyecto: Proyecto | null
 }
 
 export interface BaseDeDatos {
@@ -34,17 +34,17 @@ export interface BaseDeDatos {
 
 export interface Tabla {
   id: string
-  base_de_datos_id: string
+  base_de_datos_id: string | null
   nombre: string
   campos: Array<Record<string, unknown>>
   meta: Record<string, unknown>
-  base_de_datos: BaseDeDatos
+  base_de_datos: BaseDeDatos | null
   productos: Producto[]
 }
 
 export interface Instrumento {
   id: string
-  base_de_datos_id: string
+  base_de_datos_id: string | null
   nombre: string
   descripcion: string | null
   fecha_publicacion: string | null
@@ -55,7 +55,7 @@ export interface Instrumento {
 
 export interface Url {
   id: string
-  instrumento_id: string
+  instrumento_id: string | null
   url: string
   meta: Record<string, unknown>
   instrumento?: Instrumento
@@ -63,7 +63,7 @@ export interface Url {
 
 export interface Archivo {
   id: string
-  url_id: string
+  url_id: string | null
   descripcion: string | null
   fecha_publicacion: string | null
   fecha_fuente: string | null

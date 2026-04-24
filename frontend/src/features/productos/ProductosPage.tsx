@@ -112,13 +112,11 @@ export default function ProductosPage() {
     },
     {
       header: 'Proyecto',
-      render: (r) => (
-        <span className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-medium">
-          {r.proyecto.nombre}
-        </span>
-      ),
+      render: (r) => r.proyecto
+        ? <span className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-medium">{r.proyecto.nombre}</span>
+        : <span className="text-neutral-400">—</span>,
       className: 'w-48',
-      getValue: (r) => r.proyecto.id,
+      getValue: (r) => r.proyecto?.id ?? '',
       onEdit: handleEditProyecto,
       selectOptions: proyectos.map((p) => ({ value: p.id, label: p.nombre })),
     },
@@ -161,10 +159,13 @@ export default function ProductosPage() {
     setShowColForm(false)
   }
 
-  const filtered = items.filter((i) =>
-    i.nombre.toLowerCase().includes(search.toLowerCase()) &&
-    (!filterProyectoId || i.proyecto.id === filterProyectoId),
-  )
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    const matches = !q || [i.nombre, i.descripcion, i.proyecto?.nombre, ...Object.values(i.meta)].some(
+      (v) => String(v ?? '').toLowerCase().includes(q),
+    )
+    return matches && (!filterProyectoId || i.proyecto?.id === filterProyectoId)
+  })
 
   const addRowCells = (
     <>

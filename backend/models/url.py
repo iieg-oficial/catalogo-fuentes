@@ -11,13 +11,13 @@ class Url(Base):
     __tablename__ = "url"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    instrumento_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("instrumento.id", ondelete="CASCADE"), nullable=False
+    instrumento_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("instrumento.id", ondelete="SET NULL"), nullable=True
     )
     url: Mapped[str] = mapped_column(Text, nullable=False)
     meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
 
-    instrumento: Mapped["Instrumento"] = relationship("Instrumento", back_populates="urls")
+    instrumento: Mapped["Instrumento | None"] = relationship("Instrumento", back_populates="urls")
     archivos: Mapped[list["Archivo"]] = relationship(
-        "Archivo", back_populates="url_ref", cascade="all, delete-orphan"
+        "Archivo", back_populates="url_ref", passive_deletes=True
     )

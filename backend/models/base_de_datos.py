@@ -18,8 +18,8 @@ class BaseDeDatos(Base):
     meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
 
     tablas: Mapped[list["Tabla"]] = relationship(
-        "Tabla", back_populates="base_de_datos", cascade="all, delete-orphan"
+        "Tabla", back_populates="base_de_datos", passive_deletes=True
     )
     instrumentos: Mapped[list["Instrumento"]] = relationship(
-        "Instrumento", back_populates="base_de_datos", cascade="all, delete-orphan"
+        "Instrumento", back_populates="base_de_datos", passive_deletes=True
     )
