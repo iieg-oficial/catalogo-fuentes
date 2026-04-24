@@ -14,8 +14,8 @@ interface DataTableProps<T> {
   getKey: (row: T) => string
   // Inline add row
   onAdd?: () => void
-  addRowCells?: ReactNode     // <td>s for static columns (same count as columns[])
-  addRowActions?: ReactNode   // save/cancel shown in actions column
+  addRowCells?: ReactNode
+  addRowActions?: ReactNode
   // Meta columns
   metaColumns?: string[]
   getMeta?: (row: T) => Record<string, unknown>
@@ -28,6 +28,9 @@ interface DataTableProps<T> {
   // Row deletion
   onDeleteRow?: (row: T) => void
 }
+
+const thBase = 'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.1em] whitespace-nowrap'
+const tdBase = 'px-4 py-2.5 align-top'
 
 export default function DataTable<T>({
   columns,
@@ -57,24 +60,26 @@ export default function DataTable<T>({
     (hasActionsCol ? 1 : 0)
 
   return (
-    <div className="w-full overflow-x-auto rounded border border-gray-200">
+    <div className="w-full overflow-x-auto rounded-lg border border-neutral-200 shadow-sm">
       <table className="min-w-full text-sm">
         {caption && <caption className="sr-only">{caption}</caption>}
+
         <thead>
-          <tr className="bg-gray-800 text-gray-100 text-left text-xs uppercase tracking-wider">
+          <tr className="bg-white border-b border-neutral-100 text-left">
             {columns.map((col, i) => (
-              <th key={i} className={`px-3 py-2 font-semibold whitespace-nowrap ${col.className ?? ''}`}>
+              <th key={i} className={`${thBase} text-neutral-400 ${col.className ?? ''}`}>
                 {col.header}
               </th>
             ))}
             {metaColumns?.map((key) => (
-              <th key={key} className="group px-3 py-2 font-semibold whitespace-nowrap italic text-gray-300">
+              <th key={key} className={`group ${thBase} text-neutral-300`}>
                 <span className="inline-flex items-center gap-1">
                   {key}
                   {onDeleteColumn && (
                     <button
                       onClick={() => onDeleteColumn(key)}
-                      className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 leading-none text-sm"
+                      className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-red-400
+                                 transition-opacity duration-150 leading-none"
                       title="Quitar columna"
                       aria-label={`Quitar columna ${key}`}
                     >
@@ -85,29 +90,42 @@ export default function DataTable<T>({
               </th>
             ))}
             {onAddColumn && (
-              <th className="px-3 py-2 w-10 text-center">
+              <th className="px-3 py-3 w-10 text-center">
                 <button
                   onClick={onAddColumn}
-                  className="text-gray-400 hover:text-white font-bold text-base leading-none"
+                  className="text-neutral-300 hover:text-brand-600 transition-colors duration-150"
                   title="Agregar campo"
                   aria-label="Agregar campo"
                 >
-                  +
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M7 1v12M1 7h12" />
+                  </svg>
                 </button>
               </th>
             )}
             {hasActionsCol && <th className="w-8" />}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100">
+
+        <tbody className="divide-y divide-neutral-100">
           {rows.length === 0 && !addRowCells && !onAdd && (
             <tr>
-              <td colSpan={totalCols} className="px-3 py-4 text-sm text-gray-400 text-center">
-                Sin registros.
+              <td colSpan={totalCols} className="px-6 py-12 text-center">
+                <p className="text-sm text-neutral-400">Sin registros</p>
               </td>
             </tr>
           )}
-          {rows.map((row, ri) => (
+
+          {rows.length === 0 && !addRowCells && onAdd && (
+            <tr>
+              <td colSpan={totalCols} className="px-6 py-10 text-center">
+                <p className="text-sm text-neutral-400">Sin registros</p>
+                <p className="text-xs text-neutral-300 mt-1">Presiona "+ Agregar" para añadir el primero</p>
+              </td>
+            </tr>
+          )}
+
+          {rows.map((row) => (
             <tr
               key={getKey(row)}
               onClick={() => onRowClick?.(row)}
@@ -118,20 +136,25 @@ export default function DataTable<T>({
                 }
               } : undefined}
               tabIndex={onRowClick ? 0 : undefined}
-              className={`group ${onRowClick ? 'cursor-pointer hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500' : ''} ${ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+              className={`group bg-white ${
+                onRowClick
+                  ? 'cursor-pointer hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500'
+                  : ''
+              }`}
             >
               {columns.map((col, ci) => (
-                <td key={ci} className={`px-3 py-2 align-top ${col.className ?? ''}`}>
+                <td key={ci} className={`${tdBase} ${col.className ?? ''}`}>
                   {col.render(row)}
                 </td>
               ))}
+
               {metaColumns?.map((key) => {
                 const isEditing = editingCell?.rowKey === getKey(row) && editingCell?.colKey === key
                 const currentVal = String(getMeta?.(row)?.[key] ?? '')
                 return (
                   <td
                     key={key}
-                    className="px-3 py-2 align-top text-xs text-gray-500"
+                    className={`${tdBase} text-xs text-neutral-400`}
                     onClick={(e) => {
                       if (onEditMetaCell) {
                         e.stopPropagation()
@@ -152,27 +175,32 @@ export default function DataTable<T>({
                           if (e.key === 'Enter') { onEditMetaCell?.(row, key, editingCell!.value); setEditingCell(null) }
                           if (e.key === 'Escape') setEditingCell(null)
                         }}
-                        className="w-full px-1 py-0.5 text-xs border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        className="w-full px-1.5 py-0.5 text-xs border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500"
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className={onEditMetaCell ? 'cursor-text hover:bg-brand-50 rounded px-0.5' : ''}>
+                      <span className={onEditMetaCell ? 'cursor-text hover:bg-brand-50 rounded px-0.5 transition-colors duration-100' : ''}>
                         {currentVal || '—'}
                       </span>
                     )}
                   </td>
                 )
               })}
+
               {onAddColumn && <td />}
+
               {hasActionsCol && (
-                <td className="px-2 py-2 w-8 text-center" onClick={(e) => e.stopPropagation()}>
+                <td className="px-3 py-2.5 w-8 text-center" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onDeleteRow?.(row)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 text-base leading-none transition-opacity"
+                    className="opacity-0 group-hover:opacity-100 text-neutral-300 hover:text-red-500
+                               transition-all duration-150"
                     title="Eliminar"
                     aria-label="Eliminar fila"
                   >
-                    ×
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
+                    </svg>
                   </button>
                 </td>
               )}
@@ -181,23 +209,25 @@ export default function DataTable<T>({
 
           {/* Inline add row */}
           {addRowCells && (
-            <tr className="bg-brand-50 border-t-2 border-brand-200">
+            <tr className="bg-brand-50/60 border-t border-brand-100">
               {addRowCells}
               {metaColumns?.map((k) => (
-                <td key={k} className="px-3 py-1.5">
+                <td key={k} className="px-4 py-2">
                   {onAddRowMetaChange && (
                     <input
                       value={addRowMetaValues?.[k] ?? ''}
                       onChange={(e) => onAddRowMetaChange(k, e.target.value)}
                       placeholder={k + '…'}
-                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white"
+                      className="w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md
+                                 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400
+                                 bg-white placeholder-neutral-300 transition-colors duration-150"
                     />
                   )}
                 </td>
               ))}
               {onAddColumn && <td />}
               {hasActionsCol && (
-                <td className="px-2 py-1.5 text-center whitespace-nowrap">
+                <td className="px-3 py-2 text-center whitespace-nowrap">
                   {addRowActions}
                 </td>
               )}
@@ -206,10 +236,17 @@ export default function DataTable<T>({
 
           {/* + Agregar row */}
           {!addRowCells && onAdd && (
-            <tr className="bg-white border-t border-gray-200 hover:bg-gray-50">
-              <td colSpan={totalCols} className="px-3 py-2">
-                <button onClick={onAdd} className="text-brand-600 hover:text-brand-700 text-sm font-medium">
-                  + Agregar
+            <tr className="bg-white hover:bg-neutral-50 transition-colors duration-100">
+              <td colSpan={totalCols} className="px-4 py-2.5">
+                <button
+                  onClick={onAdd}
+                  className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700
+                             font-medium transition-colors duration-150"
+                >
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round">
+                    <path d="M7 1v12M1 7h12" />
+                  </svg>
+                  Agregar
                 </button>
               </td>
             </tr>

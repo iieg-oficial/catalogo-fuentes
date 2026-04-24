@@ -10,7 +10,7 @@ import { useMetaColumns } from '@/hooks/useMetaColumns'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
 
-const inputCls = 'w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 const columns: Column<Proyecto>[] = [
   {

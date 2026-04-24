@@ -11,7 +11,7 @@ import type { Producto, Proyecto } from '@/types'
 import { getProductos, createProducto, updateProducto, deleteProducto } from './services/productosService'
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
 
-const inputCls = 'w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 const selectCls = 'px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700'
 
 const columns: Column<Producto>[] = [
