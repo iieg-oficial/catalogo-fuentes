@@ -262,7 +262,7 @@ export default function TablasPage() {
                 type="button"
                 role="switch"
                 aria-checked={!!colColor && colType !== 'list'}
-                onClick={() => { if (!colColor) setColColor('#3b82f6'); else setColColor('') }}
+                onClick={() => { if (!colColor) setColColor(LIST_COLOR_PALETTE[0]); else setColColor('') }}
                 disabled={colType === 'list'}
                 className={`relative w-8 h-4 rounded-full transition-colors duration-150 shrink-0 ${colColor && colType !== 'list' ? 'bg-brand-600' : 'bg-neutral-200'} ${colType !== 'list' ? 'cursor-pointer' : 'cursor-not-allowed'}`}
               >
@@ -270,10 +270,20 @@ export default function TablasPage() {
               </button>
               <span className="text-sm font-medium text-neutral-700">Color</span>
               {colColor && colType !== 'list' && (
-                <label className="cursor-pointer shrink-0" title="Cambiar color">
-                  <div className="w-5 h-5 rounded-full shadow-sm border border-neutral-200" style={{ backgroundColor: colColor }} />
-                  <input type="color" value={colColor} onChange={(e) => setColColor(e.target.value)} className="sr-only" />
-                </label>
+                <div className="flex items-center gap-1.5">
+                  {LIST_COLOR_PALETTE.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setColColor(c)}
+                      title={c}
+                      className={`w-4 h-4 rounded-full transition-all duration-100 ${
+                        colColor === c ? 'ring-2 ring-offset-1 ring-neutral-400 scale-110' : 'hover:scale-110'
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
               )}
               {colType === 'list' && <span className="text-xs text-neutral-300">Las listas usan colores por opción</span>}
             </div>

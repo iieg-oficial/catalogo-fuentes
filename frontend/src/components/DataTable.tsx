@@ -156,7 +156,7 @@ export default function DataTable<T>({
               </th>
             ))}
             {metaColumnDefs?.map((def) => (
-              <th key={def.key} className={`group ${thBase} text-neutral-300`}>
+              <th key={def.key} className={`group ${thBase} text-neutral-400`}>
                 <span className="inline-flex items-center gap-0.5">
                   {TYPE_ICON[def.type]}
                   {def.label ?? def.key}
@@ -353,12 +353,12 @@ export default function DataTable<T>({
                               const opt = (def.options as ListOption[] | undefined)?.find((o) => o.label === currentVal)
                               return opt?.color
                                 ? <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${opt.color}28`, color: opt.color }}>{currentVal}</span>
-                                : <span>{currentVal}</span>
+                                : <span className="text-gray-900">{currentVal}</span>
                             })()
                           ) : currentVal && def.color ? (
                             <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${def.color}28`, color: def.color }}>{currentVal}</span>
                           ) : (
-                            currentVal || '—'
+                            currentVal ? <span className="text-gray-900">{currentVal}</span> : <span className="text-neutral-400">—</span>
                           )}
                         </span>
                       )}
