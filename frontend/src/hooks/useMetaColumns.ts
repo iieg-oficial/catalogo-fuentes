@@ -1,4 +1,7 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { API_URL } from '@/consts'
+import { getMetaColumns, saveMetaColumns } from '@/services/metaColumnsService'
 
 export type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list'
 
@@ -29,112 +32,145 @@ interface StoredCols {
   colors: Record<string, string>
 }
 
-function load(storageKey: string): StoredCols {
-  try {
-    const raw = localStorage.getItem(`metacols:${storageKey}`)
-    if (raw) return JSON.parse(raw) as StoredCols
-  } catch { /* ignore */ }
-  return { extra: [], hidden: [], types: {}, labels: {}, options: {}, colors: {} }
-}
+const EMPTY: StoredCols = { extra: [], hidden: [], types: {}, labels: {}, options: {}, colors: {} }
 
-function save(storageKey: string, data: StoredCols) {
-  try {
-    localStorage.setItem(`metacols:${storageKey}`, JSON.stringify(data))
-  } catch { /* ignore */ }
+const WS_BASE = API_URL.replace(/^http/, 'ws')
+
+function mergeConfig(raw: unknown): StoredCols {
+  const partial = (raw ?? {}) as Partial<StoredCols>
+  return {
+    extra: partial.extra ?? [],
+    hidden: partial.hidden ?? [],
+    types: partial.types ?? {},
+    labels: partial.labels ?? {},
+    options: partial.options ?? {},
+    colors: partial.colors ?? {},
+  }
 }
 
 export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
   items: T[],
-  storageKey: string,
+  entityType: string,
 ) {
-  const [extraCols, setExtraCols] = useState<MetaColumnDef[]>(() => load(storageKey).extra)
-  const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => new Set(load(storageKey).hidden))
-  const [colTypes, setColTypes] = useState<Record<string, ColumnType>>(() => load(storageKey).types)
-  const [colLabels, setColLabels] = useState<Record<string, string>>(() => load(storageKey).labels)
-  const [colOptions, setColOptions] = useState<Record<string, ListOption[]>>(() => load(storageKey).options ?? {})
-  const [colColors, setColColors] = useState<Record<string, string>>(() => load(storageKey).colors ?? {})
+  const [cfg, setCfg] = useState<StoredCols>(EMPTY)
+  const [ready, setReady] = useState(false)
+  const skipSave = useRef(false)
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>()
+
+  // Load initial config from API
+  useEffect(() => {
+    getMetaColumns(entityType)
+      .then((raw) => {
+        skipSave.current = true
+        setCfg(mergeConfig(raw))
+        setReady(true)
+      })
+      .catch(() => setReady(true))
+  }, [entityType])
+
+  // Debounced save to API on config change
+  useEffect(() => {
+    if (!ready) return
+    if (skipSave.current) {
+      skipSave.current = false
+      return
+    }
+    clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      saveMetaColumns(entityType, cfg as unknown as Record<string, unknown>)
+    }, 400)
+    return () => clearTimeout(saveTimer.current)
+  }, [cfg, entityType, ready])
+
+  // WebSocket for real-time sync with other clients
+  useEffect(() => {
+    const ws = new WebSocket(`${WS_BASE}/meta-columns/ws/${entityType}`)
+    ws.onmessage = (e) => {
+      try {
+        clearTimeout(saveTimer.current)
+        skipSave.current = true
+        setCfg(mergeConfig(JSON.parse(e.data as string)))
+      } catch { /* ignore malformed messages */ }
+    }
+    ws.onerror = () => { /* ignore — WS is best-effort for sync */ }
+    return () => ws.close()
+  }, [entityType])
 
   const dataKeys = useMemo(
     () => [...new Set(items.flatMap((i) => Object.keys(i.meta ?? {})))],
     [items],
   )
 
+  const hiddenSet = useMemo(() => new Set(cfg.hidden), [cfg.hidden])
+
   const allMetaCols = useMemo<MetaColumnDef[]>(() => {
-    const keys = [...new Set([...dataKeys, ...extraCols.map((c) => c.key)])]
+    const keys = [...new Set([...dataKeys, ...cfg.extra.map((c) => c.key)])]
     return keys
-      .filter((k) => !hiddenCols.has(k))
+      .filter((k) => !hiddenSet.has(k))
       .map((k) => ({
         key: k,
-        type: colTypes[k] ?? 'text',
-        label: colLabels[k],
-        options: colOptions[k],
-        color: colColors[k],
+        type: cfg.types[k] ?? 'text',
+        label: cfg.labels[k],
+        options: cfg.options[k],
+        color: cfg.colors[k],
       }))
-  }, [dataKeys, extraCols, hiddenCols, colTypes, colLabels, colOptions])
+  }, [dataKeys, cfg, hiddenSet])
 
-  useEffect(() => {
-    save(storageKey, {
-      extra: extraCols,
-      hidden: [...hiddenCols],
-      types: colTypes,
-      labels: colLabels,
-      options: colOptions,
-      colors: colColors,
-    })
-  }, [storageKey, extraCols, hiddenCols, colTypes, colLabels, colOptions, colColors])
-
-  const addColumn = (key: string, type: ColumnType = 'text', options?: ListOption[], color?: string) => {
+  const addColumn = useCallback((key: string, type: ColumnType = 'text', options?: ListOption[], color?: string) => {
     const trimmed = key.trim()
     if (!trimmed) return
-    setHiddenCols((prev) => { const next = new Set(prev); next.delete(trimmed); return next })
-    setExtraCols((prev) => {
-      if (prev.some((c) => c.key === trimmed)) return prev
-      return [...prev, { key: trimmed, type }]
+    setCfg((prev) => ({
+      ...prev,
+      hidden: prev.hidden.filter((k) => k !== trimmed),
+      extra: prev.extra.some((c) => c.key === trimmed) ? prev.extra : [...prev.extra, { key: trimmed, type }],
+      types: { ...prev.types, [trimmed]: type },
+      options: options?.length ? { ...prev.options, [trimmed]: options } : prev.options,
+      colors: color ? { ...prev.colors, [trimmed]: color } : prev.colors,
+    }))
+  }, [])
+
+  const deleteColumn = useCallback((key: string) => {
+    setCfg((prev) => ({ ...prev, hidden: [...prev.hidden.filter((k) => k !== key), key] }))
+  }, [])
+
+  const renameColumn = useCallback((key: string, newLabel: string) => {
+    setCfg((prev) => ({ ...prev, labels: { ...prev.labels, [key]: newLabel.trim() || key } }))
+  }, [])
+
+  const updateColumn = useCallback((
+    key: string,
+    type: ColumnType,
+    options?: ListOption[],
+    label?: string,
+    color?: string,
+  ) => {
+    setCfg((prev) => {
+      const newOptions = { ...prev.options }
+      if (options?.length) newOptions[key] = options
+      else delete newOptions[key]
+
+      const newColors = { ...prev.colors }
+      if (color) newColors[key] = color
+      else delete newColors[key]
+
+      return {
+        ...prev,
+        types: { ...prev.types, [key]: type },
+        labels: label !== undefined ? { ...prev.labels, [key]: label.trim() || key } : prev.labels,
+        options: newOptions,
+        colors: newColors,
+      }
     })
-    setColTypes((prev) => ({ ...prev, [trimmed]: type }))
-    if (options?.length) {
-      setColOptions((prev) => ({ ...prev, [trimmed]: options }))
-    }
-    if (color) {
-      setColColors((prev) => ({ ...prev, [trimmed]: color }))
-    }
-  }
+  }, [])
 
-  const deleteColumn = (key: string) => {
-    setHiddenCols((prev) => new Set([...prev, key]))
-  }
-
-  const renameColumn = (key: string, newLabel: string) => {
-    setColLabels((prev) => ({ ...prev, [key]: newLabel.trim() || key }))
-  }
-
-  const updateColumn = (key: string, type: ColumnType, options?: ListOption[], label?: string, color?: string) => {
-    setColTypes((prev) => ({ ...prev, [key]: type }))
-    if (label !== undefined) {
-      setColLabels((prev) => ({ ...prev, [key]: label.trim() || key }))
-    }
-    setColOptions((prev) => {
-      if (options?.length) return { ...prev, [key]: options }
-      const next = { ...prev }
-      delete next[key]
-      return next
-    })
-    setColColors((prev) => {
-      if (color) return { ...prev, [key]: color }
-      const next = { ...prev }
-      delete next[key]
-      return next
-    })
-  }
-
-  const getColDef = (key: string): MetaColumnDef => ({
+  const getColDef = useCallback((key: string): MetaColumnDef => ({
     key,
-    type: colTypes[key] ?? 'text',
-    label: colLabels[key],
-    options: colOptions[key],
-  })
+    type: cfg.types[key] ?? 'text',
+    label: cfg.labels[key],
+    options: cfg.options[key],
+  }), [cfg])
 
-  const getMeta = (row: T) => row.meta ?? {}
+  const getMeta = useCallback((row: T) => row.meta ?? {}, [])
 
   return { allMetaCols, addColumn, deleteColumn, renameColumn, updateColumn, getColDef, getMeta }
 }
