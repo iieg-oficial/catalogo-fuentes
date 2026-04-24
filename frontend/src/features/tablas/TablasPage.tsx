@@ -93,6 +93,13 @@ export default function TablasPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
+  const handleEditBaseDeDatos = (row: Tabla, bdId: string) => {
+    const base_de_datos = bases.find((b) => b.id === bdId)
+    if (!base_de_datos) return
+    updateTabla(row.id, { base_de_datos_id: bdId })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, base_de_datos } : i)))
+  }
+
   const columns: Column<Tabla>[] = [
     {
       header: 'Nombre',
@@ -109,6 +116,9 @@ export default function TablasPage() {
         </span>
       ),
       className: 'w-48',
+      getValue: (r) => r.base_de_datos.id,
+      onEdit: handleEditBaseDeDatos,
+      selectOptions: bases.map((b) => ({ value: b.id, label: b.nombre })),
     },
     {
       header: 'Productos',

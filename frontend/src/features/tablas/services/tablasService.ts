@@ -35,6 +35,7 @@ export async function updateTabla(id: string, payload: {
   nombre?: string
   campos?: Array<Record<string, unknown>>
   producto_ids?: string[]
+  base_de_datos_id?: string
   meta?: Record<string, unknown>
 }): Promise<Tabla> {
   const { data } = await apiClient.put<Tabla>(`/tablas/${id}`, payload)

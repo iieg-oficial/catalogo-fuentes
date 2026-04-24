@@ -22,7 +22,7 @@ export async function createInstrumento(payload: {
   return data
 }
 
-export async function updateInstrumento(id: string, payload: { nombre?: string; descripcion?: string; meta?: Record<string, unknown> }): Promise<Instrumento> {
+export async function updateInstrumento(id: string, payload: { nombre?: string; descripcion?: string; base_de_datos_id?: string; meta?: Record<string, unknown> }): Promise<Instrumento> {
   const { data } = await apiClient.put<Instrumento>(`/instrumentos/${id}`, payload)
   return data
 }

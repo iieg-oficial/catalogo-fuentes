@@ -7,6 +7,7 @@ export interface Column<T> {
   className?: string
   onEdit?: (row: T, newValue: string) => void
   getValue?: (row: T) => string
+  selectOptions?: { value: string; label: string }[]
 }
 
 interface DataTableProps<T> {
@@ -244,23 +245,38 @@ export default function DataTable<T>({
                       } : undefined}
                     >
                       {isEditingPrimary ? (
-                        <input
-                          autoFocus
-                          value={editingCell!.value}
-                          onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
-                          onBlur={() => {
-                            col.onEdit?.(row, editingCell!.value)
-                            setEditingCell(null)
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }
-                            if (e.key === 'Escape') setEditingCell(null)
-                          }}
-                          className={inlineCls}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        col.selectOptions ? (
+                          <select
+                            autoFocus
+                            value={editingCell!.value}
+                            onChange={(e) => { col.onEdit?.(row, e.target.value); setEditingCell(null) }}
+                            onBlur={() => setEditingCell(null)}
+                            className={`${inlineCls} bg-white`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {col.selectOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            autoFocus
+                            value={editingCell!.value}
+                            onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
+                            onBlur={() => {
+                              col.onEdit?.(row, editingCell!.value)
+                              setEditingCell(null)
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }
+                              if (e.key === 'Escape') setEditingCell(null)
+                            }}
+                            className={inlineCls}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )
                       ) : (
-                        <span className={isEditing && col.onEdit ? 'cursor-text hover:bg-brand-50 rounded px-0.5 transition-colors duration-100 block' : ''}>
+                        <span className={isEditing && col.onEdit ? `${col.selectOptions ? 'cursor-pointer' : 'cursor-text'} hover:bg-brand-50 rounded px-0.5 transition-colors duration-100 block` : ''}>
                           {col.render(row)}
                         </span>
                       )}

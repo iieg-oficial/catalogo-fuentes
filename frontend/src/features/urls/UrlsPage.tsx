@@ -93,6 +93,12 @@ export default function UrlsPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
+  const handleEditInstrumento = (row: Url, instrId: string) => {
+    const instrumento = instrumentos.find((i) => i.id === instrId)
+    updateUrl(row.id, { instrumento_id: instrId || undefined })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, instrumento } : i)))
+  }
+
   const columns: Column<Url>[] = [
     {
       header: 'URL',
@@ -117,6 +123,9 @@ export default function UrlsPage() {
         ? <span className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap">{r.instrumento.nombre}</span>
         : <span className="text-gray-400">—</span>,
       className: 'w-52',
+      getValue: (r) => r.instrumento?.id ?? '',
+      onEdit: handleEditInstrumento,
+      selectOptions: instrumentos.map((i) => ({ value: i.id, label: i.nombre })),
     },
     {
       header: 'Base de datos',

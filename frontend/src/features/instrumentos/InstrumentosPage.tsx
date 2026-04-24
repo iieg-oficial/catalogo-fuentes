@@ -102,6 +102,12 @@ export default function InstrumentosPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
+  const handleEditBaseDeDatos = (row: Instrumento, bdId: string) => {
+    const base_de_datos = bases.find((b) => b.id === bdId)
+    updateInstrumento(row.id, { base_de_datos_id: bdId || undefined })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, base_de_datos } : i)))
+  }
+
   const columns: Column<Instrumento>[] = [
     {
       header: 'Nombre',
@@ -116,6 +122,9 @@ export default function InstrumentosPage() {
         ? <span className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">{r.base_de_datos.nombre}</span>
         : <span className="text-gray-400">—</span>,
       className: 'w-48',
+      getValue: (r) => r.base_de_datos?.id ?? '',
+      onEdit: handleEditBaseDeDatos,
+      selectOptions: bases.map((b) => ({ value: b.id, label: b.nombre })),
     },
     {
       header: 'Fecha publicación',

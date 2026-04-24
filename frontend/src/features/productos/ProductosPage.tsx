@@ -95,6 +95,13 @@ export default function ProductosPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
+  const handleEditProyecto = (row: Producto, proyectoId: string) => {
+    const proyecto = proyectos.find((p) => p.id === proyectoId)
+    if (!proyecto) return
+    updateProducto(row.id, { proyecto_id: proyectoId })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, proyecto } : i)))
+  }
+
   const columns: Column<Producto>[] = [
     {
       header: 'Nombre',
@@ -111,6 +118,9 @@ export default function ProductosPage() {
         </span>
       ),
       className: 'w-48',
+      getValue: (r) => r.proyecto.id,
+      onEdit: handleEditProyecto,
+      selectOptions: proyectos.map((p) => ({ value: p.id, label: p.nombre })),
     },
     {
       header: 'Descripción',
