@@ -25,7 +25,7 @@ interface DataTableProps<T> {
   getMeta?: (row: T) => Record<string, unknown>
   onAddColumn?: () => void
   onDeleteColumn?: (key: string) => void
-  onRenameColumn?: (key: string, newLabel: string) => void
+  onEditColumn?: (def: MetaColumnDef) => void
   onEditMetaCell?: (row: T, key: string, value: string) => void
   // Meta inputs for add row (controlled by parent)
   addRowMetaValues?: Record<string, string>
@@ -50,22 +50,18 @@ const TYPE_ICON: Record<string, ReactNode> = {
 }
 
 function ColMenu({
-  colKey,
   open,
   onOpen,
   onClose,
   onDelete,
-  onRename,
+  onEdit,
 }: {
-  colKey: string
   open: boolean
   onOpen: () => void
   onClose: () => void
   onDelete: () => void
-  onRename: (label: string) => void
+  onEdit: () => void
 }) {
-  const [renaming, setRenaming] = useState(false)
-  const [val, setVal] = useState('')
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -76,13 +72,6 @@ function ColMenu({
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open, onClose])
-
-  const commitRename = () => {
-    onRename(val)
-    setRenaming(false)
-    setVal('')
-    onClose()
-  }
 
   return (
     <div className="relative inline-block" ref={menuRef}>
@@ -95,11 +84,11 @@ function ColMenu({
       >
         ···
       </button>
-      {open && !renaming && (
+      {open && (
         <div className="absolute left-0 top-5 z-20 w-36 bg-white border border-neutral-200 rounded-lg shadow-lg overflow-hidden text-left">
           <button
             className="w-full flex items-center gap-2 px-3 py-2 text-xs text-neutral-600 hover:bg-neutral-50 transition-colors"
-            onClick={(e) => { e.stopPropagation(); setRenaming(true) }}
+            onClick={(e) => { e.stopPropagation(); onEdit(); onClose() }}
           >
             <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" />
@@ -115,36 +104,6 @@ function ColMenu({
             </svg>
             Borrar columna
           </button>
-        </div>
-      )}
-      {open && renaming && (
-        <div className="absolute left-0 top-5 z-20 w-44 bg-white border border-neutral-200 rounded-lg shadow-lg p-2 space-y-1.5">
-          <input
-            autoFocus
-            value={val}
-            onChange={(e) => setVal(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitRename()
-              if (e.key === 'Escape') { setRenaming(false); onClose() }
-            }}
-            placeholder={colKey}
-            className="w-full px-2 py-1 text-xs border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <div className="flex justify-end gap-1">
-            <button
-              className="px-2 py-0.5 text-xs text-neutral-400 hover:text-neutral-600"
-              onClick={(e) => { e.stopPropagation(); setRenaming(false); onClose() }}
-            >
-              Cancelar
-            </button>
-            <button
-              className="px-2 py-0.5 text-xs bg-brand-600 text-white rounded hover:bg-brand-700"
-              onClick={(e) => { e.stopPropagation(); commitRename() }}
-            >
-              OK
-            </button>
-          </div>
         </div>
       )}
     </div>
@@ -165,7 +124,7 @@ export default function DataTable<T>({
   getMeta,
   onAddColumn,
   onDeleteColumn,
-  onRenameColumn,
+  onEditColumn,
   onEditMetaCell,
   addRowMetaValues,
   onAddRowMetaChange,
@@ -198,14 +157,13 @@ export default function DataTable<T>({
                 <span className="inline-flex items-center gap-0.5">
                   {TYPE_ICON[def.type]}
                   {def.label ?? def.key}
-                  {(onDeleteColumn || onRenameColumn) && (
+                  {(onDeleteColumn || onEditColumn) && (
                     <ColMenu
-                      colKey={def.key}
                       open={openColMenu === def.key}
                       onOpen={() => setOpenColMenu(def.key)}
                       onClose={() => setOpenColMenu(null)}
                       onDelete={() => onDeleteColumn?.(def.key)}
-                      onRename={(label) => onRenameColumn?.(def.key, label)}
+                      onEdit={() => onEditColumn?.(def)}
                     />
                   )}
                 </span>

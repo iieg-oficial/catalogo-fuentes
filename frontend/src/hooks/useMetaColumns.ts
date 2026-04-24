@@ -100,6 +100,19 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
     setColLabels((prev) => ({ ...prev, [key]: newLabel.trim() || key }))
   }
 
+  const updateColumn = (key: string, type: ColumnType, options?: ListOption[], label?: string) => {
+    setColTypes((prev) => ({ ...prev, [key]: type }))
+    if (label !== undefined) {
+      setColLabels((prev) => ({ ...prev, [key]: label.trim() || key }))
+    }
+    setColOptions((prev) => {
+      if (options?.length) return { ...prev, [key]: options }
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
   const getColDef = (key: string): MetaColumnDef => ({
     key,
     type: colTypes[key] ?? 'text',
@@ -109,5 +122,5 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
 
   const getMeta = (row: T) => row.meta ?? {}
 
-  return { allMetaCols, addColumn, deleteColumn, renameColumn, getColDef, getMeta }
+  return { allMetaCols, addColumn, deleteColumn, renameColumn, updateColumn, getColDef, getMeta }
 }

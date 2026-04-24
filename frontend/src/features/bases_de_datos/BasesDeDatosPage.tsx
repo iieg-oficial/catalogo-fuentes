@@ -6,7 +6,7 @@ import Modal from '@/components/Modal'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
-import { useMetaColumns, type ColumnType, type ListOption, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
+import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
 import type { BaseDeDatos } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from './services/basesDeDatosService'
 
@@ -35,7 +35,8 @@ export default function BasesDeDatosPage() {
   const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, renameColumn, getMeta } = useMetaColumns(items, 'bases-de-datos')
+  const [editingColKey, setEditingColKey] = useState<string | null>(null)
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'bases-de-datos')
 
   const load = async () => {
     setLoading(true)
@@ -137,10 +138,23 @@ export default function BasesDeDatosPage() {
     if (e.key === 'Escape') { setAddingRow(false); resetFields() }
   }
 
+  const handleEditColumn = (def: MetaColumnDef) => {
+    setEditingColKey(def.key)
+    setColName(def.label ?? def.key)
+    setColType(def.type)
+    setColListOptions(def.options ?? [])
+    setShowColForm(true)
+  }
+
   const handleAddColumn = (e: React.FormEvent) => {
     e.preventDefault()
     const validOptions = colListOptions.filter((o) => o.label.trim())
-    addColumn(colName, colType, validOptions.length ? validOptions : undefined)
+    if (editingColKey) {
+      updateColumn(editingColKey, colType, validOptions.length ? validOptions : undefined, colName)
+      setEditingColKey(null)
+    } else {
+      addColumn(colName, colType, validOptions.length ? validOptions : undefined)
+    }
     setColName('')
     setColType('text')
     setColListOptions([])
@@ -223,7 +237,7 @@ export default function BasesDeDatosPage() {
             getMeta={getMeta}
             onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
             onDeleteColumn={canWrite ? deleteColumn : undefined}
-            onRenameColumn={canWrite ? renameColumn : undefined}
+            onEditColumn={canWrite ? handleEditColumn : undefined}
             onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
             addRowMetaValues={addRowMeta}
             onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
@@ -231,7 +245,7 @@ export default function BasesDeDatosPage() {
         )}
       </div>
 
-      <Modal open={showColForm} title="Nueva columna" onClose={() => setShowColForm(false)}>
+      <Modal open={showColForm} title={editingColKey ? 'Editar columna' : 'Nueva columna'} onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]) }}>
         <form onSubmit={handleAddColumn} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">Nombre *</label>
@@ -289,7 +303,7 @@ export default function BasesDeDatosPage() {
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setShowColForm(false)} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
+            <button type="button" onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]) }} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
             <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">Crear</button>
           </div>
         </form>
