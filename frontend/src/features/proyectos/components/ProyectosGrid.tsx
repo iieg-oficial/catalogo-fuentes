@@ -13,8 +13,6 @@ export interface ProyectosGridProps {
   columns: Column<Proyecto>[]
   getKey: (row: Proyecto) => string
   onRowClick?: (row: Proyecto) => void
-  isEditing?: boolean
-  onToggleEdit?: () => void
   canWrite?: boolean
   onAdd?: () => void
   addRowCells?: ReactNode
@@ -119,9 +117,10 @@ const FILTER_ICON = (
     <path d="M2 3h12l-4.5 6v4l-3 1.5V9L2 3z" />
   </svg>
 )
-const EXPAND_ICON = (
-  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 4.5V2h2.5M10 4.5V2H7.5M2 7.5V10h2.5M10 7.5V10H7.5" />
+const EYE_ICON = (
+  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" />
+    <circle cx="8" cy="8" r="2" />
   </svg>
 )
 
@@ -542,8 +541,6 @@ export default function ProyectosGrid({
   columns,
   getKey,
   onRowClick,
-  isEditing = false,
-  onToggleEdit,
   canWrite,
   onAdd,
   addRowCells,
@@ -751,18 +748,6 @@ export default function ProyectosGrid({
               : `${displayedRows.length} de ${rows.length}`}
           </span>
 
-          {/* Editar toggle */}
-          {canWrite && onToggleEdit && (
-            <button
-              onClick={onToggleEdit}
-              className={isEditing
-                ? 'h-8 px-3 rounded-md text-[13px] font-medium bg-brand-600 text-white'
-                : 'h-8 px-3 rounded-md text-[13px] font-medium border border-ink/[12%] text-ink/55 hover:text-ink/80 hover:border-ink/20 transition-colors'}
-            >
-              {isEditing ? 'Listo' : 'Editar'}
-            </button>
-          )}
-
           {/* Nuevo proyecto */}
           {canWrite && onAdd && (
             <button
@@ -900,12 +885,10 @@ export default function ProyectosGrid({
                 return (
                   <tr
                     key={rowKey}
-                    onClick={!isEditing && onRowClick ? () => onRowClick(row) : undefined}
                     onMouseEnter={() => setHoveredRow(rowKey)}
                     onMouseLeave={() => setHoveredRow(null)}
                     style={{
                       background: isSelected ? '#FAF3FF' : isHovered ? '#FAF8FC' : '#fff',
-                      cursor: !isEditing && onRowClick ? 'pointer' : 'default',
                     }}
                   >
                     {/* # / checkbox */}
@@ -929,13 +912,13 @@ export default function ProyectosGrid({
                     {/* Core columns */}
                     {columns.map((col, ci) => {
                       const colKey = `__col_${ci}`
-                      const isEditingThis = isEditing && !!col.onEdit && editingCell?.rowKey === rowKey && editingCell?.colKey === colKey
+                      const isEditingThis = !!col.onEdit && editingCell?.rowKey === rowKey && editingCell?.colKey === colKey
                       return (
                         <td
                           key={ci}
                           className="border-r border-ink/[5%] px-2.5"
                           style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
-                          onClick={isEditing && col.onEdit ? (e) => {
+                          onClick={col.onEdit ? (e) => {
                             e.stopPropagation()
                             setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
                           } : undefined}
@@ -954,7 +937,7 @@ export default function ProyectosGrid({
                               onClick={(e) => e.stopPropagation()}
                             />
                           ) : (
-                            <span className={isEditing && col.onEdit ? 'cursor-text hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
+                            <span className={col.onEdit ? 'cursor-text hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
                               {col.render(row)}
                             </span>
                           )}
@@ -1031,7 +1014,7 @@ export default function ProyectosGrid({
                           className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-ink/60 hover:bg-ink/[5%] transition-all mx-auto"
                           title="Abrir"
                         >
-                          {EXPAND_ICON}
+                          {EYE_ICON}
                         </button>
                       )}
                     </td>

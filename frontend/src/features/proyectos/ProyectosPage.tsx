@@ -20,7 +20,6 @@ export default function ProyectosPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
   const [showColForm, setShowColForm] = useState(false)
   const [colName, setColName] = useState('')
   const [colType, setColType] = useState<ColumnType>('text')
@@ -184,8 +183,6 @@ export default function ProyectosPage() {
           columns={columns}
           getKey={(r) => r.id}
           onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
-          isEditing={isEditing}
-          onToggleEdit={canWrite ? () => setIsEditing((v) => !v) : undefined}
           canWrite={canWrite}
           onAdd={canWrite ? () => setAddingRow(true) : undefined}
           addRowCells={canWrite && addingRow ? addRowCells : undefined}
