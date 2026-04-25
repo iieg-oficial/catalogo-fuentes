@@ -8,6 +8,7 @@ export interface Column<T> {
   onEdit?: (row: T, newValue: string) => void
   getValue?: (row: T) => string
   selectOptions?: { value: string; label: string }[]
+  multiple?: boolean
 }
 
 interface DataTableProps<T> {
@@ -245,7 +246,28 @@ export default function DataTable<T>({
                       } : undefined}
                     >
                       {isEditingPrimary ? (
-                        col.selectOptions ? (
+                        col.selectOptions && col.multiple ? (
+                          <select
+                            autoFocus
+                            multiple
+                            size={Math.min(col.selectOptions.length, 6)}
+                            value={editingCell!.value.split(',').filter(Boolean)}
+                            onChange={(e) => {
+                              const selected = Array.from(e.target.selectedOptions, (o) => o.value).join(',')
+                              setEditingCell((prev) => prev ? { ...prev, value: selected } : null)
+                            }}
+                            onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Escape') setEditingCell(null)
+                            }}
+                            className={`${inlineCls} bg-white min-w-[180px]`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {col.selectOptions.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        ) : col.selectOptions ? (
                           <select
                             autoFocus
                             value={editingCell!.value}

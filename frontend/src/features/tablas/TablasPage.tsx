@@ -7,9 +7,10 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
-import type { BaseDeDatos, Tabla } from '@/types'
+import type { BaseDeDatos, Producto, Tabla } from '@/types'
 import { getTablas, createTabla, updateTabla, deleteTabla } from './services/tablasService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
+import { getProductos } from '@/features/productos/services/productosService'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 const selectCls = 'px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700'
@@ -20,6 +21,7 @@ export default function TablasPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Tabla[]>([])
   const [bases, setBases] = useState<BaseDeDatos[]>([])
+  const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
@@ -43,9 +45,10 @@ export default function TablasPage() {
     setLoading(true)
     setError(false)
     try {
-      const [tablas, bds] = await Promise.all([getTablas(), getBasesDeDatos()])
+      const [tablas, bds, prods] = await Promise.all([getTablas(), getBasesDeDatos(), getProductos()])
       setItems(tablas)
       setBases(bds)
+      setProductos(prods)
     } catch {
       setError(true)
     } finally {
@@ -93,6 +96,13 @@ export default function TablasPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
+  const handleEditProductos = (row: Tabla, value: string) => {
+    const productoIds = value.split(',').filter(Boolean)
+    updateTabla(row.id, { producto_ids: productoIds })
+    const next = productoIds.map((id) => productos.find((p) => p.id === id)!).filter(Boolean)
+    setItems((prev) => prev.map((t) => t.id === row.id ? { ...t, productos: next } : t))
+  }
+
   const handleEditBaseDeDatos = (row: Tabla, bdId: string) => {
     const base_de_datos = bases.find((b) => b.id === bdId)
     if (!base_de_datos) return
@@ -127,9 +137,13 @@ export default function TablasPage() {
               {p.nombre}
             </span>
           ))}
-          {r.productos.length === 0 && <span className="text-gray-400">—</span>}
+          {r.productos.length === 0 && <span className="text-neutral-400">—</span>}
         </div>
       ),
+      getValue: (r) => r.productos.map((p) => p.id).join(','),
+      onEdit: handleEditProductos,
+      selectOptions: productos.map((p) => ({ value: p.id, label: p.nombre })),
+      multiple: true,
     },
   ]
 
