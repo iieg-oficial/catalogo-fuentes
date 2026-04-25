@@ -4,28 +4,33 @@ FastAPI + SQLAlchemy async. API REST del catálogo de datos del IIEG.
 
 ## Requisitos
 
-- Python 3.12+
-- PostgreSQL 15+ corriendo localmente
+- Python 3.12+ vía conda (entorno `dashboard`)
+- PostgreSQL 15+ (levantado via Docker con `just`)
+- [`just`](https://github.com/casey/just)
 
-## Pasos
+## Levantar desde la raíz del monorepo
 
 ```bash
-# 1. Entrar a la carpeta
-cd backend
+just dev-seed   # DB + seed + backend + frontend
+```
 
-# 2. Copiar variables de entorno
-cp .env.example .env
+## Ejecutar manualmente (desarrollo aislado)
 
-# 3. Crear entorno virtual e instalar dependencias
-python -m venv .venv
-source .venv/bin/activate
+```bash
+# Activar el entorno conda
+conda activate dashboard
+
+# Instalar dependencias
 pip install -r requirements.txt
 
-# 4. Crear tablas y cargar datos de prueba
-python seed.py
+# Levantar DB (desde la raíz)
+cd ../deploy && docker compose up -d db && cd ../backend
 
-# 5. Levantar servidor
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# Crear tablas y cargar datos de prueba
+POSTGRES_HOST=localhost POSTGRES_PORT=5433 python seed.py
+
+# Levantar servidor
+POSTGRES_HOST=localhost POSTGRES_PORT=5433 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 API disponible en `http://localhost:8000`. Documentación interactiva en `http://localhost:8000/docs`.

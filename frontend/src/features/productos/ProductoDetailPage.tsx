@@ -59,12 +59,16 @@ export default function ProductoDetailPage() {
             </div>
             <div>
               <span className="text-xs text-gray-400 uppercase tracking-wide">Proyecto</span>
-              <button
-                onClick={() => navigate(`/proyectos/${item.proyecto.id}`)}
-                className="block text-sm text-brand-600 hover:text-brand-700 mt-0.5"
-              >
-                {item.proyecto.nombre}
-              </button>
+              {item.proyecto ? (
+                <button
+                  onClick={() => navigate(`/proyectos/${item.proyecto!.id}`)}
+                  className="block text-sm text-brand-600 hover:text-brand-700 mt-0.5"
+                >
+                  {item.proyecto.nombre}
+                </button>
+              ) : (
+                <p className="text-sm text-gray-400 mt-0.5">—</p>
+              )}
             </div>
             {item.descripcion && (
               <div>

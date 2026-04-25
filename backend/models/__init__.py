@@ -7,6 +7,7 @@ from models.instrumento import Instrumento
 from models.url import Url
 from models.archivo import Archivo
 from models.user import User, UserRole
+from models.meta_column_config import MetaColumnConfig
 
 __all__ = [
     "tabla_producto",
@@ -19,4 +20,5 @@ __all__ = [
     "Archivo",
     "User",
     "UserRole",
+    "MetaColumnConfig",
 ]

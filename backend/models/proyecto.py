@@ -16,5 +16,5 @@ class Proyecto(Base):
     meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
 
     productos: Mapped[list["Producto"]] = relationship(
-        "Producto", back_populates="proyecto", cascade="all, delete-orphan"
+        "Producto", back_populates="proyecto", passive_deletes=True
     )

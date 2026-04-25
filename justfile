@@ -14,26 +14,26 @@ default:
 [group('development')]
 dev: _check-python _db-up
     @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
-        uvicorn main:app --reload --host 0.0.0.0 --port 8000 & disown
-    @cd frontend && npm install --silent && VITE_API_URL=http://localhost:8000 npm run dev & disown
+        uvicorn main:app --reload --host 0.0.0.0 --port 8000 >> /tmp/dashboard-backend.log 2>&1 & disown
+    @cd frontend && npm install --silent && VITE_API_URL=http://localhost:8000 npm run dev >> /tmp/dashboard-frontend.log 2>&1 & disown
     @sleep 4
     @echo ""
     @echo "  DB       → localhost:{{dev_db_port}}"
-    @echo "  Backend  → http://localhost:8000"
-    @echo "  Frontend → http://localhost:5173"
+    @echo "  Backend  → http://localhost:8000   (logs: /tmp/dashboard-backend.log)"
+    @echo "  Frontend → http://localhost:5173   (logs: /tmp/dashboard-frontend.log)"
 
 # Levanta DB, corre migraciones + seed, backend y frontend
 [group('development')]
 dev-seed: _check-python _db-up
     @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} python seed.py
     @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
-        uvicorn main:app --reload --host 0.0.0.0 --port 8000 & disown
-    @cd frontend && npm install --silent && VITE_API_URL=http://localhost:8000 npm run dev & disown
+        uvicorn main:app --reload --host 0.0.0.0 --port 8000 >> /tmp/dashboard-backend.log 2>&1 & disown
+    @cd frontend && npm install --silent && VITE_API_URL=http://localhost:8000 npm run dev >> /tmp/dashboard-frontend.log 2>&1 & disown
     @sleep 4
     @echo ""
     @echo "  DB       → localhost:{{dev_db_port}}"
-    @echo "  Backend  → http://localhost:8000"
-    @echo "  Frontend → http://localhost:5173"
+    @echo "  Backend  → http://localhost:8000   (logs: /tmp/dashboard-backend.log)"
+    @echo "  Frontend → http://localhost:5173   (logs: /tmp/dashboard-frontend.log)"
 
 # Muestra los usuarios dummy creados por el seed
 [group('development')]
@@ -82,6 +82,18 @@ prod:
 [group('production')]
 prod-stop:
     cd deploy && docker compose down
+
+# ─── LOGS ─────────────────────────────────────────────────────────────────────
+
+# Sigue los logs de backend y frontend en desarrollo
+[group('logs')]
+logs:
+    tail -f /tmp/dashboard-backend.log /tmp/dashboard-frontend.log
+
+# Sigue los logs de todos los contenedores en producción
+[group('logs')]
+logs-prod:
+    cd deploy && docker compose logs -f
 
 # ─── INTERNAL ─────────────────────────────────────────────────────────────────
 

@@ -31,7 +31,7 @@ export async function createBaseDeDatos(payload: {
   return data
 }
 
-export async function updateBaseDeDatos(id: string, payload: { meta?: Record<string, unknown> }): Promise<BaseDeDatos> {
+export async function updateBaseDeDatos(id: string, payload: { nombre?: string; descripcion?: string; tema?: string; frecuencia_actualizacion?: string; meta?: Record<string, unknown> }): Promise<BaseDeDatos> {
   const { data } = await apiClient.put<BaseDeDatos>(`/bases-de-datos/${id}`, payload)
   return data
 }

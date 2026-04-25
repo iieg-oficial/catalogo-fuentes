@@ -21,7 +21,7 @@ export async function createProducto(payload: {
   return data
 }
 
-export async function updateProducto(id: string, payload: { meta?: Record<string, unknown> }): Promise<Producto> {
+export async function updateProducto(id: string, payload: { nombre?: string; descripcion?: string; proyecto_id?: string; meta?: Record<string, unknown> }): Promise<Producto> {
   const { data } = await apiClient.put<Producto>(`/productos/${id}`, payload)
   return data
 }

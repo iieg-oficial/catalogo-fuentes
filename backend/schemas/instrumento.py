@@ -29,6 +29,7 @@ class InstrumentoUpdate(BaseModel):
 
 class InstrumentoRead(InstrumentoBase):
     id: uuid.UUID
+    base_de_datos_id: uuid.UUID | None = None
     base_de_datos: BaseDeDatosRead | None = None
 
     model_config = {"from_attributes": True}

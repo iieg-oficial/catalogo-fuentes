@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuthContext } from '@/context/AuthContext'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
@@ -19,6 +19,7 @@ import ArchivosPage from '@/features/archivos/ArchivosPage'
 import ArchivoDetailPage from '@/features/archivos/ArchivoDetailPage'
 import UsersPage from '@/features/users/UsersPage'
 import EntidadesPage from '@/features/entidades/EntidadesPage'
+import HomePage from '@/features/home/HomePage'
 
 function CatalogRoutes() {
   const { user, logout } = useAuthContext()
@@ -42,7 +43,7 @@ function CatalogRoutes() {
         <Route path="archivos/:id" element={<ArchivoDetailPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
         {user?.role === 'admin' && <Route path="users" element={<UsersPage />} />}
-        <Route index element={<Navigate to="proyectos" replace />} />
+        <Route index element={<HomePage />} />
       </Routes>
     </Layout>
   )
