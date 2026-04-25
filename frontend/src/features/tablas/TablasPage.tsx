@@ -130,16 +130,23 @@ export default function TablasPage() {
     },
     {
       header: 'Productos',
-      render: (r) => (
-        <div className="flex flex-wrap gap-1">
-          {r.productos.map((p) => (
-            <span key={p.id} className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">
-              {p.nombre}
-            </span>
-          ))}
-          {r.productos.length === 0 && <span className="text-neutral-400">—</span>}
-        </div>
-      ),
+      render: (r) => {
+        const visible = r.productos.slice(0, 2)
+        const overflow = r.productos.length - 2
+        return (
+          <div className="flex flex-nowrap gap-1 items-center">
+            {r.productos.length === 0 && <span className="text-neutral-400">—</span>}
+            {visible.map((p) => (
+              <span key={p.id} className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+                {p.nombre}
+              </span>
+            ))}
+            {overflow > 0 && (
+              <span className="text-xs text-neutral-400 px-1 whitespace-nowrap">+{overflow}</span>
+            )}
+          </div>
+        )
+      },
       getValue: (r) => r.productos.map((p) => p.id).join(','),
       onEdit: handleEditProductos,
       selectOptions: productos.map((p) => ({
