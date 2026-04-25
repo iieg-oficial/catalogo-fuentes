@@ -157,10 +157,10 @@ function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
   )
 
   return (
-    <div ref={containerRef} className="relative flex flex-nowrap gap-1 items-center">
+    <div ref={containerRef} className="relative flex flex-wrap gap-1 items-center">
       {selectedOptions.length === 0 && <span className="text-neutral-400 text-sm">—</span>}
-      {visibleOptions.map((opt) => (
-        <span key={opt.value} className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">
+      {selectedOptions.map((opt) => (
+        <span key={opt.value} className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">
           {opt.label}
           <button
             onClick={(e) => remove(opt.value, e)}
@@ -173,14 +173,6 @@ function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
           </button>
         </span>
       ))}
-      {overflow > 0 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setOpen(true) }}
-          className="text-xs text-neutral-400 hover:text-brand-600 px-1.5 py-0.5 rounded-full hover:bg-brand-50 transition-colors whitespace-nowrap shrink-0"
-        >
-          +{overflow}
-        </button>
-      )}
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
         className="w-5 h-5 rounded-full bg-neutral-100 hover:bg-brand-100 text-neutral-400 hover:text-brand-600 flex items-center justify-center transition-colors shrink-0"
