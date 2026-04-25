@@ -130,6 +130,7 @@ export default function TablasPage() {
     },
     {
       header: 'Productos',
+      className: 'w-64 max-w-[16rem]',
       render: (r) => (
         <div className="flex flex-wrap gap-1">
           {r.productos.length === 0 && <span className="text-neutral-400">—</span>}

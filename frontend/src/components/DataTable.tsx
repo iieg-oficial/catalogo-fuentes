@@ -147,10 +147,7 @@ function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
     col.onEdit?.(row, next.join(','))
   }
 
-  const MAX_VISIBLE = 2
   const selectedOptions = (col.selectOptions ?? []).filter((o) => selectedIds.includes(o.value))
-  const visibleOptions = selectedOptions.slice(0, MAX_VISIBLE)
-  const overflow = selectedOptions.length - MAX_VISIBLE
   const filtered = (col.selectOptions ?? []).filter((o) =>
     o.label.toLowerCase().includes(search.toLowerCase()) ||
     (o.group ?? '').toLowerCase().includes(search.toLowerCase()),
