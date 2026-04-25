@@ -48,8 +48,8 @@ export default function BaseDeDatosDetailPage() {
 
   const proyectos = useMemo<Proyecto[]>(() => {
     const seen = new Set<string>()
-    return productos.map((p) => p.proyecto).filter((pr) => {
-      if (seen.has(pr.id)) return false
+    return productos.map((p) => p.proyecto).filter((pr): pr is Proyecto => {
+      if (!pr || seen.has(pr.id)) return false
       seen.add(pr.id)
       return true
     })
