@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Topbar from '@/components/Topbar'
-import DataTable, { type Column } from '@/components/DataTable'
 import Modal from '@/components/Modal'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
+import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
+import { ProyectosGrid } from './components'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 const modalInputCls = 'w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
@@ -31,8 +31,8 @@ export default function ProyectosPage() {
   const [newDesc, setNewDesc] = useState('')
   const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
-
   const [editingColKey, setEditingColKey] = useState<string | null>(null)
+
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'proyectos')
 
   const load = async () => {
@@ -71,11 +71,6 @@ export default function ProyectosPage() {
     }
   }
 
-  const handleDeleteRow = async (row: Proyecto) => {
-    await deleteProyecto(row.id)
-    setItems((prev) => prev.filter((i) => i.id !== row.id))
-  }
-
   const handleEditPrimaryCell = (row: Proyecto, field: 'nombre' | 'descripcion', value: string) => {
     updateProyecto(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
@@ -87,25 +82,9 @@ export default function ProyectosPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
-  const columns: Column<Proyecto>[] = [
-    {
-      header: 'Nombre',
-      render: (r) => <span className="font-medium text-gray-900">{r.nombre}</span>,
-      className: 'w-64',
-      getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
-    },
-    {
-      header: 'Descripción',
-      render: (r) => <span className="text-gray-600">{r.descripcion ?? '—'}</span>,
-      getValue: (r) => r.descripcion ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
-    },
-  ]
-
-  const kd = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSaveRow()
-    if (e.key === 'Escape') { setAddingRow(false); resetFields() }
+  const handleDeleteRows = async (keys: string[]) => {
+    await Promise.all(keys.map((id) => deleteProyecto(id)))
+    await load()
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {
@@ -141,69 +120,95 @@ export default function ProyectosPage() {
     )
   })
 
+  const kd = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSaveRow()
+    if (e.key === 'Escape') { setAddingRow(false); resetFields() }
+  }
+
+  const columns: Column<Proyecto>[] = [
+    {
+      header: 'Nombre',
+      render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
+      className: 'w-64',
+      getValue: (r) => r.nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+    },
+    {
+      header: 'Descripción',
+      render: (r) => <span className="text-ink/70">{r.descripcion ?? '—'}</span>,
+      getValue: (r) => r.descripcion ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+    },
+  ]
+
   const addRowCells = (
     <>
-      <td className="px-3 py-1.5">
-        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre…" className={inputCls} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input
+          autoFocus
+          required
+          value={newNombre}
+          onChange={(e) => setNewNombre(e.target.value)}
+          onKeyDown={kd}
+          placeholder="Nombre…"
+          className={inputCls}
+        />
       </td>
-      <td className="px-3 py-1.5">
-        <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripción…" className={inputCls} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input
+          value={newDesc}
+          onChange={(e) => setNewDesc(e.target.value)}
+          onKeyDown={kd}
+          placeholder="Descripción…"
+          className={inputCls}
+        />
       </td>
     </>
   )
 
   const addRowActions = (
     <>
-      <button onClick={handleSaveRow} disabled={saving} className="text-brand-600 hover:text-brand-700 mr-2 font-bold" title="Guardar">✓</button>
-      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-gray-400 hover:text-gray-600" title="Cancelar">✕</button>
+      <button onClick={handleSaveRow} disabled={saving} className="text-brand-600 hover:text-brand-700 mr-1.5 font-bold text-base" title="Guardar">✓</button>
+      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
     </>
   )
 
-  const editBtn = canWrite ? (
-    <button
-      onClick={() => setIsEditing((v) => !v)}
-      className={isEditing
-        ? 'px-3 py-1.5 text-xs font-medium rounded-md bg-brand-600 text-white'
-        : 'px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-200 text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 transition-colors duration-150'}
-    >
-      {isEditing ? 'Listo' : 'Editar'}
-    </button>
-  ) : undefined
+  if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
+  if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>
 
   return (
     <>
-      <Topbar title="Proyectos" search={search} onSearch={setSearch} actions={editBtn} />
-      <div className="flex-1 min-h-0 p-4 overflow-hidden flex flex-col">
-        {loading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorState onRetry={load} />
-        ) : (
-          <DataTable
-            className="flex-1 min-h-0"
-            columns={columns}
-            rows={filtered}
-            caption="Proyectos"
-            getKey={(r) => r.id}
-            isEditing={isEditing}
-            onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
-            onAdd={canWrite ? () => setAddingRow(true) : undefined}
-            addRowCells={canWrite && addingRow ? addRowCells : undefined}
-            addRowActions={canWrite && addingRow ? addRowActions : undefined}
-            onDeleteRow={canWrite ? handleDeleteRow : undefined}
-            metaColumnDefs={allMetaCols}
-            getMeta={getMeta}
-            onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
-            onDeleteColumn={canWrite ? deleteColumn : undefined}
-            onEditColumn={canWrite ? handleEditColumn : undefined}
-            onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
-            addRowMetaValues={addRowMeta}
-            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
-          />
-        )}
+      <div className="flex-1 min-h-0 overflow-auto p-8">
+        <ProyectosGrid
+          rows={filtered}
+          columns={columns}
+          getKey={(r) => r.id}
+          onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
+          isEditing={isEditing}
+          onToggleEdit={canWrite ? () => setIsEditing((v) => !v) : undefined}
+          canWrite={canWrite}
+          onAdd={canWrite ? () => setAddingRow(true) : undefined}
+          addRowCells={canWrite && addingRow ? addRowCells : undefined}
+          addRowActions={canWrite && addingRow ? addRowActions : undefined}
+          metaColumnDefs={allMetaCols}
+          getMeta={getMeta}
+          onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
+          onDeleteColumn={canWrite ? deleteColumn : undefined}
+          onEditColumn={canWrite ? handleEditColumn : undefined}
+          onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+          addRowMetaValues={addRowMeta}
+          onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
+          onDeleteRows={canWrite ? handleDeleteRows : undefined}
+          search={search}
+          onSearch={setSearch}
+        />
       </div>
 
-      <Modal open={showColForm} title={editingColKey ? 'Editar columna' : 'Nueva columna'} onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }}>
+      <Modal
+        open={showColForm}
+        title={editingColKey ? 'Editar columna' : 'Nueva columna'}
+        onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }}
+      >
         <form onSubmit={handleAddColumn}>
           <div className="space-y-3">
             <div>
@@ -219,10 +224,12 @@ export default function ProyectosPage() {
                 <option value="date">Fecha</option>
                 <option value="boolean">Booleano</option>
                 <option value="list">Lista</option>
+                <option value="priority">Prioridad</option>
               </select>
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-neutral-100 space-y-3">
+            {colType !== 'priority' && (
             <div className={`flex items-center gap-3 ${colType === 'list' ? 'opacity-40' : ''}`}>
               <button
                 type="button"
@@ -243,9 +250,7 @@ export default function ProyectosPage() {
                       type="button"
                       onClick={() => setColColor(c)}
                       title={c}
-                      className={`w-4 h-4 rounded-full transition-all duration-100 ${
-                        colColor === c ? 'ring-2 ring-offset-1 ring-neutral-400 scale-110' : 'hover:scale-110'
-                      }`}
+                      className={`w-4 h-4 rounded-full transition-all duration-100 ${colColor === c ? 'ring-2 ring-offset-1 ring-neutral-400 scale-110' : 'hover:scale-110'}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
@@ -253,6 +258,27 @@ export default function ProyectosPage() {
               )}
               {colType === 'list' && <span className="text-xs text-neutral-300">Las listas usan colores por opción</span>}
             </div>
+            )}
+            {colType === 'priority' && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">Niveles</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: 'Urgente', color: '#dc2626' },
+                    { label: 'Alta', color: '#f97316' },
+                    { label: 'Media', color: '#f59e0b' },
+                    { label: 'Baja', color: '#22c55e' },
+                    { label: 'Sin prioridad', color: '#94a3b8' },
+                  ].map((lvl) => (
+                    <span key={lvl.label} className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium whitespace-nowrap"
+                      style={{ backgroundColor: `${lvl.color}1a`, color: lvl.color }}>
+                      <span className="w-[5px] h-[5px] rounded-full" style={{ backgroundColor: lvl.color }} />
+                      {lvl.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
             {colType === 'list' && (
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1.5">Opciones</label>
@@ -295,8 +321,16 @@ export default function ProyectosPage() {
             )}
           </div>
           <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end gap-2">
-            <button type="button" onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
-            <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">Crear</button>
+            <button
+              type="button"
+              onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }}
+              className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700"
+            >
+              Cancelar
+            </button>
+            <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">
+              {editingColKey ? 'Guardar' : 'Crear'}
+            </button>
           </div>
         </form>
       </Modal>

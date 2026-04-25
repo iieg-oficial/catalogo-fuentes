@@ -1,1 +1,1 @@
-export {}
+export { default as ProyectosGrid } from './ProyectosGrid'

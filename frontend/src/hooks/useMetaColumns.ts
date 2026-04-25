@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { API_URL } from '@/consts'
 import { getMetaColumns, saveMetaColumns } from '@/services/metaColumnsService'
 
-export type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list'
+export type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'priority'
 
 export interface ListOption {
   label: string
