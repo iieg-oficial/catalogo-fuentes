@@ -154,7 +154,7 @@ function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
   )
 
   return (
-    <div ref={containerRef} className="relative flex flex-wrap gap-1 items-center">
+    <div ref={containerRef} className="relative flex flex-col items-start gap-1">
       {selectedOptions.length === 0 && <span className="text-neutral-400 text-sm">—</span>}
       {selectedOptions.map((opt) => (
         <span key={opt.value} className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">

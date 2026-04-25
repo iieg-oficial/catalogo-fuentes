@@ -132,7 +132,7 @@ export default function TablasPage() {
       header: 'Productos',
       className: 'w-64 max-w-[16rem]',
       render: (r) => (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-col items-start gap-1">
           {r.productos.length === 0 && <span className="text-neutral-400">—</span>}
           {r.productos.map((p) => (
             <span key={p.id} className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">
