@@ -11,15 +11,34 @@ interface TagPillsProps {
 export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }: TagPillsProps) {
   const [hovered, setHovered] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
+  const [copied, setCopied] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleMouseEnter = useCallback(() => {
+  const clearHide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+  }
+
+  const scheduleHide = () => {
+    clearHide()
+    hideTimer.current = setTimeout(() => setHovered(false), 120)
+  }
+
+  const handleTriggerEnter = useCallback(() => {
+    clearHide()
     if (ref.current) {
       const r = ref.current.getBoundingClientRect()
       setPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX })
     }
     setHovered(true)
   }, [])
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(items.join(', ')).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }, [items])
 
   if (!items.length) return <span className="font-mono text-ink/[30%] text-[13px] select-none">—</span>
 
@@ -30,8 +49,8 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
     <div
       ref={ref}
       className="inline-flex items-center gap-1"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={handleTriggerEnter}
+      onMouseLeave={scheduleHide}
     >
       {visible.map((item, i) => {
         const color = LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
@@ -57,10 +76,36 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
         <div
           style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 9999 }}
           className="bg-white border border-ink/[10%] rounded-lg shadow-lg shadow-ink/[8%] p-4 min-w-[200px]"
+          onMouseEnter={clearHide}
+          onMouseLeave={scheduleHide}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40 mb-2">
-            {label} · {items.length}
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+              {label} · {items.length}
+            </p>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleCopy() }}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors duration-150 text-ink/40 hover:text-ink/70 hover:bg-ink/[5%]"
+              title="Copiar lista"
+            >
+              {copied ? (
+                <>
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1.5 6L4.5 9 10.5 3" />
+                  </svg>
+                  Copiado
+                </>
+              ) : (
+                <>
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="4" y="4" width="7" height="7" rx="1" />
+                    <path d="M4 3H3a1 1 0 00-1 1v6" />
+                  </svg>
+                  Copiar
+                </>
+              )}
+            </button>
+          </div>
           <div className="flex flex-col gap-1">
             {items.map((item, i) => {
               const color = LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
