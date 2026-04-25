@@ -4,6 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import ColFormModal from '@/components/ColFormModal'
+import TagPills from '@/components/TagPills'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
 import type { Column } from '@/components/DataTable'
@@ -164,15 +165,7 @@ export default function TablasPage() {
     },
     {
       header: 'Productos',
-      render: (r) => r.productos.length > 0
-        ? (
-          <div className="flex flex-wrap gap-1">
-            {r.productos.map((p) => (
-              <span key={p.id} className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-medium bg-ink/[5%] text-ink/60">{p.nombre}</span>
-            ))}
-          </div>
-        )
-        : <span className="text-ink/30 text-[13px]">—</span>,
+      render: (r) => <TagPills items={r.productos.map((p) => p.nombre)} label="PRODUCTOS" />,
       getValue: (r) => r.productos.map((p) => p.id).join(','),
       onEdit: handleEditProductos,
       selectOptions: productos.map((p) => ({ value: p.id, label: p.nombre })),
