@@ -623,11 +623,22 @@ export default function ProyectosGrid({
         let cellVal: string
         if (id.startsWith('__col_')) {
           const idx = parseInt(id.replace('__col_', ''))
-          cellVal = String(columns[idx]?.getValue?.(row) ?? '')
+          const col = columns[idx]
+          const raw = String(col?.getValue?.(row) ?? '')
+          if (col?.selectOptions) {
+            const labels = raw.split(',').filter(Boolean)
+              .map((v) => col.selectOptions!.find((o) => o.value === v)?.label ?? v)
+            cellVal = labels.join(',')
+          } else {
+            cellVal = raw
+          }
         } else {
           cellVal = String(getMeta?.(row)?.[id] ?? '')
         }
-        if (Array.isArray(val)) return val.includes(cellVal)
+        if (Array.isArray(val)) {
+          const cells = cellVal.split(',').filter(Boolean)
+          return val.some((v) => cells.includes(v))
+        }
         return cellVal.toLowerCase().includes(val.toLowerCase())
       })
     })
