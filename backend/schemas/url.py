@@ -23,6 +23,7 @@ class UrlUpdate(BaseModel):
 
 class UrlRead(UrlBase):
     id: uuid.UUID
+    instrumento_id: uuid.UUID | None = None
     instrumento: InstrumentoRead | None = None
 
     model_config = {"from_attributes": True}

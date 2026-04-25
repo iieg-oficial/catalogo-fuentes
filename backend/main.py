@@ -13,6 +13,7 @@ from routes.instrumentos import router as instrumentos_router
 from routes.urls import router as urls_router
 from routes.archivos import router as archivos_router
 from routes.users import router as users_router
+from routes.meta_columns import router as meta_columns_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ app.include_router(instrumentos_router)
 app.include_router(urls_router)
 app.include_router(archivos_router)
 app.include_router(users_router)
+app.include_router(meta_columns_router)
 
 
 @app.get("/health")

@@ -42,42 +42,38 @@ El usuario administrador se crea con las credenciales definidas en `ADMIN_EMAIL`
 
 ## Desarrollo local
 
-**Requisitos:** Python 3.12+, Node.js 20+ y PostgreSQL 15+ corriendo localmente.
+**Requisitos:** [`just`](https://github.com/casey/just), conda (env `dashboard`), Node.js 20+ y Docker (para la DB).
 
-### 1. Base de datos
-
-Levanta solo el contenedor de PostgreSQL:
+### Configuración inicial (una sola vez)
 
 ```bash
 cd deploy
-cp .env.example .env
-docker compose up -d db
+cp .env.example .env   # ajustar ADMIN_EMAIL y ADMIN_PASSWORD si se desea
 ```
 
-### 2. Backend
+### Levantar todo
 
 ```bash
-cd backend
-cp .env.example .env        # ajustar ADMIN_EMAIL y ADMIN_PASSWORD si se desea
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python seed.py              # crea tablas y carga datos de prueba
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+just dev-seed   # DB + migraciones + seed + backend + frontend
 ```
 
-API disponible en `http://localhost:8000`.
-
-### 3. Frontend
+O si ya hay datos y solo quieres levantar los servicios:
 
 ```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
+just dev
 ```
 
-App disponible en `http://localhost:5173`.
+### Otros comandos útiles
+
+| Comando | Descripción |
+|---|---|
+| `just dev-seed` | DB + seed + backend + frontend |
+| `just dev` | DB + backend + frontend (sin seed) |
+| `just dev-stop` | Detiene backend y frontend |
+| `just dev-status` | Estado de los tres servicios |
+| `just dev-roles` | Muestra usuarios de prueba |
+
+App disponible en `http://localhost:5173`, API en `http://localhost:8000`.
 
 ---
 

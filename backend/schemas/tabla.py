@@ -27,10 +27,11 @@ class TablaUpdate(BaseModel):
 
 class TablaRead(TablaBase):
     id: uuid.UUID
+    base_de_datos_id: uuid.UUID | None = None
 
     model_config = {"from_attributes": True}
 
 
 class TablaDetail(TablaRead):
-    base_de_datos: BaseDeDatosRead
+    base_de_datos: BaseDeDatosRead | None = None
     productos: list[ProductoWithProyecto]

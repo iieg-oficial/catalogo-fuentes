@@ -98,12 +98,16 @@ export default function TablaDetailPage() {
             </div>
             <div>
               <span className="text-xs text-gray-400 uppercase tracking-wide">Base de datos</span>
-              <button
-                onClick={() => navigate(`/bases-de-datos/${item.base_de_datos.id}`)}
-                className="block text-sm text-blue-600 hover:text-blue-700 mt-0.5"
-              >
-                {item.base_de_datos.nombre}
-              </button>
+              {item.base_de_datos ? (
+                <button
+                  onClick={() => navigate(`/bases-de-datos/${item.base_de_datos!.id}`)}
+                  className="block text-sm text-blue-600 hover:text-blue-700 mt-0.5"
+                >
+                  {item.base_de_datos.nombre}
+                </button>
+              ) : (
+                <p className="text-sm text-gray-400 mt-0.5">—</p>
+              )}
             </div>
             {item.productos.length > 0 && (
               <div>

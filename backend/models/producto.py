@@ -11,14 +11,14 @@ class Producto(Base):
     __tablename__ = "producto"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    proyecto_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("proyecto.id", ondelete="CASCADE"), nullable=False
+    proyecto_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("proyecto.id", ondelete="SET NULL"), nullable=True
     )
     nombre: Mapped[str] = mapped_column(String, nullable=False)
     descripcion: Mapped[str | None] = mapped_column(Text)
     meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
 
-    proyecto: Mapped["Proyecto"] = relationship("Proyecto", back_populates="productos")
+    proyecto: Mapped["Proyecto | None"] = relationship("Proyecto", back_populates="productos")
     tablas: Mapped[list["Tabla"]] = relationship(
         "Tabla", secondary="tabla_producto", back_populates="productos"
     )

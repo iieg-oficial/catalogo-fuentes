@@ -1,9 +1,10 @@
 import asyncio
 import logging
+import subprocess
 from datetime import date
 from pathlib import Path
 
-from sqlalchemy import insert as sa_insert, select, text
+from sqlalchemy import insert as sa_insert, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 import models  # noqa: F401
@@ -379,21 +380,33 @@ async def seed(db: AsyncSession) -> None:
     logger.info("Seeding completed successfully.")
 
 
-async def run_migrations(engine: object) -> None:
-    """Execute all SQL migration files in order."""
+def run_migrations() -> None:
+    """Execute all SQL migration files in order using psql."""
     migrations_dir = Path(__file__).parent / "migrations"
-    migration_files = sorted(migrations_dir.glob("0*.sql"))
-    async with engine.begin() as conn:
-        for migration_file in migration_files:
-            logger.info("Running migration %s...", migration_file.name)
-            sql = migration_file.read_text(encoding="utf-8")
-            await conn.execute(text(sql))
+    env = {
+        "PGPASSWORD": settings.POSTGRES_PASSWORD,
+        "PATH": "/usr/bin:/bin:/usr/local/bin",
+    }
+    for migration_file in sorted(migrations_dir.glob("0*.sql")):
+        logger.info("Running migration %s...", migration_file.name)
+        subprocess.run(
+            [
+                "psql",
+                "-h", settings.POSTGRES_HOST,
+                "-p", str(settings.POSTGRES_PORT),
+                "-U", settings.POSTGRES_USER,
+                "-d", settings.POSTGRES_DB,
+                "-f", str(migration_file),
+            ],
+            env=env,
+            check=True,
+        )
     logger.info("Migrations completed.")
 
 
 async def main() -> None:
+    run_migrations()
     engine = create_async_engine(settings.database_url, echo=False)
-    await run_migrations(engine)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as db:
         await seed(db)
