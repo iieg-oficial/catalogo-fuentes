@@ -7,9 +7,10 @@ import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
 import type { Column } from '@/components/DataTable'
-import type { Tabla, BaseDeDatos } from '@/types'
+import type { Tabla, BaseDeDatos, Producto } from '@/types'
 import { getTablas, createTabla, updateTabla, deleteTabla } from './services/tablasService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
+import { getProductos } from '@/features/productos/services/productosService'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -18,6 +19,7 @@ export default function TablasPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Tabla[]>([])
   const [bases, setBases] = useState<BaseDeDatos[]>([])
+  const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
@@ -30,6 +32,8 @@ export default function TablasPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newBdId, setNewBdId] = useState('')
+  const [newProductoIds, setNewProductoIds] = useState<string[]>([])
+  const [showNewProductosPanel, setShowNewProductosPanel] = useState(false)
   const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
@@ -39,9 +43,10 @@ export default function TablasPage() {
     setLoading(true)
     setError(false)
     try {
-      const [tablas, bds] = await Promise.all([getTablas(), getBasesDeDatos()])
+      const [tablas, bds, prods] = await Promise.all([getTablas(), getBasesDeDatos(), getProductos()])
       setItems(tablas)
       setBases(bds)
+      setProductos(prods)
     } catch {
       setError(true)
     } finally {
@@ -51,13 +56,17 @@ export default function TablasPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewBdId(''); setAddRowMeta({}) }
+  const resetFields = () => { setNewNombre(''); setNewBdId(''); setNewProductoIds([]); setShowNewProductosPanel(false); setAddRowMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newBdId) return
     setSaving(true)
     try {
-      const created = await createTabla({ nombre: newNombre, base_de_datos_id: newBdId })
+      const created = await createTabla({
+        nombre: newNombre,
+        base_de_datos_id: newBdId,
+        producto_ids: newProductoIds.length ? newProductoIds : undefined,
+      })
       if (Object.values(addRowMeta).some(Boolean)) {
         await updateTabla(created.id, { meta: addRowMeta })
       }
@@ -78,6 +87,13 @@ export default function TablasPage() {
     const bd = bases.find((b) => b.id === bdId) ?? null
     updateTabla(row.id, { base_de_datos_id: bdId })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, base_de_datos_id: bdId, base_de_datos: bd } : i)))
+  }
+
+  const handleEditProductos = (row: Tabla, value: string) => {
+    const ids = value.split(',').filter(Boolean)
+    const linked = productos.filter((p) => ids.includes(p.id))
+    updateTabla(row.id, { producto_ids: ids })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, productos: linked } : i)))
   }
 
   const handleEditMetaCell = (row: Tabla, key: string, value: string) => {
@@ -157,7 +173,10 @@ export default function TablasPage() {
           </div>
         )
         : <span className="text-ink/30 text-[13px]">—</span>,
-      getValue: (r) => r.productos.map((p) => p.nombre).join(', '),
+      getValue: (r) => r.productos.map((p) => p.id).join(','),
+      onEdit: handleEditProductos,
+      selectOptions: productos.map((p) => ({ value: p.id, label: p.nombre })),
+      multiple: true,
     },
   ]
 
@@ -172,7 +191,45 @@ export default function TablasPage() {
           {bases.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
         </select>
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40, position: 'relative', overflow: showNewProductosPanel ? 'visible' : 'hidden' }}>
+        <button
+          type="button"
+          onClick={() => setShowNewProductosPanel((v) => !v)}
+          className="w-full h-full text-left text-[13px] px-1 text-ink/40 hover:text-ink/70 truncate"
+        >
+          {newProductoIds.length > 0
+            ? `${newProductoIds.length} producto${newProductoIds.length !== 1 ? 's' : ''}`
+            : 'Productos…'}
+        </button>
+        {showNewProductosPanel && (
+          <div className="absolute left-0 top-full mt-0.5 z-50 bg-white border border-ink/[10%] rounded-lg shadow-lg min-w-[180px] max-w-[240px]">
+            <div className="px-3 py-1.5 border-b border-ink/[5%]">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/30">Seleccionar</p>
+            </div>
+            <div className="p-1 max-h-48 overflow-y-auto">
+              {productos.map((p) => (
+                <label key={p.id} className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-ink cursor-pointer rounded hover:bg-brand-500/[4%]">
+                  <input type="checkbox"
+                    checked={newProductoIds.includes(p.id)}
+                    onChange={() => setNewProductoIds((prev) =>
+                      prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id]
+                    )}
+                    className="w-3.5 h-3.5 rounded accent-brand-600"
+                  />
+                  {p.nombre}
+                </label>
+              ))}
+              {productos.length === 0 && <p className="px-2 py-2 text-[12px] text-ink/40">Sin productos disponibles</p>}
+            </div>
+            <div className="px-2 pb-2 pt-1">
+              <button type="button" onClick={() => setShowNewProductosPanel(false)}
+                className="w-full px-2 py-1 text-[12px] font-medium text-brand-600 hover:bg-brand-500/[6%] rounded transition-colors">
+                Listo
+              </button>
+            </div>
+          </div>
+        )}
+      </td>
     </>
   )
 
