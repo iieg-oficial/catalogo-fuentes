@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
 import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
@@ -133,13 +134,25 @@ function FilterPanel({
   value,
   onChange,
   onClose,
+  top,
+  left,
+  label,
 }: {
   availableValues: string[]
   value: string | string[] | null
   onChange: (v: string | string[] | null) => void
   onClose: () => void
+  top: number
+  left: number
+  label: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const useCheckboxes = availableValues.length > 0 && availableValues.length <= 20
+  const [pending, setPending] = useState<string[]>(
+    Array.isArray(value) ? value : value ? [value] : [],
+  )
+  const [textVal, setTextVal] = useState(typeof value === 'string' ? value : '')
+  const hasActiveFilter = value != null && (Array.isArray(value) ? value.length > 0 : String(value).length > 0)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -154,61 +167,87 @@ function FilterPanel({
     }
   }, [onClose])
 
-  const useCheckboxes = availableValues.length > 0 && availableValues.length <= 20
-  const selected = Array.isArray(value) ? value : value ? [value] : []
+  const handleApply = () => {
+    onChange(useCheckboxes ? (pending.length ? pending : null) : (textVal || null))
+    onClose()
+  }
 
-  return (
+  const handleClear = () => {
+    setPending([])
+    setTextVal('')
+    onChange(null)
+  }
+
+  return createPortal(
     <div
       ref={ref}
-      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-lg border border-ink/[10%] shadow-lg shadow-ink/[8%] min-w-[200px] max-w-[280px]"
+      style={{ position: 'fixed', top, left, zIndex: 9999 }}
+      className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[220px] max-w-[280px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="px-3 py-2 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Filtrar</p>
+      <div className="px-3 py-2.5 border-b border-ink/[6%]">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+          Filtrar · {label}
+        </p>
       </div>
-      <div className="p-2 max-h-52 overflow-y-auto">
-        {useCheckboxes ? (
-          availableValues.map((opt) => {
-            const isChecked = selected.includes(opt)
+
+      {useCheckboxes ? (
+        <div className="py-1.5 max-h-52 overflow-y-auto">
+          {availableValues.map((opt) => {
+            const isChecked = pending.includes(opt)
             return (
-              <label
+              <button
                 key={opt}
-                className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-ink cursor-pointer rounded-md hover:bg-brand-500/[4%]"
+                type="button"
+                onClick={() => setPending(isChecked ? pending.filter((v) => v !== opt) : [...pending, opt])}
+                className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
+                  isChecked ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
+                }`}
               >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => {
-                    const next = isChecked ? selected.filter((v) => v !== opt) : [...selected, opt]
-                    onChange(next.length ? next : null)
-                  }}
-                  className="w-3.5 h-3.5 rounded accent-brand-600"
-                />
-                {opt}
-              </label>
+                <span className={`shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors duration-100 ${
+                  isChecked ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
+                }`}>
+                  {isChecked && (
+                    <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1.5 5L4 7.5 8.5 2.5" />
+                    </svg>
+                  )}
+                </span>
+                <span className="truncate">{opt}</span>
+              </button>
             )
-          })
-        ) : (
+          })}
+        </div>
+      ) : (
+        <div className="p-2">
           <input
             autoFocus
-            value={typeof value === 'string' ? value : ''}
-            onChange={(e) => onChange(e.target.value || null)}
+            value={textVal}
+            onChange={(e) => setTextVal(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleApply() }}
             placeholder="Buscar..."
             className="w-full px-2.5 py-1.5 text-[13px] border border-ink/[12%] rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
-        )}
-      </div>
-      {(selected.length > 0 || (typeof value === 'string' && value)) && (
-        <div className="px-2 pb-2">
-          <button
-            onClick={() => onChange(null)}
-            className="w-full px-2 py-1 text-[12px] text-brand-600 hover:bg-brand-500/[6%] rounded-md transition-colors"
-          >
-            Limpiar filtro
-          </button>
         </div>
       )}
-    </div>
+
+      <div className="border-t border-ink/[6%] px-2.5 py-2 flex items-center gap-2">
+        <button
+          onClick={handleClear}
+          disabled={!hasActiveFilter}
+          className="flex-1 px-2 py-1.5 text-[11px] font-medium rounded-md transition-colors text-brand-600 hover:bg-brand-500/[6%] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+        >
+          Limpiar
+        </button>
+        <button
+          onClick={handleApply}
+          className="flex-1 px-2 py-1.5 text-[11px] font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-md transition-colors"
+        >
+          Aplicar
+        </button>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -253,9 +292,11 @@ function GridColHeader({
 }) {
   const [hover, setHover] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [filterPos, setFilterPos] = useState({ top: 0, left: 0 })
   const isSorted = sortField === sortId
   const hasFilter = filterValue != null && (typeof filterValue === 'string' ? filterValue.length > 0 : filterValue.length > 0)
   const menuRef = useRef<HTMLDivElement>(null)
+  const filterBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -321,7 +362,15 @@ function GridColHeader({
 
         {/* Filter button */}
         <button
-          onClick={(e) => { e.stopPropagation(); setFilterOpen((o) => !o) }}
+          ref={filterBtnRef}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (!filterOpen && filterBtnRef.current) {
+              const r = filterBtnRef.current.getBoundingClientRect()
+              setFilterPos({ top: r.bottom + 4, left: r.left })
+            }
+            setFilterOpen((o) => !o)
+          }}
           style={{
             opacity: hasFilter ? 1 : hover || filterOpen ? 0.7 : 0,
             width: 20,
@@ -396,16 +445,16 @@ function GridColHeader({
         )}
       </div>
 
-      {/* Filter panel */}
       {filterOpen && (
-        <div style={{ position: 'relative' }}>
-          <FilterPanel
-            availableValues={availableValues}
-            value={filterValue}
-            onChange={(v) => onFilterChange(sortId, v)}
-            onClose={() => setFilterOpen(false)}
-          />
-        </div>
+        <FilterPanel
+          availableValues={availableValues}
+          value={filterValue}
+          onChange={(v) => onFilterChange(sortId, v)}
+          onClose={() => setFilterOpen(false)}
+          top={filterPos.top}
+          left={filterPos.left}
+          label={label}
+        />
       )}
     </th>
   )

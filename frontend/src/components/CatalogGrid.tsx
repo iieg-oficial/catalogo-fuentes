@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
 import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
@@ -201,19 +202,25 @@ function MultiSelectPanel({
 }
 
 // ---------------------------------------------------------------------------
-// FilterPanel
+// SingleSelectPanel
 // ---------------------------------------------------------------------------
 
-function FilterPanel({
-  availableValues,
+function SingleSelectPanel({
+  options,
   value,
   onChange,
   onClose,
+  top,
+  left,
+  label,
 }: {
-  availableValues: string[]
-  value: string | string[] | null
-  onChange: (v: string | string[] | null) => void
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
   onClose: () => void
+  top: number
+  left: number
+  label?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -230,27 +237,135 @@ function FilterPanel({
     }
   }, [onClose])
 
-  const useCheckboxes = availableValues.length > 0 && availableValues.length <= 20
-  const selected = Array.isArray(value) ? value : value ? [value] : []
-
-  return (
+  return createPortal(
     <div
       ref={ref}
-      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
+      style={{ position: 'fixed', top, left, zIndex: 9999 }}
+      className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
+      {label && (
+        <div className="px-3 py-2.5 border-b border-ink/[6%]">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label}</p>
+        </div>
+      )}
+      <div className="py-1.5 max-h-52 overflow-y-auto">
+        <button
+          type="button"
+          onClick={() => { onChange(''); onClose() }}
+          className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
+            !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/50 hover:bg-ink/[3%]'
+          }`}
+        >
+          <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-100 ${
+            !value ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
+          }`}>
+            {!value && <span className="w-2 h-2 rounded-full bg-white" />}
+          </span>
+          <span className="italic text-ink/40">—</span>
+        </button>
+        {options.map((opt) => {
+          const isSelected = value === opt.value
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => { onChange(opt.value); onClose() }}
+              className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
+                isSelected ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
+              }`}
+            >
+              <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-100 ${
+                isSelected ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
+              }`}>
+                {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
+              </span>
+              {opt.label}
+            </button>
+          )
+        })}
+        {options.length === 0 && <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>}
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+// ---------------------------------------------------------------------------
+// FilterPanel
+// ---------------------------------------------------------------------------
+
+function FilterPanel({
+  availableValues,
+  value,
+  onChange,
+  onClose,
+  top,
+  left,
+  label,
+}: {
+  availableValues: string[]
+  value: string | string[] | null
+  onChange: (v: string | string[] | null) => void
+  onClose: () => void
+  top: number
+  left: number
+  label: string
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const useCheckboxes = availableValues.length > 0 && availableValues.length <= 20
+  const [pending, setPending] = useState<string[]>(
+    Array.isArray(value) ? value : value ? [value] : [],
+  )
+  const [textVal, setTextVal] = useState(typeof value === 'string' ? value : '')
+  const hasActiveFilter = value != null && (Array.isArray(value) ? value.length > 0 : String(value).length > 0)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
+    }
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    setTimeout(() => document.addEventListener('mousedown', handler), 0)
+    document.addEventListener('keydown', keyHandler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', keyHandler)
+    }
+  }, [onClose])
+
+  const handleApply = () => {
+    onChange(useCheckboxes ? (pending.length ? pending : null) : (textVal || null))
+    onClose()
+  }
+
+  const handleClear = () => {
+    setPending([])
+    setTextVal('')
+    onChange(null)
+  }
+
+  return createPortal(
+    <div
+      ref={ref}
+      style={{ position: 'fixed', top, left, zIndex: 9999 }}
+      className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[220px] max-w-[280px] overflow-hidden"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="px-3 py-2.5 border-b border-ink/[6%]">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+          Filtrar · {label}
+        </p>
+      </div>
+
       {useCheckboxes ? (
-        <div className="py-1.5 max-h-56 overflow-y-auto">
+        <div className="py-1.5 max-h-52 overflow-y-auto">
           {availableValues.map((opt) => {
-            const isChecked = selected.includes(opt)
+            const isChecked = pending.includes(opt)
             return (
               <button
                 key={opt}
                 type="button"
-                onClick={() => {
-                  const next = isChecked ? selected.filter((v) => v !== opt) : [...selected, opt]
-                  onChange(next.length ? next : null)
-                }}
+                onClick={() => setPending(isChecked ? pending.filter((v) => v !== opt) : [...pending, opt])}
                 className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
                   isChecked ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
                 }`}
@@ -273,24 +388,32 @@ function FilterPanel({
         <div className="p-2">
           <input
             autoFocus
-            value={typeof value === 'string' ? value : ''}
-            onChange={(e) => onChange(e.target.value || null)}
+            value={textVal}
+            onChange={(e) => setTextVal(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleApply() }}
             placeholder="Buscar..."
             className="w-full px-2.5 py-1.5 text-[13px] border border-ink/[12%] rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       )}
-      {(selected.length > 0 || (typeof value === 'string' && value)) && (
-        <div className="border-t border-ink/[6%] px-2 py-1.5">
-          <button
-            onClick={() => onChange(null)}
-            className="w-full px-2 py-1 text-[11px] font-medium text-brand-600 hover:bg-brand-500/[6%] rounded-md transition-colors"
-          >
-            Limpiar filtro
-          </button>
-        </div>
-      )}
-    </div>
+
+      <div className="border-t border-ink/[6%] px-2.5 py-2 flex items-center gap-2">
+        <button
+          onClick={handleClear}
+          disabled={!hasActiveFilter}
+          className="flex-1 px-2 py-1.5 text-[11px] font-medium rounded-md transition-colors text-brand-600 hover:bg-brand-500/[6%] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+        >
+          Limpiar
+        </button>
+        <button
+          onClick={handleApply}
+          className="flex-1 px-2 py-1.5 text-[11px] font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-md transition-colors"
+        >
+          Aplicar
+        </button>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -335,9 +458,11 @@ function GridColHeader({
 }) {
   const [hover, setHover] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [filterPos, setFilterPos] = useState({ top: 0, left: 0 })
   const isSorted = sortField === sortId
   const hasFilter = filterValue != null && (typeof filterValue === 'string' ? filterValue.length > 0 : filterValue.length > 0)
   const menuRef = useRef<HTMLDivElement>(null)
+  const filterBtnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -390,7 +515,15 @@ function GridColHeader({
         </button>
 
         <button
-          onClick={(e) => { e.stopPropagation(); setFilterOpen((o) => !o) }}
+          ref={filterBtnRef}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (!filterOpen && filterBtnRef.current) {
+              const r = filterBtnRef.current.getBoundingClientRect()
+              setFilterPos({ top: r.bottom + 4, left: r.left })
+            }
+            setFilterOpen((o) => !o)
+          }}
           style={{
             opacity: hasFilter ? 1 : hover || filterOpen ? 0.7 : 0,
             width: 20, height: 20, borderRadius: 4,
@@ -450,14 +583,15 @@ function GridColHeader({
       </div>
 
       {filterOpen && (
-        <div style={{ position: 'relative' }}>
-          <FilterPanel
-            availableValues={availableValues}
-            value={filterValue}
-            onChange={(v) => onFilterChange(sortId, v)}
-            onClose={() => setFilterOpen(false)}
-          />
-        </div>
+        <FilterPanel
+          availableValues={availableValues}
+          value={filterValue}
+          onChange={(v) => onFilterChange(sortId, v)}
+          onClose={() => setFilterOpen(false)}
+          top={filterPos.top}
+          left={filterPos.left}
+          label={label}
+        />
       )}
     </th>
   )
@@ -605,6 +739,7 @@ export default function CatalogGrid<T extends { id: string }>({
   const { openSidebar } = useSidebar()
 
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
+  const [editingCellPos, setEditingCellPos] = useState({ top: 0, left: 0 })
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
@@ -942,7 +1077,11 @@ export default function CatalogGrid<T extends { id: string }>({
                           }}
                           onClick={col.onEdit ? (e) => {
                             e.stopPropagation()
-                            if (!isEditingThis) setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
+                            if (!isEditingThis) {
+                              const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
+                              setEditingCellPos({ top: rect.bottom + 4, left: rect.left })
+                              setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
+                            }
                           } : undefined}
                         >
                           {isEditingThis && isMultiSelect ? (
@@ -955,27 +1094,29 @@ export default function CatalogGrid<T extends { id: string }>({
                                 onClose={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
                               />
                             </>
+                          ) : isEditingThis && col.selectOptions ? (
+                            <>
+                              <span className="block truncate">{col.render(row)}</span>
+                              <SingleSelectPanel
+                                options={col.selectOptions}
+                                value={editingCell!.value}
+                                onChange={(v) => col.onEdit?.(row, v)}
+                                onClose={() => setEditingCell(null)}
+                                top={editingCellPos.top}
+                                left={editingCellPos.left}
+                                label={col.header}
+                              />
+                            </>
                           ) : isEditingThis ? (
-                            col.selectOptions ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { col.onEdit?.(row, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)}
-                                className={`${INLINE_INPUT_CLS} bg-white`}
-                                onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                {col.selectOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                              </select>
-                            ) : (
-                              <input autoFocus value={editingCell!.value}
-                                onChange={(e) => setEditingCell((p) => p ? { ...p, value: e.target.value } : null)}
-                                onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }
-                                  if (e.key === 'Escape') setEditingCell(null)
-                                }}
-                                className={INLINE_INPUT_CLS}
-                                onClick={(e) => e.stopPropagation()} />
-                            )
+                            <input autoFocus value={editingCell!.value}
+                              onChange={(e) => setEditingCell((p) => p ? { ...p, value: e.target.value } : null)}
+                              onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }
+                                if (e.key === 'Escape') setEditingCell(null)
+                              }}
+                              className={INLINE_INPUT_CLS}
+                              onClick={(e) => e.stopPropagation()} />
                           ) : (
                             <span className={col.onEdit ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
                               {col.render(row)}
@@ -996,32 +1137,51 @@ export default function CatalogGrid<T extends { id: string }>({
                           style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
                           onClick={onEditMetaCell ? (e) => {
                             e.stopPropagation()
+                            const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
+                            setEditingCellPos({ top: rect.bottom + 4, left: rect.left })
                             setEditingCell({ rowKey, colKey: def.key, value: currentVal })
                           } : undefined}
                         >
                           {isEditingThis ? (
                             def.type === 'boolean' ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                <option value="true">Sí</option>
-                                <option value="false">No</option>
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={[{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }]}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : def.type === 'list' && def.options?.length ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                {def.options.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={def.options.map((o) => ({ value: o.label, label: o.label }))}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : def.type === 'priority' ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                {PRIORITY_LEVELS.map((lvl) => <option key={lvl.label} value={lvl.label}>{lvl.label}</option>)}
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : (
                               <input autoFocus type={def.type === 'date' ? 'date' : 'text'}
                                 value={editingCell!.value}
