@@ -129,6 +129,78 @@ const EYE_ICON = (
 )
 
 // ---------------------------------------------------------------------------
+// MultiSelectPanel
+// ---------------------------------------------------------------------------
+
+function MultiSelectPanel({
+  options, value, onChange, onClose,
+}: {
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (v: string) => void
+  onClose: () => void
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const selected = new Set(value.split(',').filter(Boolean))
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
+    }
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    setTimeout(() => document.addEventListener('mousedown', handler), 0)
+    document.addEventListener('keydown', keyHandler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', keyHandler)
+    }
+  }, [onClose])
+
+  const toggle = (v: string) => {
+    const next = new Set(selected)
+    if (next.has(v)) next.delete(v)
+    else next.add(v)
+    onChange([...next].join(','))
+  }
+
+  return (
+    <div ref={ref}
+      className="absolute left-0 top-full mt-0.5 z-50 bg-white border border-ink/[10%] rounded-xl shadow-xl shadow-ink/[6%] min-w-[180px] max-w-[240px] overflow-hidden"
+      onClick={(e) => e.stopPropagation()}>
+      <div className="py-1.5 max-h-48 overflow-y-auto">
+        {options.map((opt) => {
+          const isChecked = selected.has(opt.value)
+          return (
+            <button key={opt.value} type="button" onClick={() => toggle(opt.value)}
+              className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
+                isChecked ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
+              }`}>
+              <span className={`shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors duration-100 ${
+                isChecked ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
+              }`}>
+                {isChecked && (
+                  <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1.5 5L4 7.5 8.5 2.5" />
+                  </svg>
+                )}
+              </span>
+              {opt.label}
+            </button>
+          )
+        })}
+        {options.length === 0 && <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>}
+      </div>
+      <div className="border-t border-ink/[6%] px-2 py-1.5">
+        <button onClick={onClose}
+          className="w-full px-2 py-1 text-[11px] font-medium text-brand-600 hover:bg-brand-500/[6%] rounded-md transition-colors">
+          Listo
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // FilterPanel
 // ---------------------------------------------------------------------------
 
@@ -164,35 +236,41 @@ function FilterPanel({
   return (
     <div
       ref={ref}
-      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-lg border border-ink/[10%] shadow-lg shadow-ink/[8%] min-w-[200px] max-w-[280px]"
+      className="absolute left-0 top-full mt-1 z-50 bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="px-3 py-2 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Filtrar</p>
-      </div>
-      <div className="p-2 max-h-52 overflow-y-auto">
-        {useCheckboxes ? (
-          availableValues.map((opt) => {
+      {useCheckboxes ? (
+        <div className="py-1.5 max-h-56 overflow-y-auto">
+          {availableValues.map((opt) => {
             const isChecked = selected.includes(opt)
             return (
-              <label
+              <button
                 key={opt}
-                className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-ink cursor-pointer rounded-md hover:bg-brand-500/[4%]"
+                type="button"
+                onClick={() => {
+                  const next = isChecked ? selected.filter((v) => v !== opt) : [...selected, opt]
+                  onChange(next.length ? next : null)
+                }}
+                className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
+                  isChecked ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
+                }`}
               >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => {
-                    const next = isChecked ? selected.filter((v) => v !== opt) : [...selected, opt]
-                    onChange(next.length ? next : null)
-                  }}
-                  className="w-3.5 h-3.5 rounded accent-brand-600"
-                />
-                {opt}
-              </label>
+                <span className={`shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors duration-100 ${
+                  isChecked ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
+                }`}>
+                  {isChecked && (
+                    <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1.5 5L4 7.5 8.5 2.5" />
+                    </svg>
+                  )}
+                </span>
+                <span className="truncate">{opt}</span>
+              </button>
             )
-          })
-        ) : (
+          })}
+        </div>
+      ) : (
+        <div className="p-2">
           <input
             autoFocus
             value={typeof value === 'string' ? value : ''}
@@ -200,13 +278,13 @@ function FilterPanel({
             placeholder="Buscar..."
             className="w-full px-2.5 py-1.5 text-[13px] border border-ink/[12%] rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
-        )}
-      </div>
+        </div>
+      )}
       {(selected.length > 0 || (typeof value === 'string' && value)) && (
-        <div className="px-2 pb-2">
+        <div className="border-t border-ink/[6%] px-2 py-1.5">
           <button
             onClick={() => onChange(null)}
-            className="w-full px-2 py-1 text-[12px] text-brand-600 hover:bg-brand-500/[6%] rounded-md transition-colors"
+            className="w-full px-2 py-1 text-[11px] font-medium text-brand-600 hover:bg-brand-500/[6%] rounded-md transition-colors"
           >
             Limpiar filtro
           </button>
@@ -840,17 +918,33 @@ export default function CatalogGrid<T extends { id: string }>({
                     {columns.map((col, ci) => {
                       const colKey = `__col_${ci}`
                       const isEditingThis = !!col.onEdit && editingCell?.rowKey === rowKey && editingCell?.colKey === colKey
+                      const isMultiSelect = col.multiple && !!col.selectOptions
                       return (
                         <td
                           key={ci}
                           className="border-r border-ink/[5%] px-2.5"
-                          style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
+                          style={{
+                            height: 40, verticalAlign: 'middle',
+                            borderBottom: '1px solid rgba(26,22,37,.05)',
+                            overflow: isEditingThis && isMultiSelect ? 'visible' : 'hidden',
+                            position: 'relative',
+                          }}
                           onClick={col.onEdit ? (e) => {
                             e.stopPropagation()
-                            setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
+                            if (!isEditingThis) setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
                           } : undefined}
                         >
-                          {isEditingThis ? (
+                          {isEditingThis && isMultiSelect ? (
+                            <>
+                              <span className="block truncate">{col.render(row)}</span>
+                              <MultiSelectPanel
+                                options={col.selectOptions!}
+                                value={editingCell!.value}
+                                onChange={(v) => setEditingCell((p) => p ? { ...p, value: v } : null)}
+                                onClose={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
+                              />
+                            </>
+                          ) : isEditingThis ? (
                             col.selectOptions ? (
                               <select autoFocus value={editingCell!.value}
                                 onChange={(e) => { col.onEdit?.(row, e.target.value); setEditingCell(null) }}
@@ -872,7 +966,7 @@ export default function CatalogGrid<T extends { id: string }>({
                                 onClick={(e) => e.stopPropagation()} />
                             )
                           ) : (
-                            <span className={col.onEdit ? 'cursor-text hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
+                            <span className={col.onEdit ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
                               {col.render(row)}
                             </span>
                           )}
