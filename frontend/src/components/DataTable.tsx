@@ -7,7 +7,7 @@ export interface Column<T> {
   className?: string
   onEdit?: (row: T, newValue: string) => void
   getValue?: (row: T) => string
-  selectOptions?: { value: string; label: string }[]
+  selectOptions?: { value: string; label: string; group?: string }[]
   multiple?: boolean
 }
 
@@ -108,6 +108,119 @@ function ColMenu({
             </svg>
             Borrar columna
           </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
+  const currentValue = col.getValue?.(row) ?? ''
+  const [selectedIds, setSelectedIds] = useState(() => currentValue.split(',').filter(Boolean))
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setSelectedIds(currentValue.split(',').filter(Boolean))
+  }, [currentValue])
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) { setOpen(false); setSearch('') }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const toggle = (id: string) => {
+    const next = selectedIds.includes(id) ? selectedIds.filter((i) => i !== id) : [...selectedIds, id]
+    setSelectedIds(next)
+    col.onEdit?.(row, next.join(','))
+  }
+
+  const remove = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const next = selectedIds.filter((i) => i !== id)
+    setSelectedIds(next)
+    col.onEdit?.(row, next.join(','))
+  }
+
+  const selectedOptions = (col.selectOptions ?? []).filter((o) => selectedIds.includes(o.value))
+  const filtered = (col.selectOptions ?? []).filter((o) =>
+    o.label.toLowerCase().includes(search.toLowerCase()) ||
+    (o.group ?? '').toLowerCase().includes(search.toLowerCase()),
+  )
+
+  return (
+    <div ref={containerRef} className="relative flex flex-wrap gap-1 items-center">
+      {selectedOptions.length === 0 && <span className="text-neutral-400 text-sm">—</span>}
+      {selectedOptions.map((opt) => (
+        <span key={opt.value} className="inline-flex items-center gap-1 bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">
+          {opt.label}
+          <button
+            onClick={(e) => remove(opt.value, e)}
+            className="text-brand-400 hover:text-brand-700 transition-colors leading-none"
+            aria-label={`Quitar ${opt.label}`}
+          >
+            <svg width="7" height="7" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M1 1l6 6M7 1L1 7" />
+            </svg>
+          </button>
+        </span>
+      ))}
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
+        className="w-5 h-5 rounded-full bg-neutral-100 hover:bg-brand-100 text-neutral-400 hover:text-brand-600 flex items-center justify-center transition-colors shrink-0"
+        aria-label="Agregar"
+      >
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M4 1v6M1 4h6" />
+        </svg>
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-8 z-30 w-60 bg-white border border-neutral-200 rounded-xl shadow-lg shadow-neutral-200/50 overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-2 border-b border-neutral-100">
+            <input
+              autoFocus
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); setSearch('') } }}
+              placeholder="Buscar..."
+              className="w-full px-2.5 py-1.5 text-xs border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white"
+            />
+          </div>
+          <div className="max-h-52 overflow-y-auto py-1">
+            {filtered.length === 0 && (
+              <p className="px-3 py-3 text-xs text-neutral-400 text-center">Sin resultados</p>
+            )}
+            {filtered.map((opt) => {
+              const isSelected = selectedIds.includes(opt.value)
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => toggle(opt.value)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-neutral-50 transition-colors"
+                >
+                  <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-brand-600' : 'border border-neutral-300'}`}>
+                    {isSelected && (
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 4l2 2 4-4" />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-xs truncate ${isSelected ? 'text-brand-700 font-medium' : 'text-neutral-700'}`}>{opt.label}</span>
+                    {opt.group && <span className="block text-[10px] text-neutral-400 truncate">{opt.group}</span>}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
@@ -239,35 +352,16 @@ export default function DataTable<T>({
                     <td
                       key={ci}
                       className={`${tdBase} ${col.className ?? ''}`}
-                      onClick={isEditing && col.onEdit ? (e) => {
+                      onClick={isEditing && col.onEdit && !col.multiple ? (e) => {
                         e.stopPropagation()
                         const currentVal = col.getValue?.(row) ?? ''
                         setEditingCell({ rowKey, colKey: `__col_${ci}`, value: currentVal })
                       } : undefined}
                     >
-                      {isEditingPrimary ? (
-                        col.selectOptions && col.multiple ? (
-                          <select
-                            autoFocus
-                            multiple
-                            size={Math.min(col.selectOptions.length, 6)}
-                            value={editingCell!.value.split(',').filter(Boolean)}
-                            onChange={(e) => {
-                              const selected = Array.from(e.target.selectedOptions, (o) => o.value).join(',')
-                              setEditingCell((prev) => prev ? { ...prev, value: selected } : null)
-                            }}
-                            onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Escape') setEditingCell(null)
-                            }}
-                            className={`${inlineCls} bg-white min-w-[180px]`}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {col.selectOptions.map((opt) => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
-                        ) : col.selectOptions ? (
+                      {col.selectOptions && col.multiple && isEditing ? (
+                        <MultiTagCell row={row} col={col} />
+                      ) : isEditingPrimary ? (
+                        col.selectOptions ? (
                           <select
                             autoFocus
                             value={editingCell!.value}

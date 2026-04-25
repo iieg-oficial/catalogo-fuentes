@@ -134,7 +134,7 @@ export default function TablasPage() {
         <div className="flex flex-wrap gap-1">
           {r.productos.map((p) => (
             <span key={p.id} className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full">
-              {p.proyecto ? `${p.nombre} · ${p.proyecto.nombre}` : p.nombre}
+              {p.nombre}
             </span>
           ))}
           {r.productos.length === 0 && <span className="text-neutral-400">—</span>}
@@ -144,7 +144,8 @@ export default function TablasPage() {
       onEdit: handleEditProductos,
       selectOptions: productos.map((p) => ({
         value: p.id,
-        label: p.proyecto ? `${p.nombre} · ${p.proyecto.nombre}` : p.nombre,
+        label: p.nombre,
+        group: p.proyecto?.nombre,
       })),
       multiple: true,
     },
