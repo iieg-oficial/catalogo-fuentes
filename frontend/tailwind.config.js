@@ -44,6 +44,7 @@ export default {
           200: '#fecaca',
           600: '#dc2626',
         },
+        ink: '#1a1625',
       },
     },
   },

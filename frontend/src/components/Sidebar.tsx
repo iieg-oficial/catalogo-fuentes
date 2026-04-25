@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { CATALOG_LEVELS } from '@/consts'
 import { useSidebar } from '@/context/SidebarContext'
 import type { User } from '@/types'
@@ -13,6 +14,69 @@ function userInitials(email: string): string {
   const parts = local.split(/[._-]/)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
   return local.slice(0, 2).toUpperCase()
+}
+
+const CATALOG_ICONS: Record<string, ReactNode> = {
+  proyectos: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 5.5a1 1 0 011-1h2.8l1.2-1.5H13a1 1 0 011 1v7.5a1 1 0 01-1 1H3a1 1 0 01-1-1V5.5z"/>
+    </svg>
+  ),
+  productos: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="12" height="7" rx="1"/>
+      <rect x="4" y="4" width="8" height="5" rx="1"/>
+      <rect x="6" y="1.5" width="4" height="4" rx="1"/>
+    </svg>
+  ),
+  tablas: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/>
+      <path d="M1.5 5.5h13M6 5.5V14.5"/>
+    </svg>
+  ),
+  'bases-de-datos': (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="8" cy="4" rx="5.5" ry="2"/>
+      <path d="M2.5 4v8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V4"/>
+      <path d="M2.5 8c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2"/>
+    </svg>
+  ),
+  instrumentos: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="1" width="8" height="14" rx="1"/>
+      <path d="M6.5 1v2h3V1M6 7h4M6 10h4M6 12.5h2"/>
+    </svg>
+  ),
+  urls: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5L7.5 3.5"/>
+      <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1"/>
+    </svg>
+  ),
+  archivos: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.5 1.5H4a1 1 0 00-1 1v11a1 1 0 001 1h8a1 1 0 001-1V5.5L9.5 1.5z"/>
+      <path d="M9.5 1.5V5.5H13.5M5.5 8.5h5M5.5 11h3.5"/>
+    </svg>
+  ),
+}
+
+const ADMIN_ICONS: Record<string, ReactNode> = {
+  entidades: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1.5" y="9" width="4" height="5.5"/>
+      <rect x="10.5" y="9" width="4" height="5.5"/>
+      <rect x="5" y="3" width="6" height="5"/>
+      <path d="M8 3V2M3.5 9L8 7.5M12.5 9L8 7.5"/>
+    </svg>
+  ),
+  users: (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="8" cy="5.5" r="2.5"/>
+      <path d="M2.5 14c0-3 2.46-4.5 5.5-4.5s5.5 1.5 5.5 4.5"/>
+    </svg>
+  ),
 }
 
 const navItemClass = (isActive: boolean) =>
@@ -73,12 +137,13 @@ export default function Sidebar({ user, onLogout }: Props) {
           >
             {({ isActive }) => (
               <>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200 ${
-                    isActive ? 'bg-accent opacity-100 scale-100' : 'opacity-0 scale-75'
-                  }`}
-                />
-                {level.label}
+                <span className={`flex-shrink-0 transition-opacity duration-150 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-75'}`}>
+                  {CATALOG_ICONS[level.key]}
+                </span>
+                <span className="flex-1 truncate">{level.label}</span>
+                <span className={`text-[10px] font-mono tabular-nums flex-shrink-0 transition-opacity duration-150 ${isActive ? 'opacity-35' : 'opacity-0 group-hover:opacity-20'}`}>
+                  {i + 1}
+                </span>
               </>
             )}
           </NavLink>
@@ -98,12 +163,10 @@ export default function Sidebar({ user, onLogout }: Props) {
         >
           {({ isActive }) => (
             <>
-              <span
-                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200 ${
-                  isActive ? 'bg-accent opacity-100 scale-100' : 'opacity-0 scale-75'
-                }`}
-              />
-              Entidades
+              <span className={`flex-shrink-0 transition-opacity duration-150 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-75'}`}>
+                {ADMIN_ICONS.entidades}
+              </span>
+              <span className="flex-1 truncate">Entidades</span>
             </>
           )}
         </NavLink>
@@ -117,12 +180,10 @@ export default function Sidebar({ user, onLogout }: Props) {
           >
             {({ isActive }) => (
               <>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200 ${
-                    isActive ? 'bg-accent opacity-100 scale-100' : 'opacity-0 scale-75'
-                  }`}
-                />
-                Usuarios
+                <span className={`flex-shrink-0 transition-opacity duration-150 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-75'}`}>
+                  {ADMIN_ICONS.users}
+                </span>
+                <span className="flex-1 truncate">Usuarios</span>
               </>
             )}
           </NavLink>
