@@ -38,7 +38,7 @@ export default function TablasPage() {
   const [newProductoIds, setNewProductoIds] = useState<string[]>([])
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'tablas')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'tablas')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -226,6 +226,7 @@ export default function TablasPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

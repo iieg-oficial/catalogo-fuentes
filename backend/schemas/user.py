@@ -8,7 +8,7 @@ from models.user import UserRole
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    role: UserRole = UserRole.viewer
+    role: UserRole = UserRole.visualizer
 
 
 class UserUpdate(BaseModel):

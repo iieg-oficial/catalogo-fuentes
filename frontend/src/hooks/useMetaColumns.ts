@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { API_URL } from '@/consts'
+import { useAuthContext } from '@/context/AuthContext'
 import { getMetaColumns, saveMetaColumns } from '@/services/metaColumnsService'
 
 export type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'priority'
@@ -21,6 +22,7 @@ export interface MetaColumnDef {
   label?: string
   options?: ListOption[]
   color?: string
+  owner_id?: string
 }
 
 interface StoredCols {
@@ -52,6 +54,7 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
   items: T[],
   entityType: string,
 ) {
+  const { user } = useAuthContext()
   const [cfg, setCfg] = useState<StoredCols>(EMPTY)
   const [ready, setReady] = useState(false)
   const skipSave = useRef(false)
@@ -105,6 +108,7 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
 
   const allMetaCols = useMemo<MetaColumnDef[]>(() => {
     const keys = [...new Set([...dataKeys, ...cfg.extra.map((c) => c.key)])]
+    const extraByKey = Object.fromEntries(cfg.extra.map((c) => [c.key, c]))
     return keys
       .filter((k) => !hiddenSet.has(k))
       .map((k) => ({
@@ -113,29 +117,48 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
         label: cfg.labels[k],
         options: cfg.options[k],
         color: cfg.colors[k],
+        owner_id: extraByKey[k]?.owner_id,
       }))
   }, [dataKeys, cfg, hiddenSet])
+
+  const canModifyCol = useCallback((col: MetaColumnDef): boolean => {
+    if (!user) return false
+    if (user.role === 'admin' || user.role === 'superadmin') return true
+    if (user.role === 'maintainer') return !col.owner_id || col.owner_id === user.id
+    return false
+  }, [user])
 
   const addColumn = useCallback((key: string, type: ColumnType = 'text', options?: ListOption[], color?: string) => {
     const trimmed = key.trim()
     if (!trimmed) return
+    const owner_id = user?.id
     setCfg((prev) => ({
       ...prev,
       hidden: prev.hidden.filter((k) => k !== trimmed),
-      extra: prev.extra.some((c) => c.key === trimmed) ? prev.extra : [...prev.extra, { key: trimmed, type }],
+      extra: prev.extra.some((c) => c.key === trimmed)
+        ? prev.extra
+        : [...prev.extra, { key: trimmed, type, owner_id }],
       types: { ...prev.types, [trimmed]: type },
       options: options?.length ? { ...prev.options, [trimmed]: options } : prev.options,
       colors: color ? { ...prev.colors, [trimmed]: color } : prev.colors,
     }))
-  }, [])
+  }, [user])
 
   const deleteColumn = useCallback((key: string) => {
-    setCfg((prev) => ({ ...prev, hidden: [...prev.hidden.filter((k) => k !== key), key] }))
-  }, [])
+    setCfg((prev) => {
+      const col = prev.extra.find((c) => c.key === key)
+      if (col && !canModifyCol(col)) return prev
+      return { ...prev, hidden: [...prev.hidden.filter((k) => k !== key), key] }
+    })
+  }, [canModifyCol])
 
   const renameColumn = useCallback((key: string, newLabel: string) => {
-    setCfg((prev) => ({ ...prev, labels: { ...prev.labels, [key]: newLabel.trim() || key } }))
-  }, [])
+    setCfg((prev) => {
+      const col = prev.extra.find((c) => c.key === key)
+      if (col && !canModifyCol(col)) return prev
+      return { ...prev, labels: { ...prev.labels, [key]: newLabel.trim() || key } }
+    })
+  }, [canModifyCol])
 
   const updateColumn = useCallback((
     key: string,
@@ -145,6 +168,9 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
     color?: string,
   ) => {
     setCfg((prev) => {
+      const col = prev.extra.find((c) => c.key === key)
+      if (col && !canModifyCol(col)) return prev
+
       const newOptions = { ...prev.options }
       if (options?.length) newOptions[key] = options
       else delete newOptions[key]
@@ -161,7 +187,7 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
         colors: newColors,
       }
     })
-  }, [])
+  }, [canModifyCol])
 
   const getColDef = useCallback((key: string): MetaColumnDef => ({
     key,
@@ -172,5 +198,5 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
 
   const getMeta = useCallback((row: T) => row.meta ?? {}, [])
 
-  return { allMetaCols, addColumn, deleteColumn, renameColumn, updateColumn, getColDef, getMeta }
+  return { allMetaCols, addColumn, deleteColumn, renameColumn, updateColumn, getColDef, getMeta, canModifyCol }
 }

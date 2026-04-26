@@ -102,7 +102,7 @@ export default function Sidebar({ user, onLogout }: Props) {
           )}
         </NavLink>
 
-        {user?.role === 'admin' && (
+        {(user?.role === 'admin' || user?.role === 'superadmin') && (
           <NavLink
             to="/users"
             onClick={closeSidebar}

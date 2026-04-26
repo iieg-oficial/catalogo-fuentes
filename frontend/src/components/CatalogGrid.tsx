@@ -29,6 +29,7 @@ export interface CatalogGridProps<T> {
   onAddColumn?: () => void
   onDeleteColumn?: (key: string) => void
   onEditColumn?: (def: MetaColumnDef) => void
+  canModifyColumn?: (def: MetaColumnDef) => boolean
   onEditMetaCell?: (row: T, key: string, value: string) => void
   addRowMetaValues?: Record<string, string>
   onAddRowMetaChange?: (key: string, value: string) => void
@@ -643,6 +644,7 @@ export default function CatalogGrid<T extends { id: string }>({
   onAddColumn,
   onDeleteColumn,
   onEditColumn,
+  canModifyColumn,
   onEditMetaCell,
   addRowMetaValues,
   onAddRowMetaChange,
@@ -925,7 +927,7 @@ export default function CatalogGrid<T extends { id: string }>({
                     filterValue={filters[def.key] ?? null}
                     onFilterChange={handleFilterChange}
                     availableValues={filterOptions[def.key] ?? []}
-                    hasMenu={!!(onDeleteColumn || onEditColumn)}
+                    hasMenu={!!(onDeleteColumn || onEditColumn) && (!canModifyColumn || canModifyColumn(def))}
                     menuOpen={openColMenu === def.key}
                     onMenuOpen={() => setOpenColMenu(def.key)}
                     onMenuClose={() => setOpenColMenu(null)}

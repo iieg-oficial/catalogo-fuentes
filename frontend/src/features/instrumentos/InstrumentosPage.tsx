@@ -35,7 +35,7 @@ export default function InstrumentosPage() {
   const [newDesc, setNewDesc] = useState('')
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'instrumentos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'instrumentos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -225,6 +225,7 @@ export default function InstrumentosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

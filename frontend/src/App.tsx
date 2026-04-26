@@ -22,7 +22,7 @@ import EntidadesPage from '@/features/entidades/EntidadesPage'
 import HomePage from '@/features/home/HomePage'
 
 function CatalogRoutes() {
-  const { user, logout } = useAuthContext()
+  const { user, canManageUsers, logout } = useAuthContext()
 
   return (
     <Layout user={user} onLogout={logout}>
@@ -42,7 +42,7 @@ function CatalogRoutes() {
         <Route path="archivos" element={<ArchivosPage />} />
         <Route path="archivos/:id" element={<ArchivoDetailPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
-        {user?.role === 'admin' && <Route path="users" element={<UsersPage />} />}
+        {canManageUsers && <Route path="users" element={<UsersPage />} />}
         <Route index element={<HomePage />} />
       </Routes>
     </Layout>

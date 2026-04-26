@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
-from exceptions.http import unauthorized
+from exceptions.http import conflict, forbidden, unauthorized
+from models.user import User, UserRole
 from routes.dependencies import get_current_user, require_admin
+from routes.users import _ADMIN_CREATABLE, _SUPERADMIN_CREATABLE
 from schemas.auth import LoginRequest, TokenResponse
 from schemas.user import UserCreate, UserRead
 from services.auth import authenticate_user, create_access_token
@@ -29,10 +31,11 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
 async def register(
     data: UserCreate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
-    from exceptions.http import conflict
-
+    allowed = _SUPERADMIN_CREATABLE if current_user.role == UserRole.superadmin else _ADMIN_CREATABLE
+    if data.role not in allowed:
+        raise forbidden()
     user = await create_user(db, data)
     if user is None:
         raise conflict("Email already registered")

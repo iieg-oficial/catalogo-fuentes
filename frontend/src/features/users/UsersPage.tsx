@@ -2,10 +2,12 @@ import { FormEvent, useEffect, useState } from 'react'
 import Topbar from '@/components/Topbar'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
+import { useAuthContext } from '@/context/AuthContext'
 import type { User, UserRole } from '@/types'
 import { createUser, getUsers, updateUser } from './services/usersService'
 
 export default function UsersPage() {
+  const { isSuperAdmin } = useAuthContext()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -14,7 +16,7 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false)
   const [formEmail, setFormEmail] = useState('')
   const [formPassword, setFormPassword] = useState('')
-  const [formRole, setFormRole] = useState<UserRole>('viewer')
+  const [formRole, setFormRole] = useState<UserRole>('visualizer')
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
 
@@ -42,7 +44,7 @@ export default function UsersPage() {
       setShowForm(false)
       setFormEmail('')
       setFormPassword('')
-      setFormRole('viewer')
+      setFormRole('visualizer')
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el email no esté registrado.')
     } finally {
@@ -65,8 +67,10 @@ export default function UsersPage() {
   )
 
   const roleColor: Record<UserRole, string> = {
+    superadmin: 'bg-purple-50 text-purple-700',
     admin: 'bg-red-50 text-red-700',
     maintainer: 'bg-yellow-50 text-yellow-700',
+    visualizer: 'bg-green-50 text-green-700',
     viewer: 'bg-green-50 text-green-700',
   }
 
@@ -83,8 +87,10 @@ export default function UsersPage() {
             className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700"
           >
             <option value="">Todos los roles</option>
+            <option value="superadmin">Superadmin</option>
             <option value="admin">Admin</option>
             <option value="maintainer">Maintainer</option>
+            <option value="visualizer">Visualizer</option>
             <option value="viewer">Viewer</option>
           </select>
         }
@@ -134,9 +140,10 @@ export default function UsersPage() {
                   onChange={(e) => setFormRole(e.target.value as UserRole)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  <option value="viewer">Viewer</option>
+                  <option value="visualizer">Visualizer</option>
                   <option value="maintainer">Maintainer</option>
-                  <option value="admin">Admin</option>
+                  {isSuperAdmin && <option value="admin">Admin</option>}
+                  {isSuperAdmin && <option value="superadmin">Superadmin</option>}
                 </select>
               </div>
               {formError && <p className="text-xs text-red-600">{formError}</p>}

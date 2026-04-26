@@ -31,7 +31,7 @@ export default function ProyectosPage() {
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
   const [editingColKey, setEditingColKey] = useState<string | null>(null)
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'proyectos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'proyectos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -193,6 +193,7 @@ export default function ProyectosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

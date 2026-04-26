@@ -33,7 +33,7 @@ export default function BasesDeDatosPage() {
 
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'bases-de-datos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'bases-de-datos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -198,6 +198,7 @@ export default function BasesDeDatosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
