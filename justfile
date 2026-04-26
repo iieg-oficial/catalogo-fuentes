@@ -40,11 +40,13 @@ dev-seed: _check-python _db-up
 dev-roles:
     @echo ""
     @echo "  Email                     Contraseña      Rol"
-    @echo "  ────────────────────────────────────────────────────"
+    @echo "  ─────────────────────────────────────────────────────"
     @echo "  admin@iieg.gob.mx         Admin1234!      admin"
     @echo "  editor@iieg.gob.mx        Editor1234!     maintainer"
-    @echo "  consulta@iieg.gob.mx      Viewer1234!     viewer"
-    @echo "  ────────────────────────────────────────────────────"
+    @echo "  consulta@iieg.gob.mx      Viewer1234!     visualizer"
+    @echo "  ─────────────────────────────────────────────────────"
+    @echo "  Roles: superadmin > admin > maintainer > visualizer"
+    @echo "  ─────────────────────────────────────────────────────"
     @echo ""
 
 # Muestra el estado de los servicios de desarrollo
