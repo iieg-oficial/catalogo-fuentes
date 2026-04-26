@@ -85,6 +85,13 @@ db-migrate: _db-up
     @echo "  ✓ Migraciones aplicadas."
     @echo ""
 
+# Limpia la BD, detiene los servicios y arranca todo de cero con seed
+[group('database')]
+db-reset: _check-python
+    @just db-clean
+    @just dev-stop
+    @just dev-seed
+
 # Elimina todos los objetos del schema público y vuelve a aplicar las migraciones
 [group('database')]
 db-clean: _db-up
