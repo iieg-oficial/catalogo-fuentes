@@ -32,7 +32,6 @@ export default function ProductosPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newProyectoId, setNewProyectoId] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'productos')
@@ -57,7 +56,6 @@ export default function ProductosPage() {
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newProyectoId) return
-    setSaving(true)
     try {
       const created = await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined })
       if (Object.values(addRowMeta).some(Boolean)) {
@@ -67,7 +65,6 @@ export default function ProductosPage() {
       resetFields()
       await load()
     } finally {
-      setSaving(false)
     }
   }
 
@@ -177,10 +174,7 @@ export default function ProductosPage() {
   )
 
   const addRowActions = (
-    <>
-      <button onClick={handleSaveRow} disabled={saving || !newNombre.trim() || !newProyectoId} className="text-brand-600 hover:text-brand-700 mr-1.5 font-bold text-base disabled:opacity-40" title="Guardar">✓</button>
-      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
-    </>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
   )
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
@@ -202,6 +196,7 @@ export default function ProductosPage() {
           onAdd={canWrite ? () => setAddingRow(true) : undefined}
           addRowCells={canWrite && addingRow ? addRowCells : undefined}
           addRowActions={canWrite && addingRow ? addRowActions : undefined}
+          onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
           metaColumnDefs={allMetaCols}
           getMeta={getMeta}
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}

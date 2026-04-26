@@ -54,15 +54,19 @@ export default function MultiSelectInput({ value, onChange, options, placeholder
         ref={btnRef}
         type="button"
         onClick={handleOpen}
-        className="w-full h-full text-left text-[13px] px-1 truncate"
+        className="w-full h-full flex items-center gap-1 text-[13px] px-1"
         style={{ color: value.length > 0 ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.35)' }}
       >
-        {displayText}
+        <span className="flex-1 truncate text-left">{displayText}</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, flexShrink: 0 }}>
+          <path d="M2 4l3 3 3-3" />
+        </svg>
       </button>
 
       {open && createPortal(
         <div
           ref={panelRef}
+          data-portal
           style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 9999 }}
           className="bg-white border border-ink/[10%] rounded-xl shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
         >

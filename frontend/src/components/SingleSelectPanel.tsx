@@ -30,6 +30,7 @@ export default function SingleSelectPanel({ options, value, onChange, onClose, t
   return createPortal(
     <div
       ref={ref}
+      data-portal
       style={{ position: 'fixed', top, left, zIndex: 9999 }}
       className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}

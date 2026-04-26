@@ -33,6 +33,7 @@ export interface CatalogGridProps<T> {
   addRowMetaValues?: Record<string, string>
   onAddRowMetaChange?: (key: string, value: string) => void
   onDeleteRows?: (keys: string[]) => void
+  onAddRowSave?: () => void
   search: string
   onSearch: (v: string) => void
 }
@@ -259,6 +260,7 @@ function FilterPanel({
   return createPortal(
     <div
       ref={ref}
+      data-portal
       style={{ position: 'fixed', top, left, zIndex: 9999 }}
       className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[220px] max-w-[280px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}
@@ -645,6 +647,7 @@ export default function CatalogGrid<T extends { id: string }>({
   addRowMetaValues,
   onAddRowMetaChange,
   onDeleteRows,
+  onAddRowSave,
   search,
   onSearch,
 }: CatalogGridProps<T>) {
@@ -652,6 +655,19 @@ export default function CatalogGrid<T extends { id: string }>({
 
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
   const [editingCellPos, setEditingCellPos] = useState({ top: 0, left: 0 })
+  const addRowRef = useRef<HTMLTableRowElement>(null)
+
+  useEffect(() => {
+    if (!addRowCells || !onAddRowSave) return
+    const handler = (e: MouseEvent) => {
+      const target = e.target as Node
+      if (addRowRef.current?.contains(target)) return
+      if ([...document.querySelectorAll('[data-portal]')].some((p) => p.contains(target))) return
+      onAddRowSave()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [addRowCells, onAddRowSave])
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
@@ -1133,7 +1149,7 @@ export default function CatalogGrid<T extends { id: string }>({
               })}
 
               {addRowCells && (
-                <tr style={{ background: 'rgba(110,37,139,.02)' }}>
+                <tr ref={addRowRef} style={{ background: 'rgba(110,37,139,.02)' }}>
                   <td style={{ height: 40, verticalAlign: 'middle', textAlign: 'center', padding: '0 6px', borderBottom: '1px solid rgba(26,22,37,.05)', borderRight: '1px solid rgba(26,22,37,.05)', whiteSpace: 'nowrap' }}>
                     {addRowActions}
                   </td>

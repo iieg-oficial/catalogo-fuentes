@@ -183,6 +183,7 @@ function FilterPanel({
   return createPortal(
     <div
       ref={ref}
+      data-portal
       style={{ position: 'fixed', top, left, zIndex: 9999 }}
       className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[220px] max-w-[280px] overflow-hidden"
       onClick={(e) => e.stopPropagation()}

@@ -74,6 +74,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
 
       {hovered && createPortal(
         <div
+          data-portal
           style={{ position: 'absolute', top: pos.top, left: pos.left, zIndex: 9999 }}
           className="bg-white border border-ink/[10%] rounded-lg shadow-lg shadow-ink/[8%] p-4 min-w-[200px]"
           onMouseEnter={clearHide}

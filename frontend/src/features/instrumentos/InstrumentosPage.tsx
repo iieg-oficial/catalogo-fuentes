@@ -33,7 +33,6 @@ export default function InstrumentosPage() {
   const [newBdId, setNewBdId] = useState('')
   const [newFecha, setNewFecha] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'instrumentos')
@@ -58,7 +57,6 @@ export default function InstrumentosPage() {
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newBdId) return
-    setSaving(true)
     try {
       const created = await createInstrumento({
         nombre: newNombre,
@@ -73,7 +71,6 @@ export default function InstrumentosPage() {
       resetFields()
       await load()
     } finally {
-      setSaving(false)
     }
   }
 
@@ -200,10 +197,7 @@ export default function InstrumentosPage() {
   )
 
   const addRowActions = (
-    <>
-      <button onClick={handleSaveRow} disabled={saving || !newNombre.trim() || !newBdId} className="text-brand-600 hover:text-brand-700 mr-1.5 font-bold text-base disabled:opacity-40" title="Guardar">✓</button>
-      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
-    </>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
   )
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
@@ -225,6 +219,7 @@ export default function InstrumentosPage() {
           onAdd={canWrite ? () => setAddingRow(true) : undefined}
           addRowCells={canWrite && addingRow ? addRowCells : undefined}
           addRowActions={canWrite && addingRow ? addRowActions : undefined}
+          onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
           metaColumnDefs={allMetaCols}
           getMeta={getMeta}
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
