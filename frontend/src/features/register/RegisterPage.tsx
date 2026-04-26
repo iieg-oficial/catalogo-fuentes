@@ -1,6 +1,5 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { TOKEN_KEY } from '@/consts'
 import apiClient from '@/services/apiClient'
 import logoIieg from '@/assets/logo_gris_iieg.png'
 
@@ -42,13 +41,12 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const { data } = await apiClient.post<{ access_token: string }>('/auth/signup', {
+      await apiClient.post('/auth/signup', {
         email,
         password,
         confirm_password: confirmPassword,
       })
-      localStorage.setItem(TOKEN_KEY, data.access_token)
-      navigate('/proyectos', { replace: true })
+      navigate('/login', { replace: true, state: { success: 'Cuenta creada con éxito. Ya puedes iniciar sesión.' } })
     } catch (err: unknown) {
       const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
       if (detail) {
