@@ -27,21 +27,21 @@ export default function ProyectosPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [saving, setSaving] = useState(false)
+
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
   const [editingColKey, setEditingColKey] = useState<string | null>(null)
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'proyectos')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       setItems(await getProyectos())
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -55,7 +55,6 @@ export default function ProyectosPage() {
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
-    setSaving(true)
     try {
       const created = await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined })
       if (Object.values(addRowMeta).some(Boolean)) {
@@ -63,9 +62,8 @@ export default function ProyectosPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
-      setSaving(false)
     }
   }
 
@@ -82,7 +80,7 @@ export default function ProyectosPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteProyecto(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {
@@ -165,10 +163,7 @@ export default function ProyectosPage() {
   )
 
   const addRowActions = (
-    <>
-      <button onClick={handleSaveRow} disabled={saving} className="text-brand-600 hover:text-brand-700 mr-1.5 font-bold text-base" title="Guardar">✓</button>
-      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
-    </>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
   )
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
@@ -192,6 +187,7 @@ export default function ProyectosPage() {
           onAdd={canWrite ? () => setAddingRow(true) : undefined}
           addRowCells={canWrite && addingRow ? addRowCells : undefined}
           addRowActions={canWrite && addingRow ? addRowActions : undefined}
+          onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
           metaColumnDefs={allMetaCols}
           getMeta={getMeta}
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}

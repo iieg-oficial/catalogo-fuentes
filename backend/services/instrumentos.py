@@ -36,6 +36,15 @@ async def get_instrumento_detail(db: AsyncSession, instrumento_id: uuid.UUID) ->
     return result.scalar_one_or_none()
 
 
+async def _reload_instrumento(db: AsyncSession, instrumento_id: uuid.UUID) -> Instrumento:
+    result = await db.execute(
+        select(Instrumento)
+        .options(selectinload(Instrumento.base_de_datos))
+        .where(Instrumento.id == instrumento_id)
+    )
+    return result.scalar_one()
+
+
 async def create_instrumento(db: AsyncSession, data: InstrumentoCreate) -> Instrumento:
     obj = Instrumento(
         base_de_datos_id=data.base_de_datos_id,
@@ -45,9 +54,9 @@ async def create_instrumento(db: AsyncSession, data: InstrumentoCreate) -> Instr
         meta=data.meta,
     )
     db.add(obj)
+    await db.flush()
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await _reload_instrumento(db, obj.id)
 
 
 async def update_instrumento(
@@ -60,8 +69,7 @@ async def update_instrumento(
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await _reload_instrumento(db, instrumento_id)
 
 
 async def delete_instrumento(db: AsyncSession, instrumento_id: uuid.UUID) -> bool:

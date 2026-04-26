@@ -37,8 +37,8 @@ export default function ArchivosPage() {
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'archivos')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       const [archivos, urlList] = await Promise.all([getArchivos(), getUrls()])
@@ -47,7 +47,7 @@ export default function ArchivosPage() {
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -69,7 +69,7 @@ export default function ArchivosPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
     }
   }
@@ -87,7 +87,7 @@ export default function ArchivosPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteArchivo(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {

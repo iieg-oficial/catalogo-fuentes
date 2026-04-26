@@ -40,8 +40,8 @@ export default function TablasPage() {
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'tablas')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       const [tablas, bds, prods] = await Promise.all([getTablas(), getBasesDeDatos(), getProductos()])
@@ -51,7 +51,7 @@ export default function TablasPage() {
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -72,7 +72,7 @@ export default function TablasPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
     }
   }
@@ -103,7 +103,7 @@ export default function TablasPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteTabla(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {

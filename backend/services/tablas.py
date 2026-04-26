@@ -74,8 +74,8 @@ async def create_tabla(db: AsyncSession, data: TablaCreate) -> Tabla:
         obj.productos = list(productos.scalars().all())
 
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    result = await get_tabla(db, obj.id)
+    return result  # type: ignore[return-value]
 
 
 async def update_tabla(db: AsyncSession, tabla_id: uuid.UUID, data: TablaUpdate) -> Tabla | None:
@@ -93,8 +93,7 @@ async def update_tabla(db: AsyncSession, tabla_id: uuid.UUID, data: TablaUpdate)
         obj.productos = list(productos.scalars().all())
 
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await get_tabla(db, tabla_id)
 
 
 async def delete_tabla(db: AsyncSession, tabla_id: uuid.UUID) -> bool:

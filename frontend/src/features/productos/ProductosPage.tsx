@@ -36,8 +36,8 @@ export default function ProductosPage() {
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'productos')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       const [prods, projs] = await Promise.all([getProductos(), getProyectos()])
@@ -46,7 +46,7 @@ export default function ProductosPage() {
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -63,7 +63,7 @@ export default function ProductosPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
     }
   }
@@ -87,7 +87,7 @@ export default function ProductosPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteProducto(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {

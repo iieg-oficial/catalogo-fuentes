@@ -35,8 +35,8 @@ export default function UrlsPage() {
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'urls')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       const [urls, instrs] = await Promise.all([getUrls(), getInstrumentos()])
@@ -45,7 +45,7 @@ export default function UrlsPage() {
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -62,7 +62,7 @@ export default function UrlsPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
     }
   }
@@ -86,7 +86,7 @@ export default function UrlsPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteUrl(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {

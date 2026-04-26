@@ -37,8 +37,8 @@ export default function InstrumentosPage() {
 
   const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'instrumentos')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
       const [instrs, bds] = await Promise.all([getInstrumentos(), getBasesDeDatos()])
@@ -47,7 +47,7 @@ export default function InstrumentosPage() {
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -69,7 +69,7 @@ export default function InstrumentosPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
     }
   }
@@ -93,7 +93,7 @@ export default function InstrumentosPage() {
 
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteInstrumento(id)))
-    await load()
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {

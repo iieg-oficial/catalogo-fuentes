@@ -57,9 +57,10 @@ async def create_archivo(db: AsyncSession, data: ArchivoCreate) -> Archivo:
         meta=data.meta,
     )
     db.add(obj)
+    await db.flush()
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    result = await get_archivo(db, obj.id)
+    return result  # type: ignore[return-value]
 
 
 async def update_archivo(db: AsyncSession, archivo_id: uuid.UUID, data: ArchivoUpdate) -> Archivo | None:
@@ -70,8 +71,7 @@ async def update_archivo(db: AsyncSession, archivo_id: uuid.UUID, data: ArchivoU
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await get_archivo(db, archivo_id)
 
 
 async def delete_archivo(db: AsyncSession, archivo_id: uuid.UUID) -> bool:

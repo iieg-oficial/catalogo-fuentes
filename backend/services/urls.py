@@ -38,12 +38,21 @@ async def get_url(db: AsyncSession, url_id: uuid.UUID) -> Url | None:
     return result.scalar_one_or_none()
 
 
+async def _reload_url(db: AsyncSession, url_id: uuid.UUID) -> Url:
+    result = await db.execute(
+        select(Url)
+        .options(selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos))
+        .where(Url.id == url_id)
+    )
+    return result.scalar_one()
+
+
 async def create_url(db: AsyncSession, data: UrlCreate) -> Url:
     obj = Url(instrumento_id=data.instrumento_id, url=data.url, meta=data.meta)
     db.add(obj)
+    await db.flush()
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await _reload_url(db, obj.id)
 
 
 async def update_url(db: AsyncSession, url_id: uuid.UUID, data: UrlUpdate) -> Url | None:
@@ -53,8 +62,7 @@ async def update_url(db: AsyncSession, url_id: uuid.UUID, data: UrlUpdate) -> Ur
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await _reload_url(db, url_id)
 
 
 async def delete_url(db: AsyncSession, url_id: uuid.UUID) -> bool:

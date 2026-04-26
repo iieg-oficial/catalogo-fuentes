@@ -51,9 +51,10 @@ async def create_producto(db: AsyncSession, data: ProductoCreate) -> Producto:
         meta=data.meta,
     )
     db.add(obj)
+    await db.flush()
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    result = await get_producto(db, obj.id)
+    return result  # type: ignore[return-value]
 
 
 async def update_producto(db: AsyncSession, producto_id: uuid.UUID, data: ProductoUpdate) -> Producto | None:
@@ -63,8 +64,7 @@ async def update_producto(db: AsyncSession, producto_id: uuid.UUID, data: Produc
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await get_producto(db, producto_id)
 
 
 async def delete_producto(db: AsyncSession, producto_id: uuid.UUID) -> bool:
