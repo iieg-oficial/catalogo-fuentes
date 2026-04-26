@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
@@ -160,11 +161,14 @@ export default function ProductosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre…" className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <select value={newProyectoId} onChange={(e) => setNewProyectoId(e.target.value)} className={inputCls} style={{ backgroundColor: 'white' }}>
-          <option value="">Proyecto…</option>
-          {proyectos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newProyectoId}
+          onChange={setNewProyectoId}
+          options={proyectos.map((p) => ({ value: p.id, label: p.nombre }))}
+          placeholder="Proyecto…"
+          label="Proyecto"
+        />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripción…" className={inputCls} />

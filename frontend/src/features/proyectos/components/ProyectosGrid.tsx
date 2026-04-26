@@ -4,6 +4,8 @@ import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
 import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
 import type { Proyecto } from '@/types'
+import SingleSelectPanel from '@/components/SingleSelectPanel'
+import SelectInput from '@/components/SelectInput'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -367,7 +369,7 @@ function GridColHeader({
             e.stopPropagation()
             if (!filterOpen && filterBtnRef.current) {
               const r = filterBtnRef.current.getBoundingClientRect()
-              setFilterPos({ top: r.bottom + 4, left: r.left })
+              setFilterPos({ top: r.bottom + 4, left: Math.min(r.left, window.innerWidth - 292) })
             }
             setFilterOpen((o) => !o)
           }}
@@ -610,6 +612,7 @@ export default function ProyectosGrid({
 
   // Cell editing
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
+  const [editingCellPos, setEditingCellPos] = useState({ top: 0, left: 0 })
   // Column menu (meta columns)
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   // Row selection
@@ -1017,32 +1020,51 @@ export default function ProyectosGrid({
                           style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
                           onClick={onEditMetaCell ? (e) => {
                             e.stopPropagation()
+                            const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
+                            setEditingCellPos({ top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 268) })
                             setEditingCell({ rowKey, colKey: def.key, value: currentVal })
                           } : undefined}
                         >
                           {isEditingThis ? (
                             def.type === 'boolean' ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                <option value="true">Sí</option>
-                                <option value="false">No</option>
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={[{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }]}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : def.type === 'list' && def.options?.length ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                {def.options.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={def.options.map((o) => ({ value: o.label, label: o.label }))}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : def.type === 'priority' ? (
-                              <select autoFocus value={editingCell!.value}
-                                onChange={(e) => { onEditMetaCell?.(row, def.key, e.target.value); setEditingCell(null) }}
-                                onBlur={() => setEditingCell(null)} className={`${INLINE_INPUT_CLS} bg-white`} onClick={(e) => e.stopPropagation()}>
-                                <option value="">—</option>
-                                {PRIORITY_LEVELS.map((lvl) => <option key={lvl.label} value={lvl.label}>{lvl.label}</option>)}
-                              </select>
+                              <>
+                                <MetaCellView value={currentVal} def={def} editable={false} />
+                                <SingleSelectPanel
+                                  options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
+                                  value={editingCell!.value}
+                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
+                                  onClose={() => setEditingCell(null)}
+                                  top={editingCellPos.top}
+                                  left={editingCellPos.left}
+                                  label={def.label ?? def.key}
+                                />
+                              </>
                             ) : (
                               <input autoFocus type={def.type === 'date' ? 'date' : 'text'}
                                 value={editingCell!.value}
@@ -1093,22 +1115,26 @@ export default function ProyectosGrid({
                     <td key={def.key} className="px-2.5 border-r border-ink/[5%]" style={{ height: 40, borderBottom: '1px solid rgba(26,22,37,.05)' }}>
                       {onAddRowMetaChange && (
                         def.type === 'boolean' ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option><option value="true">Sí</option><option value="false">No</option>
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={[{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }]}
+                            label={def.label ?? def.key}
+                          />
                         ) : def.type === 'list' && def.options?.length ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option>
-                            {def.options.map((o) => <option key={o.label} value={o.label}>{o.label}</option>)}
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={def.options.map((o) => ({ value: o.label, label: o.label }))}
+                            label={def.label ?? def.key}
+                          />
                         ) : def.type === 'priority' ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option>
-                            {PRIORITY_LEVELS.map((lvl) => <option key={lvl.label} value={lvl.label}>{lvl.label}</option>)}
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
+                            label={def.label ?? def.key}
+                          />
                         ) : (
                           <input type={def.type === 'date' ? 'date' : 'text'}
                             value={addRowMetaValues?.[def.key] ?? ''}

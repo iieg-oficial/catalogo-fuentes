@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
@@ -180,11 +181,14 @@ export default function InstrumentosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre…" className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <select value={newBdId} onChange={(e) => setNewBdId(e.target.value)} className={inputCls} style={{ backgroundColor: 'white' }}>
-          <option value="">Base de datos…</option>
-          {bases.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newBdId}
+          onChange={setNewBdId}
+          options={bases.map((b) => ({ value: b.id, label: b.nombre }))}
+          placeholder="Base de datos…"
+          label="Base de datos"
+        />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input type="date" value={newFecha} onChange={(e) => setNewFecha(e.target.value)} className={inputCls} />

@@ -5,6 +5,8 @@ import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import ColFormModal from '@/components/ColFormModal'
 import TagPills from '@/components/TagPills'
+import SelectInput from '@/components/SelectInput'
+import MultiSelectInput from '@/components/MultiSelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
 import type { Column } from '@/components/DataTable'
@@ -34,7 +36,6 @@ export default function TablasPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newBdId, setNewBdId] = useState('')
   const [newProductoIds, setNewProductoIds] = useState<string[]>([])
-  const [showNewProductosPanel, setShowNewProductosPanel] = useState(false)
   const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
@@ -57,7 +58,7 @@ export default function TablasPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewBdId(''); setNewProductoIds([]); setShowNewProductosPanel(false); setAddRowMeta({}) }
+  const resetFields = () => { setNewNombre(''); setNewBdId(''); setNewProductoIds([]); setAddRowMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newBdId) return
@@ -178,50 +179,23 @@ export default function TablasPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre…" className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <select value={newBdId} onChange={(e) => setNewBdId(e.target.value)} className={inputCls} style={{ backgroundColor: 'white' }}>
-          <option value="">Base de datos…</option>
-          {bases.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newBdId}
+          onChange={setNewBdId}
+          options={bases.map((b) => ({ value: b.id, label: b.nombre }))}
+          placeholder="Base de datos…"
+          label="Base de datos"
+        />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40, position: 'relative', overflow: showNewProductosPanel ? 'visible' : 'hidden' }}>
-        <button
-          type="button"
-          onClick={() => setShowNewProductosPanel((v) => !v)}
-          className="w-full h-full text-left text-[13px] px-1 text-ink/40 hover:text-ink/70 truncate"
-        >
-          {newProductoIds.length > 0
-            ? `${newProductoIds.length} producto${newProductoIds.length !== 1 ? 's' : ''}`
-            : 'Productos…'}
-        </button>
-        {showNewProductosPanel && (
-          <div className="absolute left-0 top-full mt-0.5 z-50 bg-white border border-ink/[10%] rounded-lg shadow-lg min-w-[180px] max-w-[240px]">
-            <div className="px-3 py-1.5 border-b border-ink/[5%]">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/30">Seleccionar</p>
-            </div>
-            <div className="p-1 max-h-48 overflow-y-auto">
-              {productos.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 px-2 py-1.5 text-[13px] text-ink cursor-pointer rounded hover:bg-brand-500/[4%]">
-                  <input type="checkbox"
-                    checked={newProductoIds.includes(p.id)}
-                    onChange={() => setNewProductoIds((prev) =>
-                      prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id]
-                    )}
-                    className="w-3.5 h-3.5 rounded accent-brand-600"
-                  />
-                  {p.nombre}
-                </label>
-              ))}
-              {productos.length === 0 && <p className="px-2 py-2 text-[12px] text-ink/40">Sin productos disponibles</p>}
-            </div>
-            <div className="px-2 pb-2 pt-1">
-              <button type="button" onClick={() => setShowNewProductosPanel(false)}
-                className="w-full px-2 py-1 text-[12px] font-medium text-brand-600 hover:bg-brand-500/[6%] rounded transition-colors">
-                Listo
-              </button>
-            </div>
-          </div>
-        )}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <MultiSelectInput
+          value={newProductoIds}
+          onChange={setNewProductoIds}
+          options={productos.map((p) => ({ value: p.id, label: p.nombre }))}
+          placeholder="Productos…"
+          label="Productos"
+        />
       </td>
     </>
   )

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
+import SingleSelectPanel from '@/components/SingleSelectPanel'
+import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
 import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
 
@@ -198,96 +200,6 @@ function MultiSelectPanel({
         </button>
       </div>
     </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// SingleSelectPanel
-// ---------------------------------------------------------------------------
-
-function SingleSelectPanel({
-  options,
-  value,
-  onChange,
-  onClose,
-  top,
-  left,
-  label,
-}: {
-  options: { value: string; label: string }[]
-  value: string
-  onChange: (v: string) => void
-  onClose: () => void
-  top: number
-  left: number
-  label?: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
-    }
-    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    setTimeout(() => document.addEventListener('mousedown', handler), 0)
-    document.addEventListener('keydown', keyHandler)
-    return () => {
-      document.removeEventListener('mousedown', handler)
-      document.removeEventListener('keydown', keyHandler)
-    }
-  }, [onClose])
-
-  return createPortal(
-    <div
-      ref={ref}
-      style={{ position: 'fixed', top, left, zIndex: 9999 }}
-      className="bg-white rounded-xl border border-ink/[10%] shadow-xl shadow-ink/[6%] min-w-[200px] max-w-[260px] overflow-hidden"
-      onClick={(e) => e.stopPropagation()}
-    >
-      {label && (
-        <div className="px-3 py-2.5 border-b border-ink/[6%]">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label}</p>
-        </div>
-      )}
-      <div className="py-1.5 max-h-52 overflow-y-auto">
-        <button
-          type="button"
-          onClick={() => { onChange(''); onClose() }}
-          className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
-            !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/50 hover:bg-ink/[3%]'
-          }`}
-        >
-          <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-100 ${
-            !value ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
-          }`}>
-            {!value && <span className="w-2 h-2 rounded-full bg-white" />}
-          </span>
-          <span className="italic text-ink/40">—</span>
-        </button>
-        {options.map((opt) => {
-          const isSelected = value === opt.value
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => { onChange(opt.value); onClose() }}
-              className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
-                isSelected ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
-              }`}
-            >
-              <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-100 ${
-                isSelected ? 'bg-brand-600 border-brand-600' : 'border-ink/[18%] bg-white'
-              }`}>
-                {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
-              </span>
-              {opt.label}
-            </button>
-          )
-        })}
-        {options.length === 0 && <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>}
-      </div>
-    </div>,
-    document.body,
   )
 }
 
@@ -520,7 +432,7 @@ function GridColHeader({
             e.stopPropagation()
             if (!filterOpen && filterBtnRef.current) {
               const r = filterBtnRef.current.getBoundingClientRect()
-              setFilterPos({ top: r.bottom + 4, left: r.left })
+              setFilterPos({ top: r.bottom + 4, left: Math.min(r.left, window.innerWidth - 292) })
             }
             setFilterOpen((o) => !o)
           }}
@@ -1079,7 +991,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             e.stopPropagation()
                             if (!isEditingThis) {
                               const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
-                              setEditingCellPos({ top: rect.bottom + 4, left: rect.left })
+                              setEditingCellPos({ top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 268) })
                               setEditingCell({ rowKey, colKey, value: col.getValue?.(row) ?? '' })
                             }
                           } : undefined}
@@ -1138,7 +1050,7 @@ export default function CatalogGrid<T extends { id: string }>({
                           onClick={onEditMetaCell ? (e) => {
                             e.stopPropagation()
                             const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
-                            setEditingCellPos({ top: rect.bottom + 4, left: rect.left })
+                            setEditingCellPos({ top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 268) })
                             setEditingCell({ rowKey, colKey: def.key, value: currentVal })
                           } : undefined}
                         >
@@ -1230,22 +1142,26 @@ export default function CatalogGrid<T extends { id: string }>({
                     <td key={def.key} className="px-2.5 border-r border-ink/[5%]" style={{ height: 40, borderBottom: '1px solid rgba(26,22,37,.05)' }}>
                       {onAddRowMetaChange && (
                         def.type === 'boolean' ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option><option value="true">Sí</option><option value="false">No</option>
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={[{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }]}
+                            label={def.label ?? def.key}
+                          />
                         ) : def.type === 'list' && def.options?.length ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option>
-                            {def.options.map((o) => <option key={o.label} value={o.label}>{o.label}</option>)}
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={def.options.map((o) => ({ value: o.label, label: o.label }))}
+                            label={def.label ?? def.key}
+                          />
                         ) : def.type === 'priority' ? (
-                          <select value={addRowMetaValues?.[def.key] ?? ''} onChange={(e) => onAddRowMetaChange(def.key, e.target.value)}
-                            className="w-full px-2 py-1 text-[13px] border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white">
-                            <option value="">—</option>
-                            {PRIORITY_LEVELS.map((lvl) => <option key={lvl.label} value={lvl.label}>{lvl.label}</option>)}
-                          </select>
+                          <SelectInput
+                            value={addRowMetaValues?.[def.key] ?? ''}
+                            onChange={(v) => onAddRowMetaChange(def.key, v)}
+                            options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
+                            label={def.label ?? def.key}
+                          />
                         ) : (
                           <input type={def.type === 'date' ? 'date' : 'text'}
                             value={addRowMetaValues?.[def.key] ?? ''}

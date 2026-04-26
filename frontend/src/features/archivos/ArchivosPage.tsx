@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
@@ -177,15 +178,14 @@ export default function ArchivosPage() {
 
   const addRowCells = (
     <>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <select autoFocus value={newUrlId} onChange={(e) => setNewUrlId(e.target.value)} className={inputCls} style={{ backgroundColor: 'white' }}>
-          <option value="">URL…</option>
-          {urls.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.url.length > 60 ? u.url.slice(0, 60) + '…' : u.url}
-            </option>
-          ))}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newUrlId}
+          onChange={setNewUrlId}
+          options={urls.map((u) => ({ value: u.id, label: u.url.length > 60 ? u.url.slice(0, 60) + '…' : u.url }))}
+          placeholder="URL…"
+          label="URL"
+        />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripción…" className={inputCls} />

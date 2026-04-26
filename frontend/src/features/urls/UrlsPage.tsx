@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
 import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
@@ -165,11 +166,14 @@ export default function UrlsPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="https://…" className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <select value={newInstrumentoId} onChange={(e) => setNewInstrumentoId(e.target.value)} className={inputCls} style={{ backgroundColor: 'white' }}>
-          <option value="">Instrumento…</option>
-          {instrumentos.map((i) => <option key={i.id} value={i.id}>{i.nombre}</option>)}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newInstrumentoId}
+          onChange={setNewInstrumentoId}
+          options={instrumentos.map((i) => ({ value: i.id, label: i.nombre }))}
+          placeholder="Instrumento…"
+          label="Instrumento"
+        />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
     </>

@@ -28,7 +28,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
     clearHide()
     if (ref.current) {
       const r = ref.current.getBoundingClientRect()
-      setPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX })
+      setPos({ top: r.bottom + window.scrollY + 4, left: Math.min(r.left + window.scrollX, window.innerWidth + window.scrollX - 208) })
     }
     setHovered(true)
   }, [])
