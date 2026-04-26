@@ -1,11 +1,25 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { CATALOG_LEVELS } from '@/consts'
+import {
+  proyectosIcon, productosIcon, tablasIcon, basesDeDatosIcon,
+  instrumentosIcon, urlsIcon, archivosIcon, entidadesIcon, usuariosIcon,
+} from '@/consts/sectionIcons'
 import { useSidebar } from '@/context/SidebarContext'
 import type { User } from '@/types'
 
 interface Props {
   user: User | null
   onLogout: () => void
+}
+
+const CATALOG_ICONS = {
+  proyectos:       () => proyectosIcon({ size: 14 }),
+  productos:       () => productosIcon({ size: 14 }),
+  tablas:          () => tablasIcon({ size: 14 }),
+  'bases-de-datos': () => basesDeDatosIcon({ size: 14 }),
+  instrumentos:    () => instrumentosIcon({ size: 14 }),
+  urls:            () => urlsIcon({ size: 14 }),
+  archivos:        () => archivosIcon({ size: 14 }),
 }
 
 function userInitials(email: string): string {
@@ -77,6 +91,9 @@ export default function Sidebar({ user, onLogout }: Props) {
                 {isActive && (
                   <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
                 )}
+                <span className="shrink-0 opacity-70">
+                  {CATALOG_ICONS[level.key]?.()}
+                </span>
                 <span className="flex-1 truncate">{level.label}</span>
               </>
             )}
@@ -97,6 +114,7 @@ export default function Sidebar({ user, onLogout }: Props) {
               {isActive && (
                 <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
               )}
+              <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
               <span className="flex-1 truncate">Entidades</span>
             </>
           )}
@@ -113,6 +131,7 @@ export default function Sidebar({ user, onLogout }: Props) {
                 {isActive && (
                   <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
                 )}
+                <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
                 <span className="flex-1 truncate">Usuarios</span>
               </>
             )}

@@ -11,6 +11,7 @@ import type { Column } from '@/components/DataTable'
 import type { Instrumento, BaseDeDatos } from '@/types'
 import { getInstrumentos, createInstrumento, updateInstrumento, deleteInstrumento } from './services/instrumentosService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
+import { nombreIcon, basesDeDatosIcon, fechaIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -137,6 +138,7 @@ export default function InstrumentosPage() {
   const columns: Column<Instrumento>[] = [
     {
       header: 'Nombre',
+      icon: nombreIcon(),
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-56',
       getValue: (r) => r.nombre,
@@ -144,6 +146,7 @@ export default function InstrumentosPage() {
     },
     {
       header: 'Base de datos',
+      icon: basesDeDatosIcon(),
       render: (r) => r.base_de_datos
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.nombre}</span>
         : <span className="text-ink/30 text-[13px]">—</span>,
@@ -153,6 +156,7 @@ export default function InstrumentosPage() {
     },
     {
       header: 'Fecha publicación',
+      icon: fechaIcon(),
       render: (r) => {
         if (!r.fecha_publicacion) return <span className="text-ink/30 text-[13px]">—</span>
         try {
@@ -167,6 +171,7 @@ export default function InstrumentosPage() {
     },
     {
       header: 'Descripción',
+      icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '—'}</span>,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),

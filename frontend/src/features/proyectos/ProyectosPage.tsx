@@ -9,6 +9,7 @@ import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } 
 import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
+import { nombreIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -124,6 +125,7 @@ export default function ProyectosPage() {
   const columns: Column<Proyecto>[] = [
     {
       header: 'Nombre',
+      icon: nombreIcon(),
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-64',
       getValue: (r) => r.nombre,
@@ -131,6 +133,7 @@ export default function ProyectosPage() {
     },
     {
       header: 'Descripción',
+      icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70">{r.descripcion ?? '—'}</span>,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
