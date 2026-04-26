@@ -76,6 +76,15 @@ dev-stop:
 
 # ─── DATABASE ─────────────────────────────────────────────────────────────────
 
+# Aplica las migraciones pendientes sin tocar los datos
+[group('database')]
+db-migrate: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        python -c "from seed import run_migrations; run_migrations()"
+    @echo ""
+    @echo "  ✓ Migraciones aplicadas."
+    @echo ""
+
 # Elimina todos los objetos del schema público y vuelve a aplicar las migraciones
 [group('database')]
 db-clean: _db-up
