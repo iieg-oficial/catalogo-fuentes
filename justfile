@@ -71,6 +71,47 @@ dev-stop:
     @pkill -f "[u]vicorn main:app" 2>/dev/null && echo "Backend detenido." || echo "Backend no estaba corriendo."
     @pkill -f "[v]ite" 2>/dev/null && echo "Frontend detenido." || echo "Frontend no estaba corriendo."
 
+# ─── DATABASE ─────────────────────────────────────────────────────────────────
+
+# Elimina todos los objetos del schema público y vuelve a aplicar las migraciones
+[group('database')]
+db-clean: _db-up
+    @PGPASSWORD="$POSTGRES_PASSWORD" psql \
+        -h {{dev_db_host}} -p {{dev_db_port}} \
+        -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q \
+        -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO \"$POSTGRES_USER\";"
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        python -c "from seed import run_migrations; run_migrations()"
+    @echo ""
+    @echo "  ✓ BD limpiada y migraciones aplicadas."
+    @echo ""
+
+# Genera un dump comprimido de la BD  (uso: just db-dump  o  just db-dump mi_dump.pgdump)
+[group('database')]
+db-dump file="": _db-up
+    #!/usr/bin/env bash
+    set -euo pipefail
+    out="{{file}}"
+    [ -z "$out" ] && out="dump_$(date +%Y%m%d_%H%M%S).pgdump"
+    PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+        -h {{dev_db_host}} -p {{dev_db_port}} \
+        -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+        -Fc -f "$out"
+    echo ""
+    echo "  ✓ Dump guardado en: $out"
+    echo ""
+
+# Restaura un dump en la BD  (uso: just db-insert <archivo>)
+[group('database')]
+db-insert file: _db-up
+    @PGPASSWORD="$POSTGRES_PASSWORD" pg_restore \
+        -h {{dev_db_host}} -p {{dev_db_port}} \
+        -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+        --clean --if-exists -1 {{file}}
+    @echo ""
+    @echo "  ✓ Dump restaurado desde: {{file}}"
+    @echo ""
+
 # ─── PRODUCTION ───────────────────────────────────────────────────────────────
 
 # Construye imágenes y levanta todos los servicios en producción
