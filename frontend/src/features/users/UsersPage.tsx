@@ -44,7 +44,6 @@ export default function UsersPage() {
   const [filterRole, setFilterRole] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formEmail, setFormEmail] = useState('')
-  const [formPassword, setFormPassword] = useState('')
   const [formRole, setFormRole] = useState<UserRole>('visualizer')
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
@@ -68,11 +67,10 @@ export default function UsersPage() {
     setFormError('')
     setFormLoading(true)
     try {
-      const u = await createUser(formEmail, formPassword, formRole)
+      const u = await createUser(formEmail, formRole)
       setUsers((prev) => [...prev, u])
       setShowForm(false)
       setFormEmail('')
-      setFormPassword('')
       setFormRole('visualizer')
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el email no esté registrado.')
@@ -164,17 +162,6 @@ export default function UsersPage() {
                   required
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Contraseña</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={formPassword}
-                  onChange={(e) => setFormPassword(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>

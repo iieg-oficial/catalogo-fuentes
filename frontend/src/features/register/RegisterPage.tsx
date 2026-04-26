@@ -1,18 +1,8 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuthContext } from '@/context/AuthContext'
+import { TOKEN_KEY } from '@/consts'
+import apiClient from '@/services/apiClient'
 import logoIieg from '@/assets/logo_gris_iieg.png'
-
-const STORAGE_KEY = 'login_remembered'
-
-function loadRemembered(): { email: string } | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
 
 function Spinner() {
   return (
@@ -29,30 +19,43 @@ function Spinner() {
   )
 }
 
-export default function LoginPage() {
-  const { login } = useAuthContext()
+export default function RegisterPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(() => loadRemembered()?.email ?? '')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [remember, setRemember] = useState(() => !!loadRemembered())
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showRecovery, setShowRecovery] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
-    setLoading(true)
-    if (remember) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ email }))
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
+
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
+      return
     }
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden.')
+      return
+    }
+
+    setLoading(true)
     try {
-      await login(email, password)
+      const { data } = await apiClient.post<{ access_token: string }>('/auth/signup', {
+        email,
+        password,
+        confirm_password: confirmPassword,
+      })
+      localStorage.setItem(TOKEN_KEY, data.access_token)
       navigate('/proyectos', { replace: true })
-    } catch {
-      setError('Credenciales incorrectas. Verifica tu email y contraseña.')
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+      if (detail) {
+        setError(detail)
+      } else {
+        setError('Ocurrió un error. Intenta de nuevo.')
+      }
     } finally {
       setLoading(false)
     }
@@ -65,7 +68,7 @@ export default function LoginPage() {
           <div className="mb-8">
             <img src={logoIieg} alt="IIEG Jalisco" width={173} height={64} className="h-16 w-auto mb-3" />
             <p className="text-xs font-medium text-brand-600 uppercase tracking-widest">
-              Sistema de Gestión de Proyectos
+              Crear contraseña
             </p>
           </div>
 
@@ -87,38 +90,37 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label htmlFor="password" className="block text-xs font-medium text-neutral-900">
-                  Contraseña
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowRecovery((v) => !v)}
-                  className="text-xs text-brand-600 hover:text-brand-700 hover:underline focus:outline-none"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
+              <label htmlFor="password" className="block text-xs font-medium text-neutral-900 mb-1">
+                Contraseña
+              </label>
               <input
                 id="password"
                 type="password"
                 required
-                autoComplete="current-password"
+                minLength={8}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-                placeholder="••••••••"
+                placeholder="Mínimo 8 caracteres"
               />
-              <div aria-live="polite">
-                {showRecovery && (
-                  <p className="mt-2 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-md px-3 py-2">
-                    Contacta al administrador para restablecer tu contraseña:{' '}
-                    <a href="mailto:admin@iieg.gob.mx" className="text-brand-600 hover:underline">
-                      admin@iieg.gob.mx
-                    </a>
-                  </p>
-                )}
-              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirm-password" className="block text-xs font-medium text-neutral-900 mb-1">
+                Confirmar contraseña
+              </label>
+              <input
+                id="confirm-password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                placeholder="Repite la contraseña"
+              />
             </div>
 
             {error && (
@@ -127,18 +129,7 @@ export default function LoginPage() {
               </p>
             )}
 
-            <div className="pt-1 space-y-3">
-              <label className="flex items-center gap-2 py-1 cursor-pointer select-none">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-neutral-200 text-brand-600 focus:ring-brand-500"
-                />
-                <span className="text-xs text-neutral-500">Recordar mi usuario en este navegador</span>
-              </label>
-
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={loading}
@@ -147,21 +138,25 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Spinner />
-                    <span>Ingresando…</span>
+                    <span>Registrando…</span>
                   </>
                 ) : (
-                  'Ingresar'
+                  'Crear cuenta'
                 )}
               </button>
             </div>
           </form>
+
+          <p className="mt-5 text-center text-xs text-neutral-500">
+            ¿Ya tienes contraseña?{' '}
+            <Link to="/login" className="text-brand-600 hover:underline font-medium">
+              Inicia sesión
+            </Link>
+          </p>
         </main>
 
         <p className="text-center text-xs text-neutral-500">
-          ¿Primera vez?{' '}
-          <Link to="/register" className="text-brand-600 hover:underline font-medium">
-            Crea tu contraseña
-          </Link>
+          Si tu correo no está registrado, contacta al administrador.
         </p>
       </div>
     </div>

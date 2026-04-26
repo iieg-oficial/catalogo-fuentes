@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
@@ -9,8 +9,8 @@ from models.user import User, UserRole
 from routes.dependencies import get_current_user, require_admin
 from routes.users import _ADMIN_CREATABLE, _SUPERADMIN_CREATABLE
 from schemas.auth import LoginRequest, TokenResponse
-from schemas.user import UserCreate, UserRead
-from services.auth import authenticate_user, create_access_token
+from schemas.user import UserCreate, UserRead, UserSignup
+from services.auth import authenticate_user, create_access_token, get_user_by_email, hash_password
 from services.users import create_user
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,28 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
         raise unauthorized()
     token = create_access_token(user.email, user.role.value)
     logger.info("User %s logged in", user.email)
+    return TokenResponse(access_token=token)
+
+
+@router.post("/signup", response_model=TokenResponse, status_code=201)
+async def signup(data: UserSignup, db: AsyncSession = Depends(get_db)):
+    """Complete registration for a pre-registered email."""
+    user = await get_user_by_email(db, data.email)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Correo no registrado. Solicita acceso al administrador.",
+        )
+    if user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Esta cuenta ya fue configurada. Inicia sesión.",
+        )
+    user.hashed_password = hash_password(data.password)
+    user.is_active = True
+    await db.commit()
+    token = create_access_token(user.email, user.role.value)
+    logger.info("User %s completed signup", user.email)
     return TokenResponse(access_token=token)
 
 

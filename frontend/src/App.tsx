@@ -3,6 +3,7 @@ import { AuthProvider, useAuthContext } from '@/context/AuthContext'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import LoginPage from '@/features/login/LoginPage'
+import RegisterPage from '@/features/register/RegisterPage'
 import ProyectosPage from '@/features/proyectos/ProyectosPage'
 import ProyectoDetailPage from '@/features/proyectos/ProyectoDetailPage'
 import ProductosPage from '@/features/productos/ProductosPage'
@@ -54,6 +55,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/*"
           element={
