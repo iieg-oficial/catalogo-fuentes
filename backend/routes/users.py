@@ -63,9 +63,12 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):
-    obj = await svc.update_user(db, user_id, data)
-    if not obj:
+    target = await svc.get_user(db, user_id)
+    if not target:
         raise not_found("User")
+    if target.role == UserRole.superadmin:
+        raise forbidden()
+    obj = await svc.update_user(db, user_id, data)
     return obj
 
 

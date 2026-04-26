@@ -192,12 +192,14 @@ export default function UsersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleToggleActive(user)}
-                        className="text-xs text-brand-600 hover:text-brand-700 underline"
-                      >
-                        {user.is_active ? 'Desactivar' : 'Activar'}
-                      </button>
+                      {user.role !== 'superadmin' && (
+                        <button
+                          onClick={() => handleToggleActive(user)}
+                          className="text-xs text-brand-600 hover:text-brand-700 underline"
+                        >
+                          {user.is_active ? 'Desactivar' : 'Activar'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
