@@ -138,12 +138,14 @@ const EYE_ICON = (
 // ---------------------------------------------------------------------------
 
 function MultiSelectPanel({
-  options, value, onChange, onClose,
+  options, value, onChange, onClose, top, left,
 }: {
   options: { value: string; label: string }[]
   value: string
   onChange: (v: string) => void
   onClose: () => void
+  top: number
+  left: number
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const selected = new Set(value.split(',').filter(Boolean))
@@ -168,10 +170,14 @@ function MultiSelectPanel({
     onChange([...next].join(','))
   }
 
-  return (
-    <div ref={ref}
-      className="absolute left-0 top-full mt-0.5 z-50 bg-white border border-ink/[10%] rounded-xl shadow-xl shadow-ink/[6%] min-w-[180px] max-w-[240px] overflow-hidden"
-      onClick={(e) => e.stopPropagation()}>
+  return createPortal(
+    <div
+      ref={ref}
+      data-portal
+      style={{ position: 'fixed', top, left, zIndex: 9999 }}
+      className="bg-white border border-ink/[10%] rounded-xl shadow-xl shadow-ink/[6%] min-w-[180px] max-w-[240px] overflow-hidden"
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="py-1.5 max-h-48 overflow-y-auto">
         {options.map((opt) => {
           const isChecked = selected.has(opt.value)
@@ -201,7 +207,8 @@ function MultiSelectPanel({
           Listo
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -338,6 +345,7 @@ function FilterPanel({
 
 function GridColHeader({
   label,
+  icon,
   typeKey,
   sortField,
   sortId,
@@ -355,6 +363,7 @@ function GridColHeader({
   onMenuEdit,
 }: {
   label: string
+  icon?: ReactNode
   typeKey: string
   sortField: string | null
   sortId: string
@@ -408,7 +417,7 @@ function GridColHeader({
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 10px', position: 'relative' }}>
         <span style={{ display: 'flex', color: 'rgba(26,22,37,.40)', flexShrink: 0 }}>
-          {TYPE_ICON[typeKey] ?? TYPE_ICON.text}
+          {icon ?? TYPE_ICON[typeKey] ?? TYPE_ICON.text}
         </span>
 
         <button
@@ -904,6 +913,7 @@ export default function CatalogGrid<T extends { id: string }>({
                   <GridColHeader
                     key={i}
                     label={col.header}
+                    icon={col.icon}
                     typeKey="text"
                     sortField={sortField}
                     sortId={`__col_${i}`}
@@ -1028,6 +1038,8 @@ export default function CatalogGrid<T extends { id: string }>({
                                 value={editingCell!.value}
                                 onChange={(v) => setEditingCell((p) => p ? { ...p, value: v } : null)}
                                 onClose={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
+                                top={editingCellPos.top}
+                                left={editingCellPos.left}
                               />
                             </>
                           ) : isEditingThis && col.selectOptions ? (
