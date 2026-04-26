@@ -107,8 +107,13 @@ export function useMetaColumns<T extends { meta?: Record<string, unknown> }>(
   const hiddenSet = useMemo(() => new Set(cfg.hidden), [cfg.hidden])
 
   const allMetaCols = useMemo<MetaColumnDef[]>(() => {
-    const keys = [...new Set([...dataKeys, ...cfg.extra.map((c) => c.key)])]
     const extraByKey = Object.fromEntries(cfg.extra.map((c) => [c.key, c]))
+    const extraKeySet = new Set(cfg.extra.map((c) => c.key))
+    // orphanKeys (auto-detected from JSONB meta, alphabetical) appear first;
+    // cfg.extra columns (explicitly created/configured, insertion order) appear last
+    // so newly added columns always stack at the end of the list.
+    const orphanKeys = dataKeys.filter((k) => !extraKeySet.has(k))
+    const keys = [...orphanKeys, ...cfg.extra.map((c) => c.key)]
     return keys
       .filter((k) => !hiddenSet.has(k))
       .map((k) => ({
