@@ -68,10 +68,10 @@ async def create_tabla(db: AsyncSession, data: TablaCreate) -> Tabla:
     await db.flush()
 
     if data.producto_ids:
-        productos = await db.execute(
-            select(Producto).where(Producto.id.in_(data.producto_ids))
-        )
-        obj.productos = list(productos.scalars().all())
+        for pid in data.producto_ids:
+            await db.execute(
+                tabla_producto.insert().values(tabla_id=obj.id, producto_id=pid)
+            )
 
     await db.commit()
     result = await get_tabla(db, obj.id)
