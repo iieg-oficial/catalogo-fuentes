@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -26,6 +27,8 @@ class ProductoUpdate(BaseModel):
 class ProductoRead(ProductoBase):
     id: uuid.UUID
     proyecto_id: uuid.UUID | None = None
+    updated_at: datetime | None = None
+    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
 

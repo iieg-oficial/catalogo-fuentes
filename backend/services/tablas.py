@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,7 @@ async def list_tablas(
     q = select(Tabla).options(
         selectinload(Tabla.base_de_datos),
         selectinload(Tabla.productos).selectinload(Producto.proyecto),
+        selectinload(Tabla.updated_by),
     )
     if base_de_datos_id:
         q = q.where(Tabla.base_de_datos_id == base_de_datos_id)
@@ -40,7 +42,7 @@ async def list_tablas(
                 .where(Producto.proyecto_id == proyecto_id)
             )
         )
-    q = q.offset(skip).limit(limit)
+    q = q.order_by(Tabla.created_at.asc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return list(result.scalars().unique().all())
 
@@ -51,6 +53,7 @@ async def get_tabla(db: AsyncSession, tabla_id: uuid.UUID) -> Tabla | None:
         .options(
             selectinload(Tabla.base_de_datos),
             selectinload(Tabla.productos).selectinload(Producto.proyecto),
+            selectinload(Tabla.updated_by),
         )
         .where(Tabla.id == tabla_id)
     )
@@ -78,7 +81,9 @@ async def create_tabla(db: AsyncSession, data: TablaCreate) -> Tabla:
     return result  # type: ignore[return-value]
 
 
-async def update_tabla(db: AsyncSession, tabla_id: uuid.UUID, data: TablaUpdate) -> Tabla | None:
+async def update_tabla(
+    db: AsyncSession, tabla_id: uuid.UUID, data: TablaUpdate, user_id: uuid.UUID
+) -> Tabla | None:
     obj = await get_tabla(db, tabla_id)
     if not obj:
         return None
@@ -92,6 +97,8 @@ async def update_tabla(db: AsyncSession, tabla_id: uuid.UUID, data: TablaUpdate)
         )
         obj.productos = list(productos.scalars().all())
 
+    obj.updated_at = datetime.now(timezone.utc)
+    obj.updated_by_id = user_id
     await db.commit()
     return await get_tabla(db, tabla_id)
 
