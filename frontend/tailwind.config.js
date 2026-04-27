@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Garet', 'system-ui', 'sans-serif'],
+        newsreader: ['"Newsreader"', '"EB Garamond"', 'Georgia', 'serif'],
       },
       colors: {
         brand: {
@@ -16,7 +17,7 @@ export default {
           500: '#6E258B',
           600: '#5C2472',
           700: '#522067',
-          900: '#3a1550',
+          900: '#2D0E42',
         },
         accent: {
           DEFAULT: '#FF8300',

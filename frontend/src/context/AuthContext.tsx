@@ -6,6 +6,8 @@ interface AuthContextValue {
   user: User | null
   loading: boolean
   canWrite: boolean
+  canManageUsers: boolean
+  isSuperAdmin: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
@@ -14,9 +16,11 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, loading, login, logout } = useAuth()
-  const canWrite = user?.role === 'admin' || user?.role === 'maintainer'
+  const canWrite = user?.role === 'admin' || user?.role === 'maintainer' || user?.role === 'superadmin'
+  const canManageUsers = user?.role === 'admin' || user?.role === 'superadmin'
+  const isSuperAdmin = user?.role === 'superadmin'
   return (
-    <AuthContext.Provider value={{ user, loading, canWrite, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, canWrite, canManageUsers, isSuperAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

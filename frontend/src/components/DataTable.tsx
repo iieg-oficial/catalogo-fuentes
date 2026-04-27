@@ -4,6 +4,7 @@ import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
 
 export interface Column<T> {
   header: string
+  icon?: ReactNode
   render: (row: T) => ReactNode
   className?: string
   onEdit?: (row: T, newValue: string) => void

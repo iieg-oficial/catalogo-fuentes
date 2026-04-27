@@ -6,8 +6,8 @@ export async function getUsers(): Promise<User[]> {
   return data
 }
 
-export async function createUser(email: string, password: string, role: UserRole): Promise<User> {
-  const { data } = await apiClient.post<User>('/users/', { email, password, role })
+export async function createUser(email: string, role: UserRole): Promise<User> {
+  const { data } = await apiClient.post<User>('/users/', { email, role })
   return data
 }
 
