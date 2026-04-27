@@ -17,5 +17,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
-          package-name: dashboard-tracking
           changelog-types: '[{"type":"feat","section":"✨ Features"},{"type":"update","section":"🔄 Updates"},{"type":"fix","section":"🐛 Bug Fixes"},{"type":"refactor","section":"♻️ Refactors"},{"type":"chore","section":"🔧 Chores"}]'
