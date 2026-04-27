@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.0...v0.2.1) (2026-04-27)
+
+
+### 🔄 Updates
+
+* **frontend:** redirect to catalog home after login ([54f235c](https://github.com/iieg-oficial/dashboard-tracking/commit/54f235c40b1e7954d6c7a32e52bd1072365f709d))
+
+
+### 🐛 Bug Fixes
+
+* **frontend:** prevent duplicate row creation on Enter key in CatalogGrid ([307a785](https://github.com/iieg-oficial/dashboard-tracking/commit/307a785f625558bda89944da4fac2ddd6d60a523))
+
 ## [0.2.0](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.1.1...v0.2.0) (2026-04-27)
 
 
