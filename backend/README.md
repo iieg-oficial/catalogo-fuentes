@@ -11,7 +11,11 @@ FastAPI + SQLAlchemy async. API REST del catálogo de datos del IIEG.
 ## Levantar desde la raíz del monorepo
 
 ```bash
-just dev-seed   # DB + seed + backend + frontend
+just dev-init   # migraciones + superadmin (sin datos dummy)
+just dev        # DB + backend + frontend
+
+# o con datos de prueba completos:
+just dev-seed   # DB + seed (4 usuarios + catálogo) + backend + frontend
 ```
 
 ## Ejecutar manualmente (desarrollo aislado)
