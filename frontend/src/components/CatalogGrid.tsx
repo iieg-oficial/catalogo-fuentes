@@ -1173,7 +1173,8 @@ export default function CatalogGrid<T extends { id: string }>({
                   ref={addRowRef}
                   style={{ background: 'rgba(110,37,139,.02)' }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !isSavingRef.current) {
+                    const tag = (e.target as HTMLElement).tagName
+                    if (e.key === 'Enter' && !isSavingRef.current && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
                       isSavingRef.current = true
                       Promise.resolve(onAddRowSaveRef.current?.()).finally(() => { isSavingRef.current = false })
                     }
