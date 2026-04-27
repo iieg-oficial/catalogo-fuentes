@@ -1,3 +1,11 @@
 {
-  "release-type": "node"
+  "release-type": "node",
+  "changelog-sections": [
+    { "type": "feat", "section": "✨ Features" },
+    { "type": "update", "section": "🔄 Updates" },
+    { "type": "fix", "section": "🐛 Bug Fixes" },
+    { "type": "refactor", "section": "♻️ Refactors" },
+    { "type": "chore", "section": "🔧 Chores" }
+  ],
+  "pull-request-title-pattern": "chore: release ${version}"
 }
