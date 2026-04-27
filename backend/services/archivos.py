@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +21,8 @@ async def list_archivos(
     q = select(Archivo).options(
         selectinload(Archivo.url_ref)
         .selectinload(Url.instrumento)
-        .selectinload(Instrumento.base_de_datos)
+        .selectinload(Instrumento.base_de_datos),
+        selectinload(Archivo.updated_by),
     )
     if url_id:
         q = q.where(Archivo.url_id == url_id)
@@ -30,7 +32,7 @@ async def list_archivos(
                 select(Url.id).where(Url.instrumento_id == instrumento_id)
             )
         )
-    q = q.offset(skip).limit(limit)
+    q = q.order_by(Archivo.created_at.asc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return list(result.scalars().all())
 
@@ -41,7 +43,8 @@ async def get_archivo(db: AsyncSession, archivo_id: uuid.UUID) -> Archivo | None
         .options(
             selectinload(Archivo.url_ref)
             .selectinload(Url.instrumento)
-            .selectinload(Instrumento.base_de_datos)
+            .selectinload(Instrumento.base_de_datos),
+            selectinload(Archivo.updated_by),
         )
         .where(Archivo.id == archivo_id)
     )
@@ -57,21 +60,25 @@ async def create_archivo(db: AsyncSession, data: ArchivoCreate) -> Archivo:
         meta=data.meta,
     )
     db.add(obj)
+    await db.flush()
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    result = await get_archivo(db, obj.id)
+    return result  # type: ignore[return-value]
 
 
-async def update_archivo(db: AsyncSession, archivo_id: uuid.UUID, data: ArchivoUpdate) -> Archivo | None:
+async def update_archivo(
+    db: AsyncSession, archivo_id: uuid.UUID, data: ArchivoUpdate, user_id: uuid.UUID
+) -> Archivo | None:
     result = await db.execute(select(Archivo).where(Archivo.id == archivo_id))
     obj = result.scalar_one_or_none()
     if not obj:
         return None
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    obj.updated_at = datetime.now(timezone.utc)
+    obj.updated_by_id = user_id
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    return await get_archivo(db, archivo_id)
 
 
 async def delete_archivo(db: AsyncSession, archivo_id: uuid.UUID) -> bool:

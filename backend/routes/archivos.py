@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
 from exceptions.http import not_found
+from models.user import User
 from routes.dependencies import get_current_user, require_write
 from schemas.archivo import ArchivoCreate, ArchivoRead, ArchivoUpdate
 from services import archivos as svc
@@ -54,9 +55,9 @@ async def update_archivo(
     archivo_id: uuid.UUID,
     data: ArchivoUpdate,
     db: AsyncSession = Depends(get_db),
-    _=Depends(require_write),
+    current_user: User = Depends(require_write),
 ):
-    obj = await svc.update_archivo(db, archivo_id, data)
+    obj = await svc.update_archivo(db, archivo_id, data, current_user.id)
     if not obj:
         raise not_found("Archivo")
     return obj

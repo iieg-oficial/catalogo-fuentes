@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthContext } from '@/context/AuthContext'
 import logoIieg from '@/assets/logo_gris_iieg.png'
 
@@ -32,6 +32,8 @@ function Spinner() {
 export default function LoginPage() {
   const { login } = useAuthContext()
   const navigate = useNavigate()
+  const location = useLocation()
+  const successMessage = (location.state as { success?: string } | null)?.success ?? ''
   const [email, setEmail] = useState(() => loadRemembered()?.email ?? '')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(() => !!loadRemembered())
@@ -68,6 +70,12 @@ export default function LoginPage() {
               Sistema de Gestión de Proyectos
             </p>
           </div>
+
+          {successMessage && (
+            <p className="mb-4 text-xs text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+              {successMessage}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -158,10 +166,10 @@ export default function LoginPage() {
         </main>
 
         <p className="text-center text-xs text-neutral-500">
-          ¿Problemas para acceder?{' '}
-          <a href="mailto:admin@iieg.gob.mx" className="text-neutral-500 hover:text-brand-600 hover:underline">
-            Contacta al administrador
-          </a>
+          ¿Primera vez?{' '}
+          <Link to="/register" className="text-brand-600 hover:underline font-medium">
+            Crea tu contraseña
+          </Link>
         </p>
       </div>
     </div>

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'maintainer' | 'viewer'
+export type UserRole = 'admin' | 'maintainer' | 'viewer' | 'visualizer' | 'superadmin'
 
 export interface User {
   id: string
@@ -12,6 +12,8 @@ export interface Proyecto {
   nombre: string
   descripcion: string | null
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
 }
 
 export interface Producto {
@@ -20,6 +22,8 @@ export interface Producto {
   nombre: string
   descripcion: string | null
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
   proyecto: Proyecto | null
 }
 
@@ -30,6 +34,8 @@ export interface BaseDeDatos {
   tema: string | null
   frecuencia_actualizacion: string | null
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
 }
 
 export interface Tabla {
@@ -38,6 +44,8 @@ export interface Tabla {
   nombre: string
   campos: Array<Record<string, unknown>>
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
   base_de_datos: BaseDeDatos | null
   productos: Producto[]
 }
@@ -49,6 +57,8 @@ export interface Instrumento {
   descripcion: string | null
   fecha_publicacion: string | null
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
   base_de_datos?: BaseDeDatos
   tablas?: Tabla[]
 }
@@ -58,6 +68,8 @@ export interface Url {
   instrumento_id: string | null
   url: string
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
   instrumento?: Instrumento
 }
 
@@ -68,6 +80,8 @@ export interface Archivo {
   fecha_publicacion: string | null
   fecha_fuente: string | null
   meta: Record<string, unknown>
+  updated_at: string | null
+  updated_by_email: string | null
   url_ref?: Url
 }
 

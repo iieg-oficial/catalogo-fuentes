@@ -32,14 +32,17 @@ async def seed(db: AsyncSession) -> None:
 
     logger.info("Seeding database...")
 
+    superadmin = User(
+        email="superadmin@iieg.gob.mx", hashed_password=hash_password("Super1234!"), role=UserRole.superadmin
+    )
     admin = User(email=settings.ADMIN_EMAIL, hashed_password=hash_password(settings.ADMIN_PASSWORD), role=UserRole.admin)
     maintainer = User(
         email="editor@iieg.gob.mx", hashed_password=hash_password("Editor1234!"), role=UserRole.maintainer
     )
-    viewer = User(
-        email="consulta@iieg.gob.mx", hashed_password=hash_password("Viewer1234!"), role=UserRole.viewer
+    visualizer = User(
+        email="consulta@iieg.gob.mx", hashed_password=hash_password("Viewer1234!"), role=UserRole.visualizer
     )
-    db.add_all([admin, maintainer, viewer])
+    db.add_all([superadmin, admin, maintainer, visualizer])
     await db.flush()
 
     mapalab = Proyecto(

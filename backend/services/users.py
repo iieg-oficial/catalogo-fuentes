@@ -22,7 +22,7 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User | None:
     existing = await get_user_by_email(db, data.email)
     if existing:
         return None
-    obj = User(email=data.email, hashed_password=hash_password(data.password), role=data.role)
+    obj = User(email=data.email, hashed_password=None, role=data.role, is_active=False)
     db.add(obj)
     await db.commit()
     await db.refresh(obj)

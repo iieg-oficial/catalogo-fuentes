@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Topbar from '@/components/Topbar'
-import DataTable, { type Column } from '@/components/DataTable'
-import Modal from '@/components/Modal'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
+import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
+import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
-import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef, LIST_COLOR_PALETTE } from '@/hooks/useMetaColumns'
-import type { Instrumento, Url } from '@/types'
+import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
+import type { Column } from '@/components/DataTable'
+import type { Url, Instrumento } from '@/types'
 import { getUrls, createUrl, updateUrl, deleteUrl } from './services/urlsService'
 import { getInstrumentos } from '@/features/instrumentos/services/instrumentosService'
+import { urlsIcon, instrumentosIcon, basesDeDatosIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
-const selectCls = 'px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white text-gray-700'
-const modalInputCls = 'w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
 
 export default function UrlsPage() {
   const navigate = useNavigate()
@@ -23,9 +23,8 @@ export default function UrlsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
-  const [filterInstrumentoId, setFilterInstrumentoId] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
   const [showColForm, setShowColForm] = useState(false)
+  const [editingColKey, setEditingColKey] = useState<string | null>(null)
   const [colName, setColName] = useState('')
   const [colType, setColType] = useState<ColumnType>('text')
   const [colListOptions, setColListOptions] = useState<ListOption[]>([])
@@ -33,37 +32,30 @@ export default function UrlsPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newUrl, setNewUrl] = useState('')
   const [newInstrumentoId, setNewInstrumentoId] = useState('')
-  const [saving, setSaving] = useState(false)
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const [editingColKey, setEditingColKey] = useState<string | null>(null)
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'urls')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'urls')
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true)
     setError(false)
     try {
-      const [urls, insts] = await Promise.all([getUrls(), getInstrumentos()])
+      const [urls, instrs] = await Promise.all([getUrls(), getInstrumentos()])
       setItems(urls)
-      setInstrumentos(insts)
+      setInstrumentos(instrs)
     } catch {
       setError(true)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => {
-    setNewUrl('')
-    setNewInstrumentoId('')
-    setAddRowMeta({})
-  }
+  const resetFields = () => { setNewUrl(''); setNewInstrumentoId(''); setAddRowMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newUrl.trim() || !newInstrumentoId) return
-    setSaving(true)
     try {
       const created = await createUrl({ url: newUrl, instrumento_id: newInstrumentoId })
       if (Object.values(addRowMeta).some(Boolean)) {
@@ -71,20 +63,20 @@ export default function UrlsPage() {
       }
       setAddingRow(false)
       resetFields()
-      await load()
+      await load(true)
     } finally {
-      setSaving(false)
     }
   }
 
-  const handleDeleteRow = async (row: Url) => {
-    await deleteUrl(row.id)
-    setItems((prev) => prev.filter((i) => i.id !== row.id))
+  const handleEditUrl = (row: Url, value: string) => {
+    updateUrl(row.id, { url: value })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, url: value } : i)))
   }
 
-  const handleEditPrimaryCell = (row: Url, field: 'url', value: string) => {
-    updateUrl(row.id, { [field]: value })
-    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
+  const handleEditInstrumento = (row: Url, instrId: string) => {
+    const instr = instrumentos.find((i) => i.id === instrId) ?? undefined
+    updateUrl(row.id, { instrumento_id: instrId })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, instrumento_id: instrId, instrumento: instr } : i)))
   }
 
   const handleEditMetaCell = (row: Url, key: string, value: string) => {
@@ -93,52 +85,9 @@ export default function UrlsPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
   }
 
-  const handleEditInstrumento = (row: Url, instrId: string) => {
-    const instrumento = instrumentos.find((i) => i.id === instrId)
-    updateUrl(row.id, { instrumento_id: instrId || undefined })
-    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, instrumento } : i)))
-  }
-
-  const columns: Column<Url>[] = [
-    {
-      header: 'URL',
-      render: (r) => (
-        <a
-          href={r.url}
-          target="_blank"
-          rel="noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="text-brand-600 hover:text-brand-700 hover:underline text-xs font-mono whitespace-nowrap"
-        >
-          {r.url.length > 60 ? r.url.slice(0, 60) + '…' : r.url}
-        </a>
-      ),
-      className: 'max-w-sm',
-      getValue: (r) => r.url,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'url', v),
-    },
-    {
-      header: 'Instrumento',
-      render: (r) => r.instrumento
-        ? <span className="inline-block bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap">{r.instrumento.nombre}</span>
-        : <span className="text-gray-400">—</span>,
-      className: 'w-52',
-      getValue: (r) => r.instrumento?.id ?? '',
-      onEdit: handleEditInstrumento,
-      selectOptions: instrumentos.map((i) => ({ value: i.id, label: i.nombre })),
-    },
-    {
-      header: 'Base de datos',
-      render: (r) => r.instrumento?.base_de_datos
-        ? <span className="inline-block bg-blue-50 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap">{r.instrumento.base_de_datos.nombre}</span>
-        : <span className="text-gray-400">—</span>,
-      className: 'w-48',
-    },
-  ]
-
-  const kd = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSaveRow()
-    if (e.key === 'Escape') { setAddingRow(false); resetFields() }
+  const handleDeleteRows = async (keys: string[]) => {
+    await Promise.all(keys.map((id) => deleteUrl(id)))
+    await load(true)
   }
 
   const handleEditColumn = (def: MetaColumnDef) => {
@@ -160,194 +109,130 @@ export default function UrlsPage() {
     } else {
       addColumn(colName, colType, validOptions.length ? validOptions : undefined, color)
     }
-    setColName('')
-    setColType('text')
-    setColListOptions([])
-    setColColor('')
-    setShowColForm(false)
+    setColName(''); setColType('text'); setColListOptions([]); setColColor(''); setShowColForm(false)
+  }
+
+  const closeColForm = () => {
+    setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('')
   }
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    const matches = !q || [i.url, i.instrumento?.nombre, ...Object.values(i.meta)].some(
+    return !q || [i.url, i.instrumento?.nombre, i.instrumento?.base_de_datos?.nombre, ...Object.values(i.meta)].some(
       (v) => String(v ?? '').toLowerCase().includes(q),
     )
-    return matches && (!filterInstrumentoId || i.instrumento?.id === filterInstrumentoId)
   })
+
+  const kd = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSaveRow()
+    if (e.key === 'Escape') { setAddingRow(false); resetFields() }
+  }
+
+  const columns: Column<Url>[] = [
+    {
+      header: 'URL',
+      icon: urlsIcon(),
+      render: (r) => (
+        <a href={r.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+          className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 280 }}>
+          {r.url}
+        </a>
+      ),
+      className: 'w-72',
+      getValue: (r) => r.url,
+      onEdit: handleEditUrl,
+    },
+    {
+      header: 'Instrumento',
+      icon: instrumentosIcon(),
+      render: (r) => r.instrumento
+        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.instrumento.nombre}</span>
+        : <span className="text-ink/30 text-[13px]">—</span>,
+      getValue: (r) => r.instrumento_id ?? '',
+      onEdit: handleEditInstrumento,
+      selectOptions: instrumentos.map((i) => ({ value: i.id, label: i.nombre })),
+    },
+    {
+      header: 'Base de datos',
+      icon: basesDeDatosIcon(),
+      render: (r) => r.instrumento?.base_de_datos
+        ? <span className="text-ink/60 text-[13px]">{r.instrumento.base_de_datos.nombre}</span>
+        : <span className="text-ink/30 text-[13px]">—</span>,
+      getValue: (r) => r.instrumento?.base_de_datos?.nombre ?? '',
+    },
+  ]
 
   const addRowCells = (
     <>
-      <td className="px-3 py-1.5">
-        <input autoFocus type="url" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="https://…" className={inputCls} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input autoFocus required value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="https://…" className={inputCls} />
       </td>
-      <td className="px-3 py-1.5">
-        <select value={newInstrumentoId} onChange={(e) => setNewInstrumentoId(e.target.value)} className={inputCls}>
-          <option value="">Instrumento…</option>
-          {instrumentos.map((i) => <option key={i.id} value={i.id}>{i.nombre}</option>)}
-        </select>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newInstrumentoId}
+          onChange={setNewInstrumentoId}
+          options={instrumentos.map((i) => ({ value: i.id, label: i.nombre }))}
+          placeholder="Instrumento…"
+          label="Instrumento"
+        />
       </td>
-      <td className="px-3 py-1.5" />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
     </>
   )
 
   const addRowActions = (
-    <>
-      <button onClick={handleSaveRow} disabled={saving || !newUrl.trim() || !newInstrumentoId} className="text-brand-600 hover:text-brand-700 mr-2 font-bold disabled:opacity-40 disabled:cursor-not-allowed" title="Guardar">✓</button>
-      <button onClick={() => { setAddingRow(false); resetFields() }} className="text-gray-400 hover:text-gray-600" title="Cancelar">✕</button>
-    </>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
   )
 
-  const editBtn = canWrite ? (
-    <button
-      onClick={() => setIsEditing((v) => !v)}
-      className={isEditing
-        ? 'px-3 py-1.5 text-xs font-medium rounded-md bg-brand-600 text-white'
-        : 'px-3 py-1.5 text-xs font-medium rounded-md border border-neutral-200 text-neutral-500 hover:text-neutral-700 hover:border-neutral-300 transition-colors duration-150'}
-    >
-      {isEditing ? 'Listo' : 'Editar'}
-    </button>
-  ) : undefined
+  if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
+  if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>
 
   return (
     <>
-      <Topbar
-        title="URLs"
-        search={search}
-        onSearch={setSearch}
-        filters={
-          <select value={filterInstrumentoId} onChange={(e) => setFilterInstrumentoId(e.target.value)} className={selectCls}>
-            <option value="">Todos los instrumentos</option>
-            {instrumentos.map((i) => <option key={i.id} value={i.id}>{i.nombre}</option>)}
-          </select>
-        }
-        actions={editBtn}
-      />
-      <div className="flex-1 min-h-0 p-4 overflow-hidden flex flex-col">
-        {loading ? (
-          <LoadingSpinner />
-        ) : error ? (
-          <ErrorState onRetry={load} />
-        ) : (
-          <DataTable
-            className="flex-1 min-h-0"
-            columns={columns}
-            rows={filtered}
-            getKey={(r) => r.id}
-            isEditing={isEditing}
-            onRowClick={(r) => navigate(`/urls/${r.id}`)}
-            onAdd={canWrite ? () => setAddingRow(true) : undefined}
-            addRowCells={canWrite && addingRow ? addRowCells : undefined}
-            addRowActions={canWrite && addingRow ? addRowActions : undefined}
-            onDeleteRow={canWrite ? handleDeleteRow : undefined}
-            metaColumnDefs={allMetaCols}
-            getMeta={getMeta}
-            onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
-            onDeleteColumn={canWrite ? deleteColumn : undefined}
-            onEditColumn={canWrite ? handleEditColumn : undefined}
-            onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
-            addRowMetaValues={addRowMeta}
-            onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
-          />
-        )}
+      <div className="flex-1 min-h-0 overflow-auto p-8">
+        <CatalogGrid
+          eyebrow="Catálogo"
+          title="URLs"
+          addLabel="Nueva URL"
+          entityLabel="URLs"
+          rows={filtered}
+          columns={columns}
+          getKey={(r) => r.id}
+          onRowClick={(r) => navigate(`/urls/${r.id}`)}
+          canWrite={canWrite}
+          onAdd={canWrite ? () => setAddingRow(true) : undefined}
+          addRowCells={canWrite && addingRow ? addRowCells : undefined}
+          addRowActions={canWrite && addingRow ? addRowActions : undefined}
+          onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
+          metaColumnDefs={allMetaCols}
+          getMeta={getMeta}
+          onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
+          onDeleteColumn={canWrite ? deleteColumn : undefined}
+          onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
+          onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
+          addRowMetaValues={addRowMeta}
+          onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
+          onDeleteRows={canWrite ? handleDeleteRows : undefined}
+          search={search}
+          onSearch={setSearch}
+        />
       </div>
 
-      <Modal open={showColForm} title={editingColKey ? 'Editar columna' : 'Nueva columna'} onClose={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }}>
-        <form onSubmit={handleAddColumn}>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Nombre *</label>
-              <input required value={colName} onChange={(e) => setColName(e.target.value)} placeholder="ej. estado" className={modalInputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
-              <select value={colType} onChange={(e) => setColType(e.target.value as ColumnType)} className={`${modalInputCls} bg-white`}>
-                <option value="text">Texto</option>
-                <option value="number">Número</option>
-                <option value="url">URL</option>
-                <option value="date">Fecha</option>
-                <option value="boolean">Booleano</option>
-                <option value="list">Lista</option>
-              </select>
-            </div>
-          </div>
-          <div className="mt-3 pt-3 border-t border-neutral-100 space-y-3">
-            <div className={`flex items-center gap-3 ${colType === 'list' ? 'opacity-40' : ''}`}>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={!!colColor && colType !== 'list'}
-                onClick={() => { if (!colColor) setColColor(LIST_COLOR_PALETTE[0]); else setColColor('') }}
-                disabled={colType === 'list'}
-                className={`relative w-8 h-4 rounded-full transition-colors duration-150 shrink-0 ${colColor && colType !== 'list' ? 'bg-brand-600' : 'bg-neutral-200'} ${colType !== 'list' ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-              >
-                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-transform duration-150 ${colColor && colType !== 'list' ? 'translate-x-4' : ''}`} />
-              </button>
-              <span className="text-sm font-medium text-neutral-700">Color</span>
-              {colColor && colType !== 'list' && (
-                <div className="flex items-center gap-1.5">
-                  {LIST_COLOR_PALETTE.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColColor(c)}
-                      title={c}
-                      className={`w-4 h-4 rounded-full transition-all duration-100 ${
-                        colColor === c ? 'ring-2 ring-offset-1 ring-neutral-400 scale-110' : 'hover:scale-110'
-                      }`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-              )}
-              {colType === 'list' && <span className="text-xs text-neutral-300">Las listas usan colores por opción</span>}
-            </div>
-            {colType === 'list' && (
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1.5">Opciones</label>
-                <div className="space-y-1.5">
-                  {colListOptions.map((opt, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <label className="shrink-0 cursor-pointer" title="Cambiar color">
-                        <div className="w-5 h-5 rounded-full shadow-sm" style={{ backgroundColor: opt.color ?? '#94a3b8' }} />
-                        <input
-                          type="color"
-                          value={opt.color ?? '#94a3b8'}
-                          onChange={(e) => setColListOptions((prev) => prev.map((o, i) => i === idx ? { ...o, color: e.target.value } : o))}
-                          className="sr-only"
-                        />
-                      </label>
-                      <input
-                        value={opt.label}
-                        onChange={(e) => setColListOptions((prev) => prev.map((o, i) => i === idx ? { ...o, label: e.target.value } : o))}
-                        placeholder="Opción…"
-                        className="flex-1 px-2.5 py-1 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setColListOptions((prev) => prev.filter((_, i) => i !== idx))}
-                        className="text-neutral-300 hover:text-red-400 transition-colors text-lg leading-none"
-                        aria-label="Quitar opción"
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setColListOptions((prev) => [...prev, { label: '', color: LIST_COLOR_PALETTE[prev.length % LIST_COLOR_PALETTE.length] }])}
-                  className="mt-2 flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 transition-colors"
-                >
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M5 1v8M1 5h8"/></svg>
-                  Agregar opción
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 pt-3 border-t border-neutral-100 flex justify-end gap-2">
-            <button type="button" onClick={() => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }} className="px-4 py-2 text-sm text-neutral-500 hover:text-neutral-700">Cancelar</button>
-            <button type="submit" className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700">Crear</button>
-          </div>
-        </form>
-      </Modal>
+      <ColFormModal
+        open={showColForm}
+        editingKey={editingColKey}
+        name={colName}
+        type={colType}
+        listOptions={colListOptions}
+        color={colColor}
+        onClose={closeColForm}
+        onNameChange={setColName}
+        onTypeChange={setColType}
+        onListOptionsChange={setColListOptions}
+        onColorChange={setColColor}
+        onSubmit={handleAddColumn}
+      />
     </>
   )
 }
