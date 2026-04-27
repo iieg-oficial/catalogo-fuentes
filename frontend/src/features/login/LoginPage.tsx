@@ -52,7 +52,7 @@ export default function LoginPage() {
     }
     try {
       await login(email, password)
-      navigate('/proyectos', { replace: true })
+      navigate('/', { replace: true })
     } catch {
       setError('Credenciales incorrectas. Verifica tu email y contraseña.')
     } finally {
