@@ -53,5 +53,18 @@ services:
         condition: service_healthy
     restart: "no"
 
+  init:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    env_file: .env
+    entrypoint: ["/bin/bash", "/app/run_init.sh"]
+    volumes:
+      - ../deploy/run_init.sh:/app/run_init.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
 volumes:
   pgdata:

@@ -1,0 +1,6 @@
+services:
+  backend:
+    env_file: .env.prod
+
+  init:
+    env_file: .env.prod

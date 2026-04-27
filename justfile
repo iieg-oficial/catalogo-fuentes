@@ -22,6 +22,15 @@ dev: _check-python _db-up
     @echo "  Backend  → http://localhost:8000   (logs: /tmp/dashboard-backend.log)"
     @echo "  Frontend → http://localhost:5173   (logs: /tmp/dashboard-frontend.log)"
 
+# Corre migraciones y crea solo el superadmin (sin datos dummy)
+[group('development')]
+dev-init: _check-python _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        python seed.py dev-init
+    @echo ""
+    @echo "  ✓ Migraciones aplicadas y superadmin creado."
+    @echo ""
+
 # Levanta DB, corre migraciones + seed, backend y frontend
 [group('development')]
 dev-seed: _check-python _db-up
@@ -133,15 +142,25 @@ db-insert file: _db-up
 
 # ─── PRODUCTION ───────────────────────────────────────────────────────────────
 
-# Construye imágenes y levanta todos los servicios en producción
+# Levanta todos los servicios en producción con BD propia y solo superadmin
+# Requiere deploy/.env.prod con las credenciales de producción
 [group('production')]
 prod:
-    cd deploy && docker compose up -d --build db backend frontend
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml up -d --build db backend frontend
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml run --rm init
 
 # Detiene y elimina los contenedores de producción
 [group('production')]
 prod-stop:
-    cd deploy && docker compose down
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml down
 
 # ─── LOGS ─────────────────────────────────────────────────────────────────────
 
@@ -150,10 +169,14 @@ prod-stop:
 logs:
     tail -f /tmp/dashboard-backend.log /tmp/dashboard-frontend.log
 
-# Sigue los logs de todos los contenedores en producción
+# Sigue los logs de los contenedores en producción
 [group('logs')]
 logs-prod:
-    cd deploy && docker compose logs -f
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml logs -f
 
 # ─── INTERNAL ─────────────────────────────────────────────────────────────────
 

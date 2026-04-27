@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "change-me-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60
-    ADMIN_EMAIL: str = "admin@iieg.gob.mx"
-    ADMIN_PASSWORD: str = "Admin1234!"
+    SUPERADMIN_EMAIL: str = "superadmin@iieg.gob.mx"
+    SUPERADMIN_PASSWORD: str = "Super1234!"
 
     @property
     def database_url(self) -> str:

@@ -24,26 +24,50 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def seed(db: AsyncSession) -> None:
-    result = await db.execute(select(User).where(User.email == settings.ADMIN_EMAIL))
+async def seed_superadmin(db: AsyncSession) -> None:
+    """Production init: only creates superadmin from env vars."""
+    result = await db.execute(select(User).where(User.email == settings.SUPERADMIN_EMAIL))
     if result.scalar_one_or_none():
-        logger.info("Data already seeded, skipping.")
+        logger.info("Superadmin already exists, skipping.")
         return
-
-    logger.info("Seeding database...")
-
     superadmin = User(
-        email="superadmin@iieg.gob.mx", hashed_password=hash_password("Super1234!"), role=UserRole.superadmin
+        email=settings.SUPERADMIN_EMAIL,
+        hashed_password=hash_password(settings.SUPERADMIN_PASSWORD),
+        role=UserRole.superadmin,
     )
-    admin = User(email=settings.ADMIN_EMAIL, hashed_password=hash_password(settings.ADMIN_PASSWORD), role=UserRole.admin)
-    maintainer = User(
-        email="editor@iieg.gob.mx", hashed_password=hash_password("Editor1234!"), role=UserRole.maintainer
+    db.add(superadmin)
+    await db.commit()
+    logger.info("Superadmin created: %s", settings.SUPERADMIN_EMAIL)
+
+
+async def seed_users(db: AsyncSession) -> None:
+    """Development seed: creates dummy users for testing."""
+    result = await db.execute(select(User).where(User.email == "admin@iieg.gob.mx"))
+    if result.scalar_one_or_none():
+        logger.info("Users already seeded, skipping.")
+        return
+    superadmin = User(
+        email=settings.SUPERADMIN_EMAIL,
+        hashed_password=hash_password(settings.SUPERADMIN_PASSWORD),
+        role=UserRole.superadmin,
     )
-    visualizer = User(
-        email="consulta@iieg.gob.mx", hashed_password=hash_password("Viewer1234!"), role=UserRole.visualizer
-    )
+    admin = User(email="admin@iieg.gob.mx", hashed_password=hash_password("Admin1234!"), role=UserRole.admin)
+    maintainer = User(email="editor@iieg.gob.mx", hashed_password=hash_password("Editor1234!"), role=UserRole.maintainer)
+    visualizer = User(email="consulta@iieg.gob.mx", hashed_password=hash_password("Viewer1234!"), role=UserRole.visualizer)
     db.add_all([superadmin, admin, maintainer, visualizer])
     await db.flush()
+    logger.info("Users seeded.")
+
+
+async def seed_catalog(db: AsyncSession) -> None:
+    """Development seed: creates dummy catalog data for testing."""
+    result = await db.execute(select(Proyecto))
+    if result.scalars().first():
+        logger.info("Catalog already seeded, skipping.")
+        return
+
+    logger.info("Seeding catalog...")
+
 
     mapalab = Proyecto(
         nombre="MapaLab Jalisco",
@@ -379,6 +403,14 @@ async def seed(db: AsyncSession) -> None:
         Archivo(url_id=urls_data[11].id, descripcion="Ficha técnica aplicación DENUE Interactivo", fecha_publicacion=date(2024, 2, 14), fecha_fuente="INEGI 2024", meta={"formato": "PDF"}),
     ]
     db.add_all(archivos_data)
+    await db.flush()
+    logger.info("Catalog seeded.")
+
+
+async def seed(db: AsyncSession) -> None:
+    """Development seed: users + catalog data."""
+    await seed_users(db)
+    await seed_catalog(db)
     await db.commit()
     logger.info("Seeding completed successfully.")
 
@@ -416,5 +448,31 @@ async def main() -> None:
     await engine.dispose()
 
 
+async def main_prod() -> None:
+    run_migrations()
+    engine = create_async_engine(settings.database_url, echo=False)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    async with factory() as db:
+        await seed_superadmin(db)
+    await engine.dispose()
+
+
+async def main_dev_init() -> None:
+    """Migrations + superadmin only, for dev without full seed."""
+    run_migrations()
+    engine = create_async_engine(settings.database_url, echo=False)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+    async with factory() as db:
+        await seed_superadmin(db)
+    await engine.dispose()
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    import sys
+    mode = sys.argv[1] if len(sys.argv) > 1 else "dev"
+    if mode == "prod":
+        asyncio.run(main_prod())
+    elif mode == "dev-init":
+        asyncio.run(main_dev_init())
+    else:
+        asyncio.run(main())
