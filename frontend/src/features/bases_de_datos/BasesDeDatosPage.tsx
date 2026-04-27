@@ -9,6 +9,7 @@ import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } 
 import type { Column } from '@/components/DataTable'
 import type { BaseDeDatos } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from './services/basesDeDatosService'
+import { nombreIcon, temaIcon, frecuenciaIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -33,7 +34,7 @@ export default function BasesDeDatosPage() {
 
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'bases-de-datos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'bases-de-datos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -127,6 +128,7 @@ export default function BasesDeDatosPage() {
   const columns: Column<BaseDeDatos>[] = [
     {
       header: 'Nombre',
+      icon: nombreIcon(),
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-56',
       getValue: (r) => r.nombre,
@@ -134,18 +136,21 @@ export default function BasesDeDatosPage() {
     },
     {
       header: 'Tema',
+      icon: temaIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.tema ?? '—'}</span>,
       getValue: (r) => r.tema ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'tema', v),
     },
     {
       header: 'Frecuencia',
+      icon: frecuenciaIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.frecuencia_actualizacion ?? '—'}</span>,
       getValue: (r) => r.frecuencia_actualizacion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'frecuencia_actualizacion', v),
     },
     {
       header: 'Descripción',
+      icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '—'}</span>,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
@@ -198,6 +203,7 @@ export default function BasesDeDatosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

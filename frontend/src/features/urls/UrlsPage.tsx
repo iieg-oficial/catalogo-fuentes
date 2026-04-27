@@ -11,6 +11,7 @@ import type { Column } from '@/components/DataTable'
 import type { Url, Instrumento } from '@/types'
 import { getUrls, createUrl, updateUrl, deleteUrl } from './services/urlsService'
 import { getInstrumentos } from '@/features/instrumentos/services/instrumentosService'
+import { urlsIcon, instrumentosIcon, basesDeDatosIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -33,7 +34,7 @@ export default function UrlsPage() {
   const [newInstrumentoId, setNewInstrumentoId] = useState('')
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'urls')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'urls')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -130,6 +131,7 @@ export default function UrlsPage() {
   const columns: Column<Url>[] = [
     {
       header: 'URL',
+      icon: urlsIcon(),
       render: (r) => (
         <a href={r.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
           className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 280 }}>
@@ -142,6 +144,7 @@ export default function UrlsPage() {
     },
     {
       header: 'Instrumento',
+      icon: instrumentosIcon(),
       render: (r) => r.instrumento
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.instrumento.nombre}</span>
         : <span className="text-ink/30 text-[13px]">—</span>,
@@ -151,6 +154,7 @@ export default function UrlsPage() {
     },
     {
       header: 'Base de datos',
+      icon: basesDeDatosIcon(),
       render: (r) => r.instrumento?.base_de_datos
         ? <span className="text-ink/60 text-[13px]">{r.instrumento.base_de_datos.nombre}</span>
         : <span className="text-ink/30 text-[13px]">—</span>,
@@ -205,6 +209,7 @@ export default function UrlsPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

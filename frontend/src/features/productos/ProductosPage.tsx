@@ -11,6 +11,7 @@ import type { Column } from '@/components/DataTable'
 import type { Producto, Proyecto } from '@/types'
 import { getProductos, createProducto, updateProducto, deleteProducto } from './services/productosService'
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
+import { nombreIcon, descripcionIcon, proyectosIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -34,7 +35,7 @@ export default function ProductosPage() {
   const [newDesc, setNewDesc] = useState('')
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'productos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'productos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -131,6 +132,7 @@ export default function ProductosPage() {
   const columns: Column<Producto>[] = [
     {
       header: 'Nombre',
+      icon: nombreIcon(),
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-56',
       getValue: (r) => r.nombre,
@@ -138,6 +140,7 @@ export default function ProductosPage() {
     },
     {
       header: 'Proyecto',
+      icon: proyectosIcon(),
       render: (r) => r.proyecto
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.proyecto.nombre}</span>
         : <span className="text-ink/30 text-[13px]">—</span>,
@@ -147,6 +150,7 @@ export default function ProductosPage() {
     },
     {
       header: 'Descripción',
+      icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '—'}</span>,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
@@ -202,6 +206,7 @@ export default function ProductosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

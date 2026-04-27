@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -30,6 +30,8 @@ class ArchivoRead(ArchivoBase):
     id: uuid.UUID
     url_id: uuid.UUID | None = None
     url_ref: UrlRead | None = None
+    updated_at: datetime | None = None
+    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
 

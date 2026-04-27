@@ -3,6 +3,7 @@ import { AuthProvider, useAuthContext } from '@/context/AuthContext'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import LoginPage from '@/features/login/LoginPage'
+import RegisterPage from '@/features/register/RegisterPage'
 import ProyectosPage from '@/features/proyectos/ProyectosPage'
 import ProyectoDetailPage from '@/features/proyectos/ProyectoDetailPage'
 import ProductosPage from '@/features/productos/ProductosPage'
@@ -22,7 +23,7 @@ import EntidadesPage from '@/features/entidades/EntidadesPage'
 import HomePage from '@/features/home/HomePage'
 
 function CatalogRoutes() {
-  const { user, logout } = useAuthContext()
+  const { user, canManageUsers, logout } = useAuthContext()
 
   return (
     <Layout user={user} onLogout={logout}>
@@ -42,7 +43,7 @@ function CatalogRoutes() {
         <Route path="archivos" element={<ArchivosPage />} />
         <Route path="archivos/:id" element={<ArchivoDetailPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
-        {user?.role === 'admin' && <Route path="users" element={<UsersPage />} />}
+        {canManageUsers && <Route path="users" element={<UsersPage />} />}
         <Route index element={<HomePage />} />
       </Routes>
     </Layout>
@@ -54,6 +55,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route
           path="/*"
           element={

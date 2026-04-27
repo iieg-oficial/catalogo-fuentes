@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -21,5 +22,7 @@ class ProyectoUpdate(BaseModel):
 
 class ProyectoRead(ProyectoBase):
     id: uuid.UUID
+    updated_at: datetime | None = None
+    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}

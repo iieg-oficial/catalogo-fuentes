@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -25,6 +26,8 @@ class UrlRead(UrlBase):
     id: uuid.UUID
     instrumento_id: uuid.UUID | None = None
     instrumento: InstrumentoRead | None = None
+    updated_at: datetime | None = None
+    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
 

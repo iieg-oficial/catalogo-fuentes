@@ -11,6 +11,7 @@ import type { Column } from '@/components/DataTable'
 import type { Archivo, Url } from '@/types'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from './services/archivosService'
 import { getUrls } from '@/features/urls/services/urlsService'
+import { urlsIcon, descripcionIcon, fechaIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -35,7 +36,7 @@ export default function ArchivosPage() {
   const [newFechaPub, setNewFechaPub] = useState('')
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'archivos')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'archivos')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -137,6 +138,7 @@ export default function ArchivosPage() {
   const columns: Column<Archivo>[] = [
     {
       header: 'URL',
+      icon: urlsIcon(),
       render: (r) => r.url_ref?.url
         ? (
           <a href={r.url_ref.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
@@ -149,12 +151,14 @@ export default function ArchivosPage() {
     },
     {
       header: 'Descripción',
+      icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '—'}</span>,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },
     {
       header: 'Fecha fuente',
+      icon: fechaIcon(),
       render: (r) => {
         const fmt = fmtDate(r.fecha_fuente)
         return <span className="text-ink/70 text-[12px]">{fmt ?? '—'}</span>
@@ -164,6 +168,7 @@ export default function ArchivosPage() {
     },
     {
       header: 'Fecha publicación',
+      icon: fechaIcon(),
       render: (r) => {
         const fmt = fmtDate(r.fecha_publicacion)
         return <span className="text-ink/70 text-[12px]">{fmt ?? '—'}</span>
@@ -225,6 +230,7 @@ export default function ArchivosPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}

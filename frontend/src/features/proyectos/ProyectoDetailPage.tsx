@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
@@ -33,30 +33,6 @@ function EstadoChip({ label }: { label: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// StatTile
-// ---------------------------------------------------------------------------
-
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  const isNumeric = typeof value === 'number' || /^\d+$/.test(String(value))
-  return (
-    <div className="bg-white border border-ink/[6%] rounded-lg p-4">
-      <p
-        className="text-[10px] uppercase tracking-widest font-medium mb-1.5"
-        style={{ color: '#9F8FA8' }}
-      >
-        {label}
-      </p>
-      <p
-        className={isNumeric ? 'font-mono tabular-nums text-ink' : 'text-ink'}
-        style={{ fontSize: '22px', lineHeight: 1.1 }}
-      >
-        {value}
-      </p>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // SectionHeading
 // ---------------------------------------------------------------------------
 
@@ -83,6 +59,8 @@ export default function ProyectoDetailPage() {
   const [item, setItem] = useState<ProyectoDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const load = async () => {
     if (!id) return
@@ -117,10 +95,16 @@ export default function ProyectoDetailPage() {
       ? [item.meta.categoria]
       : []
 
-  const registrosRaw = item.meta?.registros
-  const registros = registrosRaw != null ? String(registrosRaw) : null
+  const formatDate = (iso: string | null) => {
+    if (!iso) return null
+    return new Date(iso).toLocaleString('es-MX', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    })
+  }
 
   return (
+    <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       {/* ------------------------------------------------------------------ */}
       {/* Breadcrumb                                                           */}
@@ -135,7 +119,7 @@ export default function ProyectoDetailPage() {
           Proyectos
         </button>
         <span className="text-ink/25">›</span>
-        <span className="text-ink/70 font-medium">#{item.id}</span>
+        <span className="text-ink/70 font-medium">{item.nombre}</span>
       </nav>
 
       {/* ------------------------------------------------------------------ */}
@@ -147,7 +131,7 @@ export default function ProyectoDetailPage() {
             className="text-[11px] font-semibold uppercase tracking-widest mb-1.5"
             style={{ color: '#9F8FA8' }}
           >
-            Proyecto · {item.id}
+            Proyecto
           </p>
 
           <h1
@@ -176,14 +160,6 @@ export default function ProyectoDetailPage() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2 shrink-0 pt-1">
-          {canWrite && (
-            <button
-              onClick={() => {/* future: open edit modal */}}
-              className="h-8 px-4 rounded-md text-sm font-medium border border-ink/[12%] text-ink/60 hover:text-ink/80 hover:border-ink/20 transition-colors duration-150"
-            >
-              Editar
-            </button>
-          )}
           <button
             onClick={() => navigate(-1)}
             className="h-8 px-4 rounded-md text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors duration-150"
@@ -191,18 +167,6 @@ export default function ProyectoDetailPage() {
             Volver
           </button>
         </div>
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Stat tiles                                                           */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatTile label="Productos" value={item.productos.length} />
-        <StatTile
-          label={registros != null ? 'Registros' : 'Campos meta'}
-          value={registros ?? metaEntries.length}
-        />
-        <StatTile label="Total metadatos" value={metaEntries.length} />
       </div>
 
       {/* ------------------------------------------------------------------ */}
@@ -230,9 +194,37 @@ export default function ProyectoDetailPage() {
             )}
           </section>
 
-          {/* Recursos vinculados */}
+          {/* Productos vinculados */}
           <section>
-            <SectionHeading>Recursos vinculados</SectionHeading>
+            <div className="flex items-baseline justify-between mb-3">
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>
+                Productos vinculados
+              </p>
+              {item.productos.length > 0 && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(item.productos.map((p) => p.nombre).join('\n'))
+                    setCopied(true)
+                    if (copyTimer.current) clearTimeout(copyTimer.current)
+                    copyTimer.current = setTimeout(() => setCopied(false), 500)
+                  }}
+                  className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1"
+                  title="Copiar todos los nombres"
+                >
+                  {copied ? (
+                    <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 7l4 4 6-6" />
+                    </svg>
+                  ) : (
+                    <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="4" y="4" width="8" height="8" rx="1.5" />
+                      <path d="M2 10V2h8" />
+                    </svg>
+                  )}
+                  {copied ? 'Copiado' : 'Copiar todos'}
+                </button>
+              )}
+            </div>
             {item.productos.length === 0 ? (
               <p className="text-[13px] text-ink/[35%] italic">Sin productos vinculados</p>
             ) : (
@@ -310,8 +302,30 @@ export default function ProyectoDetailPage() {
               Agregar campo
             </button>
           )}
+
+          {(item.updated_at || item.updated_by_email) && (
+            <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
+              {item.updated_at && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
+                    Última edición
+                  </p>
+                  <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
+                </div>
+              )}
+              {item.updated_by_email && (
+                <div>
+                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
+                    Último editor
+                  </p>
+                  <p className="text-[12px] text-ink/70">{item.updated_by_email}</p>
+                </div>
+              )}
+            </div>
+          )}
         </aside>
       </div>
+    </div>
     </div>
   )
 }

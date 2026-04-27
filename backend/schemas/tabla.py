@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -28,6 +29,8 @@ class TablaUpdate(BaseModel):
 class TablaRead(TablaBase):
     id: uuid.UUID
     base_de_datos_id: uuid.UUID | None = None
+    updated_at: datetime | None = None
+    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
 

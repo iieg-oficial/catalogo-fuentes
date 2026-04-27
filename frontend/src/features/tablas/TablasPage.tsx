@@ -14,6 +14,7 @@ import type { Tabla, BaseDeDatos, Producto } from '@/types'
 import { getTablas, createTabla, updateTabla, deleteTabla } from './services/tablasService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
 import { getProductos } from '@/features/productos/services/productosService'
+import { nombreIcon, basesDeDatosIcon, productosIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -38,7 +39,7 @@ export default function TablasPage() {
   const [newProductoIds, setNewProductoIds] = useState<string[]>([])
   const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
 
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta } = useMetaColumns(items, 'tablas')
+  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'tablas')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -147,6 +148,7 @@ export default function TablasPage() {
   const columns: Column<Tabla>[] = [
     {
       header: 'Nombre',
+      icon: nombreIcon(),
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-56',
       getValue: (r) => r.nombre,
@@ -154,6 +156,7 @@ export default function TablasPage() {
     },
     {
       header: 'Base de datos',
+      icon: basesDeDatosIcon(),
       render: (r) => r.base_de_datos
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.nombre}</span>
         : <span className="text-ink/30 text-[13px]">—</span>,
@@ -163,6 +166,7 @@ export default function TablasPage() {
     },
     {
       header: 'Productos',
+      icon: productosIcon(),
       render: (r) => <TagPills items={r.productos.map((p) => p.nombre)} label="PRODUCTOS" />,
       getValue: (r) => r.productos.map((p) => p.id).join(','),
       onEdit: handleEditProductos,
@@ -226,6 +230,7 @@ export default function TablasPage() {
           onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
           onDeleteColumn={canWrite ? deleteColumn : undefined}
           onEditColumn={canWrite ? handleEditColumn : undefined}
+          canModifyColumn={canWrite ? canModifyCol : undefined}
           onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
           addRowMetaValues={addRowMeta}
           onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
