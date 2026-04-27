@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.1.1...v0.2.0) (2026-04-27)
+
+
+### ✨ Features
+
+* **deploy:** add dev/prod environment split with separate seeds ([068580c](https://github.com/iieg-oficial/dashboard-tracking/commit/068580c30d012d2fb54316754a5e3521ea2c161a))
+* **deploy:** add dev/prod environment split with separate seeds and docker compose override ([16f68a0](https://github.com/iieg-oficial/dashboard-tracking/commit/16f68a0c03166c23a3b8185193ffc78b0dbad971))
+
 ## [0.1.1](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.1.0...v0.1.1) (2026-04-27)
 
 
