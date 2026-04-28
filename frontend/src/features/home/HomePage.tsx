@@ -17,7 +17,7 @@ const CARD_BG: Record<string, string> = {
   proyectos:        'bg-brand-600',
   productos:        'bg-violet-600',
   tablas:           'bg-blue-700',
-  'bases-de-datos': 'bg-teal-700',
+  'bases-de-datos': 'bg-indigo-600',
   instrumentos:     'bg-emerald-700',
   urls:             'bg-orange-600',
   archivos:         'bg-rose-700',
