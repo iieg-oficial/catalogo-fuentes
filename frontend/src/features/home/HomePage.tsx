@@ -276,9 +276,20 @@ export default function HomePage() {
           )}
 
           {hasQuery && results.length > 0 && (
-            <p className="mt-2 text-xs text-gray-400">
-              {results.length} resultado{results.length !== 1 ? 's' : ''} — ↑↓ navegar · Enter abrir · Esc cerrar
-            </p>
+            <div className="mt-2 flex items-center gap-3">
+              <span className="text-xs font-medium text-neutral-400">
+                {results.length} resultado{results.length !== 1 ? 's' : ''}
+              </span>
+              <span className="text-neutral-200 text-xs">·</span>
+              <span className="text-[11px] text-neutral-300 flex items-center gap-1.5">
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↑↓</kbd>
+                navegar
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↵</kbd>
+                abrir
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">Esc</kbd>
+                cerrar
+              </span>
+            </div>
           )}
         </section>
 
