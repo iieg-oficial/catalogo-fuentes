@@ -819,7 +819,7 @@ export default function CatalogGrid<T extends { id: string }>({
         </p>
         <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
           {title}
-          <span style={{ color: '#9F8FA8', fontStyle: 'italic', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span style={{ color: '#9F8FA8', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -860,12 +860,6 @@ export default function CatalogGrid<T extends { id: string }>({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[12px] text-ink/40">
-            {displayedRows.length === rows.length
-              ? `${rows.length} ${entityLabel}`
-              : `${displayedRows.length} de ${rows.length}`}
-          </span>
-
           {canWrite && onAdd && (
             <button
               onClick={onAdd}
