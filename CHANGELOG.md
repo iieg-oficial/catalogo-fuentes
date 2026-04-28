@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.1...v0.2.2) (2026-04-28)
+
+
+### 🐛 Bug Fixes
+
+* **backend:** set allow_credentials=False to fix CORS with wildcard origin ([79af117](https://github.com/iieg-oficial/dashboard-tracking/commit/79af117df8e24330ea53ce991ef7dc81a550f61b))
+
 ## [0.2.1](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.0...v0.2.1) (2026-04-27)
 
 
