@@ -122,7 +122,6 @@ export default function HomePage() {
           <div>
             <h1
               className="text-2xl font-bold text-gray-900 tracking-tight leading-tight"
-              style={{ fontFamily: '"Garet", system-ui, sans-serif' }}
             >
               Catálogo de Datos
             </h1>
@@ -136,7 +135,6 @@ export default function HomePage() {
         <section>
           <p
             className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-4"
-            style={{ fontFamily: '"Garet", system-ui, sans-serif' }}
           >
             Módulos del catálogo
           </p>
@@ -164,7 +162,6 @@ export default function HomePage() {
                   <div>
                     <div
                       className="text-xs font-bold uppercase tracking-wide text-white/80 leading-tight"
-                      style={{ fontFamily: '"Garet", system-ui, sans-serif' }}
                     >
                       {level.label}
                     </div>
@@ -188,7 +185,6 @@ export default function HomePage() {
         <section className="flex flex-col items-center">
           <p
             className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-4"
-            style={{ fontFamily: '"Garet", system-ui, sans-serif' }}
           >
             Búsqueda global
           </p>

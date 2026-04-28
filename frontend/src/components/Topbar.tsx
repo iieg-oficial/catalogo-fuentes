@@ -28,7 +28,6 @@ export default function Topbar({ title, search, onSearch, filters, actions }: Pr
 
       <h2
         className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400 shrink-0"
-        style={{ fontFamily: '"Garet", system-ui, sans-serif' }}
       >
         {title}
       </h2>
