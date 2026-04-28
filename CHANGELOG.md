@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.2...v0.2.3) (2026-04-28)
+
+
+### 🐛 Bug Fixes
+
+* **backend:** eagerly load updated_by on all nested relations to fix MissingGreenlet 500s ([fced64d](https://github.com/iieg-oficial/dashboard-tracking/commit/fced64d471927cb173a086a1e991a17789fb6d49))
+
 ## [0.2.2](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.1...v0.2.2) (2026-04-28)
 
 
