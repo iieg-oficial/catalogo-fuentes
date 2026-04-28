@@ -153,6 +153,34 @@ prod:
     docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml up -d --build db backend frontend
     docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml run --rm init
 
+# Genera un dump comprimido de la BD de producción  (uso: just db-dump-prod  o  just db-dump-prod mi_dump.pgdump)
+[group('production')]
+db-dump-prod file="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    out="{{file}}"
+    [ -z "$out" ] && out="dump_prod_$(date +%Y%m%d_%H%M%S).pgdump"
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml \
+        exec -T db pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc > "../$out"
+    echo ""
+    echo "  ✓ Dump de producción guardado en: $out"
+    echo ""
+
+# Restaura un dump en la BD de producción  (uso: just db-insert-prod <archivo>)
+[group('production')]
+db-insert-prod file:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml \
+        exec -T db pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists -1 < "../{{file}}"
+    echo ""
+    echo "  ✓ Dump restaurado en producción desde: {{file}}"
+    echo ""
+
 # Detiene y elimina los contenedores de producción
 [group('production')]
 prod-stop:
