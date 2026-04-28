@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from models.archivo import Archivo
+from models.base_de_datos import BaseDeDatos
 from models.instrumento import Instrumento
 from models.url import Url
 from schemas.archivo import ArchivoCreate, ArchivoUpdate
@@ -19,9 +20,9 @@ async def list_archivos(
     instrumento_id: uuid.UUID | None = None,
 ) -> list[Archivo]:
     q = select(Archivo).options(
-        selectinload(Archivo.url_ref)
-        .selectinload(Url.instrumento)
-        .selectinload(Instrumento.base_de_datos),
+        selectinload(Archivo.url_ref).selectinload(Url.updated_by),
+        selectinload(Archivo.url_ref).selectinload(Url.instrumento).selectinload(Instrumento.updated_by),
+        selectinload(Archivo.url_ref).selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
         selectinload(Archivo.updated_by),
     )
     if url_id:
@@ -41,9 +42,9 @@ async def get_archivo(db: AsyncSession, archivo_id: uuid.UUID) -> Archivo | None
     result = await db.execute(
         select(Archivo)
         .options(
-            selectinload(Archivo.url_ref)
-            .selectinload(Url.instrumento)
-            .selectinload(Instrumento.base_de_datos),
+            selectinload(Archivo.url_ref).selectinload(Url.updated_by),
+            selectinload(Archivo.url_ref).selectinload(Url.instrumento).selectinload(Instrumento.updated_by),
+            selectinload(Archivo.url_ref).selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
             selectinload(Archivo.updated_by),
         )
         .where(Archivo.id == archivo_id)

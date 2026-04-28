@@ -17,7 +17,7 @@ async def list_instrumentos(
     base_de_datos_id: uuid.UUID | None = None,
 ) -> list[Instrumento]:
     q = select(Instrumento).options(
-        selectinload(Instrumento.base_de_datos),
+        selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
         selectinload(Instrumento.updated_by),
     )
     if base_de_datos_id:
@@ -33,7 +33,7 @@ async def get_instrumento_detail(db: AsyncSession, instrumento_id: uuid.UUID) ->
     result = await db.execute(
         select(Instrumento)
         .options(
-            selectinload(Instrumento.base_de_datos),
+            selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
             selectinload(Instrumento.urls),
             selectinload(Instrumento.updated_by),
         )
@@ -46,7 +46,7 @@ async def _reload_instrumento(db: AsyncSession, instrumento_id: uuid.UUID) -> In
     result = await db.execute(
         select(Instrumento)
         .options(
-            selectinload(Instrumento.base_de_datos),
+            selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
             selectinload(Instrumento.updated_by),
         )
         .where(Instrumento.id == instrumento_id)

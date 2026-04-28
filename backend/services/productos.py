@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from models.producto import Producto
+from models.proyecto import Proyecto
 from schemas.producto import ProductoCreate, ProductoUpdate
 
 
@@ -16,7 +17,7 @@ async def list_productos(
     proyecto_id: uuid.UUID | None = None,
 ) -> list[Producto]:
     q = select(Producto).options(
-        selectinload(Producto.proyecto),
+        selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
         selectinload(Producto.updated_by),
     )
     if proyecto_id:
@@ -30,7 +31,7 @@ async def get_producto(db: AsyncSession, producto_id: uuid.UUID) -> Producto | N
     result = await db.execute(
         select(Producto)
         .options(
-            selectinload(Producto.proyecto),
+            selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
             selectinload(Producto.updated_by),
         )
         .where(Producto.id == producto_id)
@@ -42,7 +43,7 @@ async def get_producto_detail(db: AsyncSession, producto_id: uuid.UUID) -> Produ
     result = await db.execute(
         select(Producto)
         .options(
-            selectinload(Producto.proyecto),
+            selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
             selectinload(Producto.tablas),
             selectinload(Producto.updated_by),
         )

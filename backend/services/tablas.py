@@ -5,7 +5,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.base_de_datos import BaseDeDatos
 from models.producto import Producto
+from models.proyecto import Proyecto
 from models.tabla import Tabla
 from models.tabla_producto import tabla_producto
 from schemas.tabla import TablaCreate, TablaUpdate
@@ -20,8 +22,9 @@ async def list_tablas(
     proyecto_id: uuid.UUID | None = None,
 ) -> list[Tabla]:
     q = select(Tabla).options(
-        selectinload(Tabla.base_de_datos),
-        selectinload(Tabla.productos).selectinload(Producto.proyecto),
+        selectinload(Tabla.base_de_datos).selectinload(BaseDeDatos.updated_by),
+        selectinload(Tabla.productos).selectinload(Producto.updated_by),
+        selectinload(Tabla.productos).selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
         selectinload(Tabla.updated_by),
     )
     if base_de_datos_id:
@@ -51,8 +54,9 @@ async def get_tabla(db: AsyncSession, tabla_id: uuid.UUID) -> Tabla | None:
     result = await db.execute(
         select(Tabla)
         .options(
-            selectinload(Tabla.base_de_datos),
-            selectinload(Tabla.productos).selectinload(Producto.proyecto),
+            selectinload(Tabla.base_de_datos).selectinload(BaseDeDatos.updated_by),
+            selectinload(Tabla.productos).selectinload(Producto.updated_by),
+            selectinload(Tabla.productos).selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
             selectinload(Tabla.updated_by),
         )
         .where(Tabla.id == tabla_id)

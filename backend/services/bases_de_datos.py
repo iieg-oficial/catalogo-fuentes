@@ -58,16 +58,18 @@ async def get_base_de_datos(db: AsyncSession, bd_id: uuid.UUID) -> BaseDeDatos |
 
 
 async def get_base_de_datos_detail(db: AsyncSession, bd_id: uuid.UUID) -> BaseDeDatos | None:
+    from models.instrumento import Instrumento
     from models.producto import Producto
-    from models.proyecto import Proyecto  # noqa: F401
+    from models.proyecto import Proyecto
 
     result = await db.execute(
         select(BaseDeDatos)
         .options(
-            selectinload(BaseDeDatos.tablas)
-            .selectinload(Tabla.productos)
-            .selectinload(Producto.proyecto),
-            selectinload(BaseDeDatos.instrumentos),
+            selectinload(BaseDeDatos.tablas).selectinload(Tabla.updated_by),
+            selectinload(BaseDeDatos.tablas).selectinload(Tabla.base_de_datos).selectinload(BaseDeDatos.updated_by),
+            selectinload(BaseDeDatos.tablas).selectinload(Tabla.productos).selectinload(Producto.updated_by),
+            selectinload(BaseDeDatos.tablas).selectinload(Tabla.productos).selectinload(Producto.proyecto).selectinload(Proyecto.updated_by),
+            selectinload(BaseDeDatos.instrumentos).selectinload(Instrumento.updated_by),
             selectinload(BaseDeDatos.updated_by),
         )
         .where(BaseDeDatos.id == bd_id)

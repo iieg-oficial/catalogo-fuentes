@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.base_de_datos import BaseDeDatos
 from models.instrumento import Instrumento
 from models.url import Url
 from schemas.url import UrlCreate, UrlUpdate
@@ -17,7 +18,8 @@ async def list_urls(
     instrumento_id: uuid.UUID | None = None,
 ) -> list[Url]:
     q = select(Url).options(
-        selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos),
+        selectinload(Url.instrumento).selectinload(Instrumento.updated_by),
+        selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
         selectinload(Url.updated_by),
     )
     if instrumento_id:
@@ -33,7 +35,8 @@ async def get_url(db: AsyncSession, url_id: uuid.UUID) -> Url | None:
     result = await db.execute(
         select(Url)
         .options(
-            selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos),
+            selectinload(Url.instrumento).selectinload(Instrumento.updated_by),
+            selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
             selectinload(Url.archivos),
             selectinload(Url.updated_by),
         )
@@ -46,7 +49,8 @@ async def _reload_url(db: AsyncSession, url_id: uuid.UUID) -> Url:
     result = await db.execute(
         select(Url)
         .options(
-            selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos),
+            selectinload(Url.instrumento).selectinload(Instrumento.updated_by),
+            selectinload(Url.instrumento).selectinload(Instrumento.base_de_datos).selectinload(BaseDeDatos.updated_by),
             selectinload(Url.updated_by),
         )
         .where(Url.id == url_id)
