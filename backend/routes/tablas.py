@@ -18,7 +18,7 @@ router = APIRouter(prefix="/tablas", tags=["tablas"])
 @router.get("/", response_model=list[TablaDetail])
 async def list_tablas(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     base_de_datos_id: uuid.UUID | None = None,
     producto_id: uuid.UUID | None = None,
     proyecto_id: uuid.UUID | None = None,

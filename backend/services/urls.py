@@ -14,7 +14,7 @@ from schemas.url import UrlCreate, UrlUpdate
 async def list_urls(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     instrumento_id: uuid.UUID | None = None,
 ) -> list[Url]:
     q = select(Url).options(

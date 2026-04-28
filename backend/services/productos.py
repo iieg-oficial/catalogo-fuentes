@@ -13,7 +13,7 @@ from schemas.producto import ProductoCreate, ProductoUpdate
 async def list_productos(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     proyecto_id: uuid.UUID | None = None,
 ) -> list[Producto]:
     q = select(Producto).options(

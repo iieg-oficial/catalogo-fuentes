@@ -15,7 +15,7 @@ from schemas.archivo import ArchivoCreate, ArchivoUpdate
 async def list_archivos(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     url_id: uuid.UUID | None = None,
     instrumento_id: uuid.UUID | None = None,
 ) -> list[Archivo]:

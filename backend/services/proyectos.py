@@ -9,7 +9,7 @@ from models.proyecto import Proyecto
 from schemas.proyecto import ProyectoCreate, ProyectoUpdate
 
 
-async def list_proyectos(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Proyecto]:
+async def list_proyectos(db: AsyncSession, skip: int = 0, limit: int = 10_000) -> list[Proyecto]:
     result = await db.execute(
         select(Proyecto)
         .options(selectinload(Proyecto.updated_by))
