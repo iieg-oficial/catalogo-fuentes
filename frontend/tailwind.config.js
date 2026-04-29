@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Garet', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
         newsreader: ['"Newsreader"', '"EB Garamond"', 'Georgia', 'serif'],
       },
       colors: {

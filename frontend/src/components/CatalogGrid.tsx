@@ -818,6 +818,40 @@ export default function CatalogGrid<T extends { id: string }>({
 
   const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0) + 1
 
+  const exportToCsv = () => {
+    const escape = (v: unknown) => {
+      const s = String(v ?? '')
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? `"${s.replace(/"/g, '""')}"`
+        : s
+    }
+    const resolveColValue = (col: Column<T>, row: T): string => {
+      const raw = col.getValue?.(row) ?? ''
+      if (col.selectOptions?.length) {
+        const labels = raw.split(',').filter(Boolean)
+          .map((id) => col.selectOptions!.find((o) => o.value === id)?.label ?? id)
+        return labels.join(', ')
+      }
+      return raw
+    }
+    const headers = [
+      ...columns.map((c) => escape(c.header)),
+      ...(metaColumnDefs ?? []).map((d) => escape(d.label ?? d.key)),
+    ]
+    const rowLines = displayedRows.map((row) => [
+      ...columns.map((c) => escape(resolveColValue(c, row))),
+      ...(metaColumnDefs ?? []).map((d) => escape(getMeta?.(row)?.[d.key] ?? '')),
+    ].join(','))
+    const csv = [headers.join(','), ...rowLines].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title.toLowerCase().replace(/\s+/g, '_')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex flex-col gap-5">
       {/* Editorial header */}
@@ -827,7 +861,7 @@ export default function CatalogGrid<T extends { id: string }>({
         </p>
         <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
           {title}
-          <span style={{ color: '#9F8FA8', fontStyle: 'italic', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span style={{ color: '#9F8FA8', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -868,12 +902,17 @@ export default function CatalogGrid<T extends { id: string }>({
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[12px] text-ink/40">
-            {displayedRows.length === rows.length
-              ? `${rows.length} ${entityLabel}`
-              : `${displayedRows.length} de ${rows.length}`}
-          </span>
-
+          <button
+            onClick={exportToCsv}
+            title="Exportar a CSV"
+            className="h-8 px-3 rounded-md text-[13px] font-medium bg-ink/[8%] text-ink/50 hover:bg-accent hover:text-white transition-all duration-300 inline-flex items-center gap-1.5"
+          >
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 1v8M4 6l3 3 3-3" />
+              <path d="M1 10v1a2 2 0 002 2h8a2 2 0 002-2v-1" />
+            </svg>
+            CSV
+          </button>
           {canWrite && onAdd && (
             <button
               onClick={onAdd}
