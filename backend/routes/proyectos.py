@@ -19,7 +19,7 @@ router = APIRouter(prefix="/proyectos", tags=["proyectos"])
 @router.get("/", response_model=list[ProyectoRead])
 async def list_proyectos(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):

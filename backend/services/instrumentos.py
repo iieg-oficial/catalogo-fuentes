@@ -13,7 +13,7 @@ from schemas.instrumento import InstrumentoCreate, InstrumentoUpdate
 async def list_instrumentos(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     base_de_datos_id: uuid.UUID | None = None,
 ) -> list[Instrumento]:
     q = select(Instrumento).options(

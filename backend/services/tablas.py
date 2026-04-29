@@ -16,7 +16,7 @@ from schemas.tabla import TablaCreate, TablaUpdate
 async def list_tablas(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     base_de_datos_id: uuid.UUID | None = None,
     producto_id: uuid.UUID | None = None,
     proyecto_id: uuid.UUID | None = None,

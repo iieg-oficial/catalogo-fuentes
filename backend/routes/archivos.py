@@ -18,7 +18,7 @@ router = APIRouter(prefix="/archivos", tags=["archivos"])
 @router.get("/", response_model=list[ArchivoRead])
 async def list_archivos(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     url_id: uuid.UUID | None = None,
     instrumento_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),

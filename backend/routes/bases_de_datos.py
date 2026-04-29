@@ -19,7 +19,7 @@ router = APIRouter(prefix="/bases-de-datos", tags=["bases_de_datos"])
 @router.get("/", response_model=list[BaseDeDatosRead])
 async def list_bases_de_datos(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     tabla_id: uuid.UUID | None = None,
     producto_id: uuid.UUID | None = None,
     proyecto_id: uuid.UUID | None = None,

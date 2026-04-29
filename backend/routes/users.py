@@ -22,7 +22,7 @@ _SUPERADMIN_CREATABLE = set(UserRole)
 @router.get("/", response_model=list[UserRead])
 async def list_users(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     db: AsyncSession = Depends(get_db),
     _=Depends(require_admin),
 ):

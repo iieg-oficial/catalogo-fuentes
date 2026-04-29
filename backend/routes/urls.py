@@ -19,7 +19,7 @@ router = APIRouter(prefix="/urls", tags=["urls"])
 @router.get("/", response_model=list[UrlRead])
 async def list_urls(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     instrumento_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),

@@ -8,7 +8,7 @@ from schemas.user import UserCreate, UserUpdate
 from services.auth import get_user_by_email, hash_password
 
 
-async def list_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
+async def list_users(db: AsyncSession, skip: int = 0, limit: int = 10_000) -> list[User]:
     result = await db.execute(select(User).offset(skip).limit(limit))
     return list(result.scalars().all())
 

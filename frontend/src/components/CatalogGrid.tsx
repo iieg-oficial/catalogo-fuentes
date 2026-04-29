@@ -664,8 +664,11 @@ export default function CatalogGrid<T extends { id: string }>({
 }: CatalogGridProps<T>) {
   const { openSidebar } = useSidebar()
 
+  const PAGE_SIZE = 100
+
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
   const [editingCellPos, setEditingCellPos] = useState({ top: 0, left: 0 })
+  const [page, setPage] = useState(0)
   const addRowRef = useRef<HTMLTableRowElement>(null)
   const onAddRowSaveRef = useRef<(() => void) | undefined>(undefined)
   onAddRowSaveRef.current = onAddRowSave
@@ -789,6 +792,8 @@ export default function CatalogGrid<T extends { id: string }>({
 
   const activeFilterCount = Object.values(filters).filter((v) => v != null && (Array.isArray(v) ? v.length > 0 : v.length > 0)).length
 
+  useEffect(() => { setPage(0) }, [filters, sortField, sortDir, search])
+
   const totalRegistros = useMemo(() => {
     let sum = 0
     displayedRows.forEach((row) => {
@@ -799,10 +804,13 @@ export default function CatalogGrid<T extends { id: string }>({
     return sum
   }, [displayedRows, getMeta])
 
+  const pagedRows = displayedRows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const totalPages = Math.max(1, Math.ceil(displayedRows.length / PAGE_SIZE))
+
   const toggleSelectAll = () => {
-    setSelectedRows(selectedRows.size === displayedRows.length && displayedRows.length > 0
+    setSelectedRows(selectedRows.size === pagedRows.length && pagedRows.length > 0
       ? new Set()
-      : new Set(displayedRows.map(getKey)))
+      : new Set(pagedRows.map(getKey)))
   }
   const toggleSelectRow = (key: string) => {
     setSelectedRows((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n })
@@ -938,7 +946,7 @@ export default function CatalogGrid<T extends { id: string }>({
                   {headerHovered ? (
                     <input
                       type="checkbox"
-                      checked={selectedRows.size === displayedRows.length && displayedRows.length > 0}
+                      checked={selectedRows.size === pagedRows.length && pagedRows.length > 0}
                       onChange={toggleSelectAll}
                       className="w-3.5 h-3.5 rounded accent-brand-600 cursor-pointer"
                       aria-label="Seleccionar todos"
@@ -1021,7 +1029,7 @@ export default function CatalogGrid<T extends { id: string }>({
                 </tr>
               )}
 
-              {displayedRows.map((row, rowIndex) => {
+              {pagedRows.map((row, rowIndex) => {
                 const rowKey = getKey(row)
                 const isSelected = selectedRows.has(rowKey)
                 const isHovered = hoveredRow === rowKey
@@ -1042,7 +1050,7 @@ export default function CatalogGrid<T extends { id: string }>({
                         <input type="checkbox" checked={isSelected} onChange={() => toggleSelectRow(rowKey)}
                           className="w-3.5 h-3.5 rounded accent-brand-600 cursor-pointer" />
                       ) : (
-                        <span className="font-mono text-[10px] text-ink/30 select-none">{rowIndex + 1}</span>
+                        <span className="font-mono text-[10px] text-ink/30 select-none">{page * PAGE_SIZE + rowIndex + 1}</span>
                       )}
                     </td>
 
@@ -1305,13 +1313,44 @@ export default function CatalogGrid<T extends { id: string }>({
           {selectedRows.size > 0 && onDeleteRows && (
             <button
               onClick={() => { onDeleteRows([...selectedRows]); setSelectedRows(new Set()) }}
-              className="ml-auto flex items-center gap-1.5 text-[11px] text-red-400 hover:text-red-500 px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
+              className="flex items-center gap-1.5 text-[11px] text-red-400 hover:text-red-500 px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
             >
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
               </svg>
               Eliminar seleccionadas
             </button>
+          )}
+
+          {totalPages > 1 && (
+            <div className="ml-auto flex items-center gap-2">
+              <span className="font-mono text-[11px] text-ink/40">
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, displayedRows.length)} de {displayedRows.length}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                aria-label="Página anterior"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7.5 2.5L4.5 6l3 3.5" />
+                </svg>
+              </button>
+              <span className="font-mono text-[11px] text-ink/55">
+                {page + 1} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                aria-label="Página siguiente"
+              >
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4.5 2.5L7.5 6l-3 3.5" />
+                </svg>
+              </button>
+            </div>
           )}
         </div>
       </div>

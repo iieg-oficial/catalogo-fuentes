@@ -14,7 +14,7 @@ from schemas.base_de_datos import BaseDeDatosCreate, BaseDeDatosUpdate
 async def list_bases_de_datos(
     db: AsyncSession,
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 10_000,
     tabla_id: uuid.UUID | None = None,
     producto_id: uuid.UUID | None = None,
     proyecto_id: uuid.UUID | None = None,
