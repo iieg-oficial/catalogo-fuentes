@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.3...v0.3.0) (2026-04-29)
+
+
+### ✨ Features
+
+* **config:** add db-dump-prod and db-insert-prod commands to justfile ([68bb24c](https://github.com/iieg-oficial/dashboard-tracking/commit/68bb24c8f2c654999a1d2b7c5dbce96d1bb5112e))
+* **frontend:** add client-side pagination to CatalogGrid (100 rows per page) ([92bd3c1](https://github.com/iieg-oficial/dashboard-tracking/commit/92bd3c18783af85b551d3182a2827d3151632719))
+* **frontend:** add csv export button to catalog grid toolbar ([e8b7ab0](https://github.com/iieg-oficial/dashboard-tracking/commit/e8b7ab03af732b6f215f1db8af0133bdcd3696e9))
+
+
+### 🐛 Bug Fixes
+
+* **backend:** raise default list limit from 100 to 10_000 in all routes and services ([5555d43](https://github.com/iieg-oficial/dashboard-tracking/commit/5555d430ba649b1415a74edaf956893e2292e132))
+
 ## [0.2.3](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.2.2...v0.2.3) (2026-04-28)
 
 
