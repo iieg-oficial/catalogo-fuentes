@@ -424,7 +424,7 @@ function GridColHeader({
         backgroundColor: '#FBFAFC',
         borderBottom: '1px solid rgba(26,22,37,.10)',
         width: width ?? 'auto',
-        minWidth: typeof width === 'number' ? width : undefined,
+        minWidth: typeof width === 'number' ? width : 320,
         whiteSpace: 'nowrap',
         verticalAlign: 'middle',
         padding: 0,
@@ -947,7 +947,7 @@ export default function CatalogGrid<T extends { id: string }>({
       {/* Grid */}
       <div className="rounded-lg border border-ink/[10%] shadow-sm overflow-hidden bg-white">
         <div className="overflow-x-auto" style={{ maxHeight: '560px', overflowY: 'auto' }}>
-          <table className="border-collapse text-[13px]" style={{ tableLayout: 'fixed', width: '100%', minWidth: totalCols * 180 }}>
+          <table className="border-collapse text-[13px]" style={{ tableLayout: 'fixed', width: '100%', minWidth: totalCols * 320 }}>
             <thead>
               <tr onMouseEnter={() => setHeaderHovered(true)} onMouseLeave={() => setHeaderHovered(false)}>
                 <th
