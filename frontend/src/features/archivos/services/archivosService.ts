@@ -22,6 +22,8 @@ export async function createArchivo(payload: {
   distribucion_id?: string
   rol_archivo?: string
   observaciones_archivo?: string
+  ruta_relativa_en_distribucion?: string
+  ruta_almacenamiento?: string
 }): Promise<Archivo> {
   const { data } = await apiClient.post<Archivo>('/archivos/', payload)
   return data

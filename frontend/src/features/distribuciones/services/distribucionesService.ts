@@ -21,6 +21,10 @@ export async function createDistribucion(payload: {
   edicion_dataset_id?: string
   descriptor?: string
   url?: string
+  requiere_autenticacion?: boolean
+  requiere_registro?: boolean
+  es_url_persistente?: boolean
+  estado_url_ultima_revision?: string
   observaciones_distribucion?: string
 }): Promise<Distribucion> {
   const { data } = await apiClient.post<Distribucion>('/distribuciones/', payload)

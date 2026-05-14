@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { Dataset } from '@/types'
+import type { Dataset, Fuente } from '@/types'
 import { getDatasets, createDataset, updateDataset, deleteDataset } from '../services/datasetsService'
+import { getFuentes } from '@/features/fuentes/services/fuentesService'
 import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -15,6 +17,7 @@ export default function DatasetsPage() {
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Dataset[]>([])
+  const [fuentes, setFuentes] = useState<Fuente[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
@@ -22,28 +25,72 @@ export default function DatasetsPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newNombreCorto, setNewNombreCorto] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newIdentificador, setNewIdentificador] = useState('')
   const [newPeriodicidad, setNewPeriodicidad] = useState('')
+  const [newVigente, setNewVigente] = useState('')
+  const [newUrlPagina, setNewUrlPagina] = useState('')
+  const [newUrlMetodologia, setNewUrlMetodologia] = useState('')
+  const [newUrlMetadatos, setNewUrlMetadatos] = useState('')
+  const [newDesagregacion, setNewDesagregacion] = useState('')
+  const [newCobertura, setNewCobertura] = useState('')
+  const [newUnidadObs, setNewUnidadObs] = useState('')
   const [newTema, setNewTema] = useState('')
+  const [newProposito, setNewProposito] = useState('')
+  const [newFechaInicio, setNewFechaInicio] = useState('')
+  const [newFechaFin, setNewFechaFin] = useState('')
+  const [newObservaciones, setNewObservaciones] = useState('')
+  const [newUrlNormativa, setNewUrlNormativa] = useState('')
+  const [newFuenteId, setNewFuenteId] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
-    try { setItems(await getDatasets()) } catch { setError(true) } finally { if (!silent) setLoading(false) }
+    try {
+      const [datasets, fuentesList] = await Promise.all([getDatasets(), getFuentes()])
+      setItems(datasets)
+      setFuentes(fuentesList)
+    } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewPeriodicidad(''); setNewTema('') }
+  const resetFields = () => {
+    setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewIdentificador('')
+    setNewPeriodicidad(''); setNewVigente(''); setNewUrlPagina(''); setNewUrlMetodologia('')
+    setNewUrlMetadatos(''); setNewDesagregacion(''); setNewCobertura(''); setNewUnidadObs('')
+    setNewTema(''); setNewProposito(''); setNewFechaInicio(''); setNewFechaFin('')
+    setNewObservaciones(''); setNewUrlNormativa(''); setNewFuenteId('')
+  }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createDataset({ nombre: newNombre, nombre_corto: newNombreCorto || undefined, descripcion: newDesc || undefined, periodicidad: newPeriodicidad || undefined, tema_principal: newTema || undefined })
+      await createDataset({
+        nombre: newNombre,
+        nombre_corto: newNombreCorto || undefined,
+        descripcion: newDesc || undefined,
+        identificador_persistente: newIdentificador || undefined,
+        periodicidad: newPeriodicidad || undefined,
+        vigente: newVigente ? newVigente === 'true' : undefined,
+        url_pagina_principal: newUrlPagina || undefined,
+        url_metodologia_general: newUrlMetodologia || undefined,
+        url_metadatos_general: newUrlMetadatos || undefined,
+        desagregacion_geografica: newDesagregacion || undefined,
+        cobertura_temporal_general: newCobertura || undefined,
+        unidad_observacion: newUnidadObs || undefined,
+        tema_principal: newTema || undefined,
+        proposito: newProposito || undefined,
+        fecha_inicio_disponibilidad: newFechaInicio || undefined,
+        fecha_fin_disponibilidad: newFechaFin || undefined,
+        observaciones_dataset: newObservaciones || undefined,
+        url_normativa_o_marco_legal: newUrlNormativa || undefined,
+        fuente_id: newFuenteId || undefined,
+      })
       setAddingRow(false); resetFields(); await load(true)
     } finally {}
   }
 
-  const handleEditCell = (row: Dataset, field: string, value: string) => {
+  const handleEditCell = (row: Dataset, field: string, value: string | boolean) => {
     updateDataset(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
@@ -76,7 +123,7 @@ export default function DatasetsPage() {
     { header: 'Descripcion', icon: descripcionIcon(), render: (r) => txt(r.descripcion), getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
     { header: 'ID persistente', icon: descripcionIcon(), render: (r) => txt(r.identificador_persistente), getValue: (r) => r.identificador_persistente ?? '', onEdit: (r, v) => handleEditCell(r, 'identificador_persistente', v) },
     { header: 'Periodicidad', icon: frecuenciaIcon(), render: (r) => txt(r.periodicidad), getValue: (r) => r.periodicidad ?? '', onEdit: (r, v) => handleEditCell(r, 'periodicidad', v) },
-    { header: 'Vigente', icon: estadoIcon(), render: (r) => r.vigente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>, getValue: (r) => r.vigente ? 'Si' : 'No' },
+    { header: 'Vigente', icon: estadoIcon(), render: (r) => r.vigente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>, selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }], onEdit: (r, v) => handleEditCell(r, 'vigente', v === 'true'), getValue: (r) => r.vigente ? 'true' : 'false' },
     { header: 'URL principal', icon: urlIcon(), render: (r) => link(r.url_pagina_principal), getValue: (r) => r.url_pagina_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_pagina_principal', v) },
     { header: 'URL metodologia', icon: urlIcon(), render: (r) => link(r.url_metodologia_general), getValue: (r) => r.url_metodologia_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metodologia_general', v) },
     { header: 'URL metadatos', icon: urlIcon(), render: (r) => link(r.url_metadatos_general), getValue: (r) => r.url_metadatos_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metadatos_general', v) },
@@ -90,30 +137,90 @@ export default function DatasetsPage() {
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_dataset), getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
     { header: 'Etiquetas', icon: jsonIcon(), render: (r) => { const t = r.etiquetas ?? []; return t.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{t.length} tags</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => JSON.stringify(r.etiquetas ?? []) },
     { header: 'URL normativa', icon: urlIcon(), render: (r) => link(r.url_normativa_o_marco_legal), getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
-    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.fuente?.nombre ?? '' },
+    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => handleEditCell(r, 'fuente_id', v), getValue: (r) => r.fuente_id ?? '' },
   ]
 
   const emptyTd = <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
   const addRowCells = (
     <>
+      {/* 1. Nombre */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
       </td>
+      {/* 2. Nombre corto */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newNombreCorto} onChange={(e) => setNewNombreCorto(e.target.value)} onKeyDown={kd} placeholder="Nombre corto..." className={inputCls} />
       </td>
+      {/* 3. Descripcion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      {emptyTd}
+      {/* 4. ID persistente */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newIdentificador} onChange={(e) => setNewIdentificador(e.target.value)} onKeyDown={kd} placeholder="ID persistente..." className={inputCls} />
+      </td>
+      {/* 5. Periodicidad */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newPeriodicidad} onChange={(e) => setNewPeriodicidad(e.target.value)} onKeyDown={kd} placeholder="Periodicidad..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {/* 6. Vigente */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newVigente} onChange={setNewVigente} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Vigente..." label="Vigente" />
+      </td>
+      {/* 7. URL principal */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlPagina} onChange={(e) => setNewUrlPagina(e.target.value)} onKeyDown={kd} placeholder="URL pagina..." className={inputCls} />
+      </td>
+      {/* 8. URL metodologia */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlMetodologia} onChange={(e) => setNewUrlMetodologia(e.target.value)} onKeyDown={kd} placeholder="URL metodologia..." className={inputCls} />
+      </td>
+      {/* 9. URL metadatos */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlMetadatos} onChange={(e) => setNewUrlMetadatos(e.target.value)} onKeyDown={kd} placeholder="URL metadatos..." className={inputCls} />
+      </td>
+      {/* 10. Desagregacion geo */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newDesagregacion} onChange={(e) => setNewDesagregacion(e.target.value)} onKeyDown={kd} placeholder="Desagregacion..." className={inputCls} />
+      </td>
+      {/* 11. Cobertura temporal */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newCobertura} onChange={(e) => setNewCobertura(e.target.value)} onKeyDown={kd} placeholder="Cobertura..." className={inputCls} />
+      </td>
+      {/* 12. Unidad observacion */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUnidadObs} onChange={(e) => setNewUnidadObs(e.target.value)} onKeyDown={kd} placeholder="Unidad obs..." className={inputCls} />
+      </td>
+      {/* 13. Tema */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newTema} onChange={(e) => setNewTema(e.target.value)} onKeyDown={kd} placeholder="Tema..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {/* 14. Proposito */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newProposito} onChange={(e) => setNewProposito(e.target.value)} onKeyDown={kd} placeholder="Proposito..." className={inputCls} />
+      </td>
+      {/* 15. Inicio disponibilidad */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="date" value={newFechaInicio} onChange={(e) => setNewFechaInicio(e.target.value)} className={inputCls} />
+      </td>
+      {/* 16. Fin disponibilidad */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="date" value={newFechaFin} onChange={(e) => setNewFechaFin(e.target.value)} className={inputCls} />
+      </td>
+      {/* 17. Observaciones */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
+      </td>
+      {/* 18. Etiquetas */}
+      {emptyTd}
+      {/* 19. URL normativa */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlNormativa} onChange={(e) => setNewUrlNormativa(e.target.value)} onKeyDown={kd} placeholder="URL normativa..." className={inputCls} />
+      </td>
+      {/* 20. Fuente */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newFuenteId} onChange={setNewFuenteId} options={fuentes.map((f) => ({ value: f.id, label: f.nombre }))} placeholder="Fuente..." label="Fuente" />
+      </td>
     </>
   )
 

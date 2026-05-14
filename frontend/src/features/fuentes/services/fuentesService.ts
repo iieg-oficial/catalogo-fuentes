@@ -20,6 +20,10 @@ export async function createFuente(payload: {
   descripcion?: string
   es_fuente_oficial?: boolean
   es_publicador?: boolean
+  jurisdiccion?: string
+  url_terminos_uso?: string
+  url_aviso_privacidad?: string
+  contacto_institucional?: string
 }): Promise<Fuente> {
   const { data } = await apiClient.post<Fuente>('/fuentes/', payload)
   return data

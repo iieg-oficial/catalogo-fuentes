@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { Archivo } from '@/types'
+import type { Archivo, Distribucion } from '@/types'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from './services/archivosService'
+import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
 import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -15,19 +17,25 @@ export default function ArchivosPage() {
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Archivo[]>([])
+  const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
+  const [newRutaRelativa, setNewRutaRelativa] = useState('')
   const [newRol, setNewRol] = useState('')
+  const [newRutaAlmacenamiento, setNewRutaAlmacenamiento] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
+  const [newDistribucionId, setNewDistribucionId] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      setItems(await getArchivos())
+      const [arch, dist] = await Promise.all([getArchivos(), getDistribuciones()])
+      setItems(arch)
+      setDistribuciones(dist)
     } catch {
       setError(true)
     } finally {
@@ -37,12 +45,22 @@ export default function ArchivosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewRol(''); setNewObservaciones('') }
+  const resetFields = () => {
+    setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
+    setNewRutaAlmacenamiento(''); setNewObservaciones(''); setNewDistribucionId('')
+  }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createArchivo({ nombre_archivo: newNombre, rol_archivo: newRol || undefined, observaciones_archivo: newObservaciones || undefined })
+      await createArchivo({
+        nombre_archivo: newNombre,
+        ruta_relativa_en_distribucion: newRutaRelativa || undefined,
+        rol_archivo: newRol || undefined,
+        ruta_almacenamiento: newRutaAlmacenamiento || undefined,
+        observaciones_archivo: newObservaciones || undefined,
+        distribucion_id: newDistribucionId || undefined,
+      })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -83,6 +101,8 @@ export default function ArchivosPage() {
     if (!d) return null
     try { return new Date(d).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) } catch { return d }
   }
+
+  const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.descriptor ?? d.id.slice(0, 8) }))
 
   const columns: Column<Archivo>[] = [
     {
@@ -162,28 +182,51 @@ export default function ArchivosPage() {
     {
       header: 'Distribucion',
       icon: distribucionesIcon(),
+      selectOptions: distribucionOpts,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'distribucion_id', v),
+      getValue: (r) => r.distribucion_id ?? '',
       render: (r) => r.distribucion
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.distribucion.descriptor ?? r.distribucion.id.slice(0, 8)}</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
-      getValue: (r) => r.distribucion?.descriptor ?? '',
     },
   ]
 
+  /* 10 columns: Nombre archivo, Ruta en distribucion, Rol, Fecha ingesta, Tamano, SHA-256, Archivos relacionados, Ruta almacenamiento, Observaciones, Distribucion */
   const emptyTd = <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
   const addRowCells = (
     <>
+      {/* 1. Nombre archivo */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre archivo..." className={inputCls} />
       </td>
-      {emptyTd}
+      {/* 2. Ruta en distribucion */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newRutaRelativa} onChange={(e) => setNewRutaRelativa(e.target.value)} onKeyDown={kd} placeholder="Ruta relativa..." className={inputCls} />
+      </td>
+      {/* 3. Rol */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {/* 4. Fecha ingesta (auto) */}
+      {emptyTd}
+      {/* 5. Tamano (auto) */}
+      {emptyTd}
+      {/* 6. SHA-256 (auto) */}
+      {emptyTd}
+      {/* 7. Archivos relacionados (not on create) */}
+      {emptyTd}
+      {/* 8. Ruta almacenamiento */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newRutaAlmacenamiento} onChange={(e) => setNewRutaAlmacenamiento(e.target.value)} onKeyDown={kd} placeholder="Ruta almac..." className={inputCls} />
+      </td>
+      {/* 9. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
       </td>
-      {emptyTd}
+      {/* 10. Distribucion (FK select) */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newDistribucionId} onChange={setNewDistribucionId} options={distribucionOpts} placeholder="Distribucion..." label="Distribucion" />
+      </td>
     </>
   )
 

@@ -19,11 +19,25 @@ export async function getDataset(id: string): Promise<DatasetDetail> {
 
 export async function createDataset(payload: {
   nombre: string
-  fuente_id?: string
+  nombre_corto?: string
+  identificador_persistente?: string
   descripcion?: string
   periodicidad?: string
+  vigente?: boolean
   tema_principal?: string
-  nombre_corto?: string
+  proposito?: string
+  observaciones_dataset?: string
+  fuente_id?: string
+  url_pagina_principal?: string
+  url_metodologia_general?: string
+  url_metadatos_general?: string
+  url_normativa_o_marco_legal?: string
+  desagregacion_geografica?: string
+  cobertura_temporal_general?: string
+  unidad_observacion?: string
+  fecha_inicio_disponibilidad?: string
+  fecha_fin_disponibilidad?: string
+  etiquetas?: unknown[]
 }): Promise<Dataset> {
   const { data } = await apiClient.post<Dataset>('/datasets/', payload)
   return data

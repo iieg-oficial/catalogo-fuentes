@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { BaseDeDatos } from '@/types'
+import type { BaseDeDatos, Dataset } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from './services/basesDeDatosService'
+import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { nombreIcon, datasetsIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -15,17 +17,23 @@ export default function BasesDeDatosPage() {
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<BaseDeDatos[]>([])
+  const [datasets, setDatasets] = useState<Dataset[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
+  const [newDatasetId, setNewDatasetId] = useState('')
+  const [newDescripcionEsquema, setNewDescripcionEsquema] = useState('')
+  const [newMeta, setNewMeta] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      setItems(await getBasesDeDatos())
+      const [bds, ds] = await Promise.all([getBasesDeDatos(), getDatasets()])
+      setItems(bds)
+      setDatasets(ds)
     } catch {
       setError(true)
     } finally {
@@ -35,12 +43,17 @@ export default function BasesDeDatosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre('') }
+  const resetFields = () => { setNewNombre(''); setNewDatasetId(''); setNewDescripcionEsquema(''); setNewMeta('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createBaseDeDatos({ db_nombre: newNombre })
+      await createBaseDeDatos({
+        db_nombre: newNombre,
+        dataset_id: newDatasetId || undefined,
+        descripcion_esquema: newDescripcionEsquema ? JSON.parse(newDescripcionEsquema) : undefined,
+        meta: newMeta ? JSON.parse(newMeta) : undefined,
+      })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -82,10 +95,15 @@ export default function BasesDeDatosPage() {
     {
       header: 'Dataset',
       icon: datasetsIcon(),
+      selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })),
+      onEdit: (r, v) => {
+        updateBaseDeDatos(r.id, { dataset_id: v })
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i)))
+      },
       render: (r) => r.dataset
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
-      getValue: (r) => r.dataset?.nombre ?? '',
+      getValue: (r) => r.dataset_id ?? '',
     },
     {
       header: 'Descripcion esquema',
@@ -116,9 +134,21 @@ export default function BasesDeDatosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newDatasetId}
+          onChange={setNewDatasetId}
+          options={datasets.map((d) => ({ value: d.id, label: d.nombre }))}
+          placeholder="Dataset..."
+          label="Dataset"
+        />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newDescripcionEsquema} onChange={(e) => setNewDescripcionEsquema(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newMeta} onChange={(e) => setNewMeta(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+      </td>
     </>
   )
 
