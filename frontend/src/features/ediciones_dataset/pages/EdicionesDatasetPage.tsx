@@ -100,23 +100,22 @@ export default function EdicionesDatasetPage() {
     try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return d }
   }
 
-  const txt = (v: string | null | undefined) => <span className="text-ink/70 text-[13px]">{v ?? '--'}</span>
 
   const boolOpts = [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]
 
   const columns: Column<EdicionDataset>[] = [
-    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
+    { header: 'Nombre', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })), onEdit: (r, v) => { updateEdicionDataset(r.id, { dataset_id: v }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i))) }, render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.dataset_id ?? '' },
     { header: 'Publicacion', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_publicacion) ?? '--'}</span>, getValue: (r) => r.fecha_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_publicacion', v) },
     { header: 'Periodo inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_inicio) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_inicio', v) },
     { header: 'Periodo fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_fin) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_fin', v) },
-    { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => txt(r.tipo_periodo_referencia), getValue: (r) => r.tipo_periodo_referencia ?? '', onEdit: (r, v) => handleEditCell(r, 'tipo_periodo_referencia', v) },
+    { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => <TextCell value={r.tipo_periodo_referencia} />, getValue: (r) => r.tipo_periodo_referencia ?? '', onEdit: (r, v) => handleEditCell(r, 'tipo_periodo_referencia', v) },
     { header: 'Levantamiento inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_inicio) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_levantamiento_inicio', v) },
     { header: 'Levantamiento fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_fin) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_levantamiento_fin', v) },
-    { header: 'URL documentacion', icon: urlIcon(), render: (r) => <TextCell value={r.url_documentacion_edicion} mono />, getValue: (r) => r.url_documentacion_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_documentacion_edicion', v) },
-    { header: 'URL comunicado', icon: urlIcon(), render: (r) => <TextCell value={r.url_comunicado_publicacion} mono />, getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
+    { header: 'URL documentacion', icon: urlIcon(), render: (r) => <TextCell value={r.url_documentacion_edicion} mono link />, getValue: (r) => r.url_documentacion_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_documentacion_edicion', v) },
+    { header: 'URL comunicado', icon: urlIcon(), render: (r) => <TextCell value={r.url_comunicado_publicacion} mono link />, getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_edicion} />, getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
-    { header: 'Version', icon: descripcionIcon(), render: (r) => txt(r.version_publicacion), getValue: (r) => r.version_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'version_publicacion', v) },
+    { header: 'Version', icon: descripcionIcon(), render: (r) => <TextCell value={r.version_publicacion} />, getValue: (r) => r.version_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'version_publicacion', v) },
     { header: 'Corregida', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_version_corregida', v === 'true'), getValue: (r) => r.es_version_corregida ? 'true' : 'false', render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
   ]
 

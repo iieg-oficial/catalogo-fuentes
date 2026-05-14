@@ -177,7 +177,11 @@ export default function ArchivosPage() {
       header: 'Distribucion',
       icon: distribucionesIcon(),
       selectOptions: distribucionOpts,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'distribucion_id', v),
+      onEdit: (r, v) => {
+        updateArchivo(r.id, { distribucion_id: v })
+        const dist = distribuciones.find((d) => d.id === v)
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, distribucion_id: v || null, distribucion: dist ? { id: dist.id, descriptor: dist.descriptor } : null } : i)))
+      },
       getValue: (r) => r.distribucion_id ?? '',
       render: (r) => <TextCell value={r.distribucion ? (r.distribucion.descriptor ?? r.distribucion.id.slice(0, 8)) : null} />,
     },

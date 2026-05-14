@@ -89,7 +89,7 @@ export default function ProductosPage() {
     {
       header: 'Nombre',
       icon: nombreIcon(),
-      render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
+      render: (r) => <TextCell value={r.nombre} />,
       className: 'w-56',
       getValue: (r) => r.nombre,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),

@@ -88,7 +88,7 @@ export default function BasesDeDatosPage() {
     {
       header: 'Nombre BD',
       icon: nombreIcon(),
-      render: (r) => <span className="font-medium text-ink">{r.db_nombre}</span>,
+      render: (r) => <TextCell value={r.db_nombre} />,
       className: 'w-48',
       getValue: (r) => r.db_nombre,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),

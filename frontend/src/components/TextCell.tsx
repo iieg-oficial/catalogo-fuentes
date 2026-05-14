@@ -4,11 +4,12 @@ import { createPortal } from 'react-dom'
 interface TextCellProps {
   value: string | null | undefined
   mono?: boolean
+  link?: boolean
 }
 
 const CARD_WIDTH = 540
 
-export function TextCell({ value, mono = false }: TextCellProps) {
+export function TextCell({ value, mono = false, link = false }: TextCellProps) {
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
   const [copied, setCopied] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
@@ -85,9 +86,21 @@ export function TextCell({ value, mono = false }: TextCellProps) {
           onMouseLeave={scheduleHide}
         >
           <div className="px-7 pt-6 pb-5">
-            <p className={`whitespace-pre-wrap break-words leading-relaxed ${mono ? 'font-mono text-[13px]' : 'text-[15px]'} text-ink/85`}>
-              {value}
-            </p>
+            {link ? (
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`break-all leading-relaxed text-brand-600 underline decoration-brand-600/30 hover:decoration-brand-600 ${mono ? 'font-mono text-[13px]' : 'text-[15px]'}`}
+              >
+                {value}
+              </a>
+            ) : (
+              <p className={`whitespace-pre-wrap break-words leading-relaxed ${mono ? 'font-mono text-[13px]' : 'text-[15px]'} text-ink/85`}>
+                {value}
+              </p>
+            )}
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button

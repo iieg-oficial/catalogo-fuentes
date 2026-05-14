@@ -9,6 +9,7 @@ import type { ProductoTabla, Producto, InformacionTablas } from '@/types'
 import { getProductoTablas, createProductoTabla, updateProductoTabla, deleteProductoTabla } from '../services/productoTablasService'
 import { getProductos } from '@/features/productos/services/productosService'
 import { getInformacionTablas } from '@/features/informacion_tablas/services/informacionTablasService'
+import { TextCell } from '@/components/TextCell'
 import { productosIcon, informacionTablasIcon, fechaIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -115,7 +116,7 @@ export default function ProductoTablasPage() {
     {
       header: 'Observaciones',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70 text-[13px]">{r.observaciones ?? '--'}</span>,
+      render: (r) => <TextCell value={r.observaciones} />,
       getValue: (r) => r.observaciones ?? '',
       onEdit: (r, v) => handleEditCell(r, 'observaciones', v),
     },
