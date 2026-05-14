@@ -38,6 +38,7 @@ class UsuarioRead(BaseModel):
     activo: bool
     rol_id: uuid.UUID | None = None
     rol: RolRead | None = None
+    permisos: list[str] = []
     created_at: datetime
     updated_at: datetime | None = None
 

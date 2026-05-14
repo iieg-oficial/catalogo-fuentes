@@ -25,6 +25,7 @@ export interface Usuario {
   activo: boolean
   rol_id: string | null
   rol: Rol | null
+  permisos: string[]
   created_at: string
   updated_at: string | null
 }

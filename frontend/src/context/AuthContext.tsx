@@ -16,9 +16,10 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, loading, login, logout } = useAuth()
-  const canWrite = user?.rol?.nombre === 'admin' || user?.rol?.nombre === 'maintainer' || user?.rol?.nombre === 'superadmin'
-  const canManageUsers = user?.rol?.nombre === 'admin' || user?.rol?.nombre === 'superadmin'
-  const isSuperAdmin = user?.rol?.nombre === 'superadmin'
+  const permisos = user?.permisos ?? []
+  const canWrite = permisos.includes('catalog:write')
+  const canManageUsers = permisos.includes('users:manage')
+  const isSuperAdmin = permisos.includes('admin:full')
   return (
     <AuthContext.Provider value={{ user, loading, canWrite, canManageUsers, isSuperAdmin, login, logout }}>
       {children}

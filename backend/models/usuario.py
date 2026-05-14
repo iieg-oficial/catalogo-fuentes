@@ -26,3 +26,9 @@ class Usuario(Base):
 
     rol: Mapped["Rol | None"] = relationship("Rol", back_populates="usuarios")
     proyectos: Mapped[list["Proyecto"]] = relationship("Proyecto", back_populates="usuario")
+
+    @property
+    def permisos(self) -> list[str]:
+        if self.rol and self.rol.permisos:
+            return [p.nombre for p in self.rol.permisos]
+        return []

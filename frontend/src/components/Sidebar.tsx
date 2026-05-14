@@ -123,7 +123,7 @@ export default function Sidebar({ user, onLogout }: Props) {
           )}
         </NavLink>
 
-        {(user?.rol?.nombre === 'admin' || user?.rol?.nombre === 'superadmin') && (
+        {user?.permisos?.includes('users:manage') && (
           <NavLink
             to="/usuarios"
             onClick={closeSidebar}

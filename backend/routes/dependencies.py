@@ -30,16 +30,17 @@ async def get_current_user(
     return usuario
 
 
-def require_roles(*roles: str):
+def require_permisos(*permisos: str):
     async def dependency(current_user: Usuario = Depends(get_current_user)) -> Usuario:
-        if not current_user.rol or current_user.rol.nombre not in roles:
+        user_permisos = set(current_user.permisos)
+        if not user_permisos.intersection(permisos):
             raise forbidden()
         return current_user
 
     return dependency
 
 
-require_superadmin = require_roles("superadmin")
-require_admin = require_roles("admin", "superadmin")
-require_write = require_roles("admin", "maintainer", "superadmin")
-require_any = require_roles("admin", "maintainer", "viewer", "superadmin")
+require_catalog_read = require_permisos("catalog:read")
+require_write = require_permisos("catalog:write")
+require_admin = require_permisos("users:manage")
+require_superadmin = require_permisos("admin:full")

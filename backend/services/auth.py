@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from config import settings
+from models.rol import Rol
 from models.usuario import Usuario
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -28,7 +29,9 @@ def create_access_token(subject: str, rol: str) -> str:
 
 async def get_usuario_by_correo(db: AsyncSession, correo: str) -> Usuario | None:
     result = await db.execute(
-        select(Usuario).options(selectinload(Usuario.rol)).where(Usuario.correo == correo)
+        select(Usuario)
+        .options(selectinload(Usuario.rol).selectinload(Rol.permisos))
+        .where(Usuario.correo == correo)
     )
     return result.scalar_one_or_none()
 

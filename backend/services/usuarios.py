@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.rol import Rol
 from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate, UsuarioUpdate
 from services.auth import get_usuario_by_correo
@@ -12,7 +13,7 @@ from services.auth import get_usuario_by_correo
 async def list_usuarios(db: AsyncSession, skip: int = 0, limit: int = 10_000) -> list[Usuario]:
     result = await db.execute(
         select(Usuario)
-        .options(selectinload(Usuario.rol))
+        .options(selectinload(Usuario.rol).selectinload(Rol.permisos))
         .order_by(Usuario.created_at.asc())
         .offset(skip)
         .limit(limit)
@@ -22,7 +23,9 @@ async def list_usuarios(db: AsyncSession, skip: int = 0, limit: int = 10_000) ->
 
 async def get_usuario(db: AsyncSession, usuario_id: uuid.UUID) -> Usuario | None:
     result = await db.execute(
-        select(Usuario).options(selectinload(Usuario.rol)).where(Usuario.id == usuario_id)
+        select(Usuario)
+        .options(selectinload(Usuario.rol).selectinload(Rol.permisos))
+        .where(Usuario.id == usuario_id)
     )
     return result.scalar_one_or_none()
 
