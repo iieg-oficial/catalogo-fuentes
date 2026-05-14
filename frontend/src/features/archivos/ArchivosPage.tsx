@@ -135,9 +135,7 @@ export default function ArchivosPage() {
     {
       header: 'Rol',
       icon: descripcionIcon(),
-      render: (r) => r.rol_archivo
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{r.rol_archivo}</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.rol_archivo} />,
       getValue: (r) => r.rol_archivo ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'rol_archivo', v),
     },

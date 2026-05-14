@@ -58,7 +58,7 @@ export default function EdicionDatasetDetailPage() {
           <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: '#9F8FA8' }}>Edicion de dataset</p>
           <h1 className="text-ink leading-tight break-words mb-3" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '44px', fontWeight: 500 }}>{item.nombre}</h1>
           <div className="flex flex-wrap items-center gap-2">
-            {item.es_version_corregida && <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium bg-amber-50 text-amber-700">Version corregida</span>}
+            {item.es_version_corregida && <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-500/10 text-green-700">Version corregida</span>}
           </div>
         </div>
         <div className="shrink-0 pt-1">

@@ -135,7 +135,7 @@ export default function FuentesPage() {
       icon: estadoIcon(),
       render: (r) => r.es_fuente_oficial
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
-        : <span className="text-ink/30 text-[13px]">No</span>,
+        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
       selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
       onEdit: (r, v) => handleEditCell(r, 'es_fuente_oficial', v === 'true'),
       getValue: (r) => r.es_fuente_oficial ? 'true' : 'false',
@@ -166,7 +166,7 @@ export default function FuentesPage() {
       icon: estadoIcon(),
       render: (r) => r.es_publicador
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
-        : <span className="text-ink/30 text-[13px]">No</span>,
+        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
       selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
       onEdit: (r, v) => handleEditCell(r, 'es_publicador', v === 'true'),
       getValue: (r) => r.es_publicador ? 'true' : 'false',

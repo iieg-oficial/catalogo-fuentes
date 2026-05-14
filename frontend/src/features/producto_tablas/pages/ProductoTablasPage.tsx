@@ -108,7 +108,7 @@ export default function ProductoTablasPage() {
     {
       header: 'Info. Tabla',
       icon: informacionTablasIcon(),
-      render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{tablaMap[r.informacion_tablas_id] ?? r.informacion_tablas_id.slice(0, 8)}</span>,
+      render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{tablaMap[r.informacion_tablas_id] ?? r.informacion_tablas_id.slice(0, 8)}</span>,
       className: 'w-48',
       selectOptions: tablas.map((t) => ({ value: t.id, label: t.nombre })),
       onEdit: (r, v) => {

@@ -117,7 +117,7 @@ export default function EdicionesDatasetPage() {
     { header: 'URL comunicado', icon: urlIcon(), render: (r) => <TextCell value={r.url_comunicado_publicacion} mono link />, getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_edicion} />, getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
     { header: 'Version', icon: descripcionIcon(), render: (r) => <TextCell value={r.version_publicacion} />, getValue: (r) => r.version_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'version_publicacion', v) },
-    { header: 'Corregida', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_version_corregida', v === 'true'), getValue: (r) => r.es_version_corregida ? 'true' : 'false', render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
+    { header: 'Corregida', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_version_corregida', v === 'true'), getValue: (r) => r.es_version_corregida ? 'true' : 'false', render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
   ]
 
   const addRowCells = (
