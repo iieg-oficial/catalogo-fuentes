@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
@@ -20,7 +20,8 @@ export default function ProyectosPage() {
   const [items, setItems] = useState<Proyecto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')

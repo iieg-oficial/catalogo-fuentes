@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
@@ -22,7 +23,8 @@ export default function ProductoTablasPage() {
   const [tablas, setTablas] = useState<InformacionTablas[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [search, setSearch] = useState('')
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [addingRow, setAddingRow] = useState(false)
   const [newProductoId, setNewProductoId] = useState('')
   const [newTablaId, setNewTablaId] = useState('')

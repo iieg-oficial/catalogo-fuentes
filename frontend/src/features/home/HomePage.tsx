@@ -192,7 +192,7 @@ export default function HomePage() {
         </section>
 
         {/* Search — below cards, centered */}
-        <section className="flex flex-col items-center">
+        <section className="flex flex-col items-center pb-8">
           <p
             className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-4"
           >
@@ -201,7 +201,7 @@ export default function HomePage() {
 
           <div className="relative w-full max-w-3xl">
             <svg
-              className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              className="absolute left-5 top-4 text-gray-400 pointer-events-none"
               width="22" height="22" viewBox="0 0 16 16" fill="none"
               stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
             >
@@ -211,14 +211,14 @@ export default function HomePage() {
 
             <input
               ref={inputRef}
-              type="search"
+              type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={ready ? 'Buscar proyectos, datasets, fuentes, distribuciones…' : 'Cargando catálogo…'}
               disabled={!ready}
               autoComplete="off"
-              className="w-full h-16 pl-14 pr-20 text-lg border-2 border-gray-200 rounded-2xl
+              className="w-full h-14 pl-14 pr-14 text-lg border-2 border-gray-200 rounded-2xl
                          bg-white placeholder-gray-400 text-gray-900
                          focus:outline-none focus:border-brand-600 focus:shadow-md
                          disabled:bg-gray-50 disabled:cursor-wait
@@ -243,64 +243,66 @@ export default function HomePage() {
                 </svg>
               </button>
             )}
-          </div>
 
-          {hasQuery && (
-            <div className="mt-1 w-full max-w-3xl border-2 border-gray-200 rounded-2xl bg-white overflow-hidden shadow-md">
-              {results.length === 0 ? (
-                <div className="px-4 py-6 text-center">
-                  <p className="text-sm text-gray-500">
-                    Sin resultados para <span className="font-medium text-gray-700">"{query}"</span>
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Intenta con otro término o revisa la ortografía
-                  </p>
-                </div>
-              ) : (
-                results.map((result, i) => (
-                  <button
-                    key={`${result.type}-${result.id}`}
-                    onClick={() => navigate(result.path)}
-                    className={`w-full flex items-center gap-3 px-5 py-3 text-left
-                                border-b border-gray-100 last:border-0 transition-colors duration-75
-                                ${i === selected ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
-                  >
-                    <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide whitespace-nowrap ${TYPE_BADGE[result.type] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {result.typeLabel}
-                    </span>
-                    <span className="flex-1 text-sm font-medium text-gray-900 truncate">
-                      {result.label}
-                    </span>
-                    {result.subtitle && (
-                      <span className="shrink-0 text-xs text-gray-400 truncate max-w-[200px] hidden sm:block">
-                        {result.subtitle}
+            {hasQuery && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50">
+              <div className="border-2 border-gray-200 rounded-2xl bg-white overflow-hidden shadow-md">
+                {results.length === 0 ? (
+                  <div className="px-4 py-6 text-center">
+                    <p className="text-sm text-gray-500">
+                      Sin resultados para <span className="font-medium text-gray-700">"{query}"</span>
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Intenta con otro término o revisa la ortografía
+                    </p>
+                  </div>
+                ) : (
+                  results.map((result, i) => (
+                    <button
+                      key={`${result.type}-${result.id}`}
+                      onClick={() => navigate(result.path)}
+                      className={`w-full flex items-center gap-3 px-5 py-3 text-left
+                                  border-b border-gray-100 last:border-0 transition-colors duration-75
+                                  ${i === selected ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
+                    >
+                      <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide whitespace-nowrap ${TYPE_BADGE[result.type] ?? 'bg-gray-100 text-gray-600'}`}>
+                        {result.typeLabel}
                       </span>
-                    )}
-                    <svg className="shrink-0 text-gray-300" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2.5 6h7M7 3.5L9.5 6 7 8.5" />
-                    </svg>
-                  </button>
-                ))
+                      <span className="flex-1 text-sm font-medium text-gray-900 truncate">
+                        {result.label}
+                      </span>
+                      {result.subtitle && (
+                        <span className="shrink-0 text-xs text-gray-400 truncate max-w-[200px] hidden sm:block">
+                          {result.subtitle}
+                        </span>
+                      )}
+                      <svg className="shrink-0 text-gray-300" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2.5 6h7M7 3.5L9.5 6 7 8.5" />
+                      </svg>
+                    </button>
+                  ))
+                )}
+              </div>
+
+              {results.length > 0 && (
+                <div className="mt-2 flex items-center justify-center gap-3">
+                  <span className="text-xs font-medium text-neutral-400">
+                    {results.length} resultado{results.length !== 1 ? 's' : ''}
+                  </span>
+                  <span className="text-neutral-200 text-xs">·</span>
+                  <span className="text-[11px] text-neutral-300 flex items-center gap-1.5">
+                    <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↑↓</kbd>
+                    navegar
+                    <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↵</kbd>
+                    abrir
+                    <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">Esc</kbd>
+                    cerrar
+                  </span>
+                </div>
               )}
             </div>
-          )}
-
-          {hasQuery && results.length > 0 && (
-            <div className="mt-2 flex items-center gap-3">
-              <span className="text-xs font-medium text-neutral-400">
-                {results.length} resultado{results.length !== 1 ? 's' : ''}
-              </span>
-              <span className="text-neutral-200 text-xs">·</span>
-              <span className="text-[11px] text-neutral-300 flex items-center gap-1.5">
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↑↓</kbd>
-                navegar
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">↵</kbd>
-                abrir
-                <kbd className="px-1 py-0.5 rounded bg-neutral-100 border border-neutral-200 font-mono text-[10px] text-neutral-400">Esc</kbd>
-                cerrar
-              </span>
-            </div>
-          )}
+            )}
+          </div>
         </section>
 
       </div>
