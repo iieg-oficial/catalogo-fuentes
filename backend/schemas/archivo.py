@@ -12,7 +12,6 @@ class ArchivoBase(BaseModel):
     rol_archivo: str | None = None
     fecha_ingesta_sistema: datetime | None = None
     tamano_bytes: int | None = None
-    hash_sha256: str | None = None
     archivos_relacionados: dict = {}
     ruta_almacenamiento: str | None = None
     observaciones_archivo: str | None = None
@@ -29,7 +28,6 @@ class ArchivoUpdate(BaseModel):
     rol_archivo: str | None = None
     fecha_ingesta_sistema: datetime | None = None
     tamano_bytes: int | None = None
-    hash_sha256: str | None = None
     archivos_relacionados: dict | None = None
     ruta_almacenamiento: str | None = None
     observaciones_archivo: str | None = None

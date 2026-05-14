@@ -32,7 +32,7 @@ export async function createArchivo(payload: {
   return data
 }
 
-export async function updateArchivo(id: string, payload: { nombre_archivo?: string; rol_archivo?: string; observaciones_archivo?: string; distribucion_id?: string; ruta_relativa_en_distribucion?: string; ruta_almacenamiento?: string; hash_sha256?: string; fecha_ingesta_sistema?: string; tamano_bytes?: number; archivos_relacionados?: Record<string, unknown> }): Promise<Archivo> {
+export async function updateArchivo(id: string, payload: { nombre_archivo?: string; rol_archivo?: string; observaciones_archivo?: string; distribucion_id?: string; ruta_relativa_en_distribucion?: string; ruta_almacenamiento?: string; fecha_ingesta_sistema?: string; tamano_bytes?: number; archivos_relacionados?: Record<string, unknown> }): Promise<Archivo> {
   const { data } = await apiClient.put<Archivo>(`/archivos/${id}`, payload)
   return data
 }

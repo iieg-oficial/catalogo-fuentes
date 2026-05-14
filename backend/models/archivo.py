@@ -17,7 +17,6 @@ class Archivo(Base):
     rol_archivo: Mapped[str | None] = mapped_column(String)
     fecha_ingesta_sistema: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     tamano_bytes: Mapped[int | None] = mapped_column(BigInteger)
-    hash_sha256: Mapped[str | None] = mapped_column(String)
     archivos_relacionados: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
     ruta_almacenamiento: Mapped[str | None] = mapped_column(Text)
     observaciones_archivo: Mapped[str | None] = mapped_column(Text)

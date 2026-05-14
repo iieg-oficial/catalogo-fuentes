@@ -154,15 +154,6 @@ export default function ArchivosPage() {
       onEdit: (r, v) => { const n = Number(v); if (!isNaN(n)) { updateArchivo(r.id, { tamano_bytes: n }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tamano_bytes: n } : i))) } },
     },
     {
-      header: 'SHA-256',
-      icon: descripcionIcon(),
-      render: (r) => r.hash_sha256
-        ? <span className="font-mono text-[11px] text-ink/50 truncate block" style={{ maxWidth: 100 }}>{r.hash_sha256.slice(0, 16)}...</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
-      getValue: (r) => r.hash_sha256 ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'hash_sha256', v),
-    },
-    {
       header: 'Archivos relacionados',
       icon: jsonIcon(),
       render: (r) => {
@@ -202,8 +193,6 @@ export default function ArchivosPage() {
     },
   ]
 
-  /* 10 columns: Nombre archivo, Ruta en distribucion, Rol, Fecha ingesta, Tamano, SHA-256, Archivos relacionados, Ruta almacenamiento, Observaciones, Distribucion */
-  const emptyTd = <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
   const addRowCells = (
     <>
       {/* 1. Nombre archivo */}
@@ -226,9 +215,7 @@ export default function ArchivosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input type="number" value={newTamano} onChange={(e) => setNewTamano(e.target.value)} onKeyDown={kd} placeholder="Bytes..." className={inputCls} />
       </td>
-      {/* 6. SHA-256 */}
-      {emptyTd}
-      {/* 7. Archivos relacionados */}
+      {/* 6. Archivos relacionados */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newArchivosRelacionados} onChange={(e) => setNewArchivosRelacionados(e.target.value)} onKeyDown={kd} placeholder='{"key": "val"}' className={inputCls} />
       </td>

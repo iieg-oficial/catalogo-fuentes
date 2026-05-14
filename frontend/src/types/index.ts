@@ -217,7 +217,6 @@ export interface Archivo {
   rol_archivo: string | null
   fecha_ingesta_sistema: string | null
   tamano_bytes: number | null
-  hash_sha256: string | null
   archivos_relacionados: Record<string, unknown>
   ruta_almacenamiento: string | null
   observaciones_archivo: string | null
