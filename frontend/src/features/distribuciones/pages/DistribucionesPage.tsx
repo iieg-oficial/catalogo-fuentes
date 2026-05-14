@@ -7,10 +7,10 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Distribucion, EdicionDataset } from '@/types'
+import { TextCell } from '@/components/TextCell'
 import { getDistribuciones, createDistribucion, updateDistribucion, deleteDistribucion } from '../services/distribucionesService'
 import { getEdicionesDataset } from '@/features/ediciones_dataset/services/edicionesDatasetService'
 import { nombreIcon, descripcionIcon, estadoIcon, edicionesIcon, urlIcon } from '@/consts/sectionIcons'
-import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -88,14 +88,14 @@ export default function DistribucionesPage() {
   const edicionOpts = ediciones.map((e) => ({ value: e.id, label: e.nombre }))
 
   const columns: Column<Distribucion>[] = [
-    { header: 'Descripcion', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.descriptor ?? r.id.slice(0, 8)}</span>, className: 'w-48', getValue: (r) => r.descriptor ?? '', onEdit: (r, v) => handleEditCell(r, 'descriptor', v) },
-    { header: 'URL', icon: urlIcon(), render: (r) => r.url ? <UrlCell url={r.url} maxWidth={200} /> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
+    { header: 'Descripcion', icon: nombreIcon(), render: (r) => <TextCell value={r.descriptor ?? r.id.slice(0, 8)} />, className: 'w-48', getValue: (r) => r.descriptor ?? '', onEdit: (r, v) => handleEditCell(r, 'descriptor', v) },
+    { header: 'URL', icon: urlIcon(), render: (r) => <TextCell value={r.url} mono />, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
     { header: 'Edicion', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => handleEditCell(r, 'edicion_dataset_id', v), getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span> },
     { header: 'Req. autenticacion', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_autenticacion', v === 'true'), getValue: (r) => r.requiere_autenticacion ? 'true' : 'false', render: (r) => r.requiere_autenticacion ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
     { header: 'Req. registro', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_registro', v === 'true'), getValue: (r) => r.requiere_registro ? 'true' : 'false', render: (r) => r.requiere_registro ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
     { header: 'URL persistente', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_url_persistente', v === 'true'), getValue: (r) => r.es_url_persistente ? 'true' : 'false', render: (r) => r.es_url_persistente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
     { header: 'Estado URL', icon: descripcionIcon(), render: (r) => <span className="text-ink/70 text-[13px]">{r.estado_url_ultima_revision ?? '--'}</span>, getValue: (r) => r.estado_url_ultima_revision ?? '', onEdit: (r, v) => handleEditCell(r, 'estado_url_ultima_revision', v) },
-    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <span className="text-ink/70 text-[13px]">{r.observaciones_distribucion ?? '--'}</span>, getValue: (r) => r.observaciones_distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_distribucion', v) },
+    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_distribucion} />, getValue: (r) => r.observaciones_distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_distribucion', v) },
   ]
 
   /* 8 columns: Descripcion, URL, Edicion, Req. autenticacion, Req. registro, URL persistente, Estado URL, Observaciones */

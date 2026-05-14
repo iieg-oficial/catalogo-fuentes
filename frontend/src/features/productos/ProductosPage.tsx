@@ -7,6 +7,7 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Producto, Proyecto } from '@/types'
+import { TextCell } from '@/components/TextCell'
 import { getProductos, createProducto, updateProducto, deleteProducto } from './services/productosService'
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
 import { nombreIcon, descripcionIcon, proyectosIcon, jsonIcon } from '@/consts/sectionIcons'
@@ -106,7 +107,7 @@ export default function ProductosPage() {
     {
       header: 'Descripcion',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '--'}</span>,
+      render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },

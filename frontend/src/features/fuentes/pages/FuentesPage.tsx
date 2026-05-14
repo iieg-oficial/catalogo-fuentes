@@ -7,9 +7,9 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Fuente } from '@/types'
+import { TextCell } from '@/components/TextCell'
 import { getFuentes, createFuente, updateFuente, deleteFuente } from '../services/fuentesService'
 import { nombreIcon, descripcionIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
-import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -150,14 +150,14 @@ export default function FuentesPage() {
     {
       header: 'URL',
       icon: urlIcon(),
-      render: (r) => r.url ? <UrlCell url={r.url} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.url} mono />,
       getValue: (r) => r.url ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url', v),
     },
     {
       header: 'Descripcion',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '--'}</span>,
+      render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditCell(r, 'descripcion', v),
     },
@@ -174,21 +174,21 @@ export default function FuentesPage() {
     {
       header: 'URL terminos uso',
       icon: urlIcon(),
-      render: (r) => r.url_terminos_uso ? <UrlCell url={r.url_terminos_uso} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.url_terminos_uso} mono />,
       getValue: (r) => r.url_terminos_uso ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url_terminos_uso', v),
     },
     {
       header: 'URL aviso privacidad',
       icon: urlIcon(),
-      render: (r) => r.url_aviso_privacidad ? <UrlCell url={r.url_aviso_privacidad} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.url_aviso_privacidad} mono />,
       getValue: (r) => r.url_aviso_privacidad ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url_aviso_privacidad', v),
     },
     {
       header: 'Contacto institucional',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70 text-[13px]">{r.contacto_institucional ?? '--'}</span>,
+      render: (r) => <TextCell value={r.contacto_institucional} />,
       getValue: (r) => r.contacto_institucional ?? '',
       onEdit: (r, v) => handleEditCell(r, 'contacto_institucional', v),
     },

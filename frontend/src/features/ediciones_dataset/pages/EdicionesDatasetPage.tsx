@@ -7,10 +7,10 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { EdicionDataset, Dataset } from '@/types'
+import { TextCell } from '@/components/TextCell'
 import { getEdicionesDataset, createEdicionDataset, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
-import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -101,7 +101,6 @@ export default function EdicionesDatasetPage() {
   }
 
   const txt = (v: string | null | undefined) => <span className="text-ink/70 text-[13px]">{v ?? '--'}</span>
-  const link = (v: string | null | undefined) => v ? <UrlCell url={v} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>
 
   const boolOpts = [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]
 
@@ -114,9 +113,9 @@ export default function EdicionesDatasetPage() {
     { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => txt(r.tipo_periodo_referencia), getValue: (r) => r.tipo_periodo_referencia ?? '', onEdit: (r, v) => handleEditCell(r, 'tipo_periodo_referencia', v) },
     { header: 'Levantamiento inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_inicio) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_levantamiento_inicio', v) },
     { header: 'Levantamiento fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_fin) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_levantamiento_fin', v) },
-    { header: 'URL documentacion', icon: urlIcon(), render: (r) => link(r.url_documentacion_edicion), getValue: (r) => r.url_documentacion_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_documentacion_edicion', v) },
-    { header: 'URL comunicado', icon: urlIcon(), render: (r) => link(r.url_comunicado_publicacion), getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
-    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_edicion), getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
+    { header: 'URL documentacion', icon: urlIcon(), render: (r) => <TextCell value={r.url_documentacion_edicion} mono />, getValue: (r) => r.url_documentacion_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_documentacion_edicion', v) },
+    { header: 'URL comunicado', icon: urlIcon(), render: (r) => <TextCell value={r.url_comunicado_publicacion} mono />, getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
+    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_edicion} />, getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
     { header: 'Version', icon: descripcionIcon(), render: (r) => txt(r.version_publicacion), getValue: (r) => r.version_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'version_publicacion', v) },
     { header: 'Corregida', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_version_corregida', v === 'true'), getValue: (r) => r.es_version_corregida ? 'true' : 'false', render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
   ]

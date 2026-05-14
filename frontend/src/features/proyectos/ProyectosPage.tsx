@@ -7,6 +7,7 @@ import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
+import { TextCell } from '@/components/TextCell'
 import { nombreIcon, descripcionIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -88,7 +89,7 @@ export default function ProyectosPage() {
     {
       header: 'Descripcion',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70">{r.descripcion ?? '—'}</span>,
+      render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },

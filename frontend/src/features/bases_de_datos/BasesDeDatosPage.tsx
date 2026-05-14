@@ -9,7 +9,8 @@ import type { Column } from '@/components/DataTable'
 import type { BaseDeDatos, Dataset } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from './services/basesDeDatosService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
-import { nombreIcon, datasetsIcon, jsonIcon } from '@/consts/sectionIcons'
+import { TextCell } from '@/components/TextCell'
+import { nombreIcon, datasetsIcon, jsonIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -106,14 +107,9 @@ export default function BasesDeDatosPage() {
       getValue: (r) => r.dataset_id ?? '',
     },
     {
-      header: 'Descripcion esquema',
-      icon: jsonIcon(),
-      render: (r) => {
-        const keys = Object.keys(r.descripcion_esquema ?? {})
-        return keys.length
-          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
-          : <span className="text-ink/30 text-[13px]">--</span>
-      },
+      header: 'Descripcion',
+      icon: descripcionIcon(),
+      render: (r) => <TextCell value={Object.keys(r.descripcion_esquema ?? {}).length ? JSON.stringify(r.descripcion_esquema) : null} mono />,
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
     },
     {

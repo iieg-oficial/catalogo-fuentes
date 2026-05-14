@@ -7,6 +7,7 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, Distribucion } from '@/types'
+import { TextCell } from '@/components/TextCell'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from './services/archivosService'
 import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
 import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
@@ -116,7 +117,7 @@ export default function ArchivosPage() {
     {
       header: 'Nombre archivo',
       icon: nombreIcon(),
-      render: (r) => <span className="font-medium text-ink">{r.nombre_archivo}</span>,
+      render: (r) => <TextCell value={r.nombre_archivo} />,
       className: 'w-48',
       getValue: (r) => r.nombre_archivo,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre_archivo', v),
@@ -124,9 +125,7 @@ export default function ArchivosPage() {
     {
       header: 'Ruta en distribucion',
       icon: descripcionIcon(),
-      render: (r) => r.ruta_relativa_en_distribucion
-        ? <span className="font-mono text-[12px] text-ink/70 truncate block" style={{ maxWidth: 160 }}>{r.ruta_relativa_en_distribucion}</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.ruta_relativa_en_distribucion} mono />,
       getValue: (r) => r.ruta_relativa_en_distribucion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_relativa_en_distribucion', v),
     },
@@ -156,28 +155,21 @@ export default function ArchivosPage() {
     {
       header: 'Archivos relacionados',
       icon: jsonIcon(),
-      render: (r) => {
-        const keys = Object.keys(r.archivos_relacionados ?? {})
-        return keys.length
-          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length}</span>
-          : <span className="text-ink/30 text-[13px]">--</span>
-      },
+      render: (r) => <TextCell value={Object.keys(r.archivos_relacionados ?? {}).length ? JSON.stringify(r.archivos_relacionados) : null} mono />,
       getValue: (r) => JSON.stringify(r.archivos_relacionados ?? {}),
       onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateArchivo(r.id, { archivos_relacionados: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivos_relacionados: parsed } : i))) } catch { /* invalid JSON */ } },
     },
     {
       header: 'Ruta almacenamiento',
       icon: descripcionIcon(),
-      render: (r) => r.ruta_almacenamiento
-        ? <span className="font-mono text-[12px] text-ink/70 truncate block" style={{ maxWidth: 180 }}>{r.ruta_almacenamiento}</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.ruta_almacenamiento} mono />,
       getValue: (r) => r.ruta_almacenamiento ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_almacenamiento', v),
     },
     {
       header: 'Observaciones',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70 text-[13px]">{r.observaciones_archivo ?? '--'}</span>,
+      render: (r) => <TextCell value={r.observaciones_archivo} />,
       getValue: (r) => r.observaciones_archivo ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'observaciones_archivo', v),
     },
@@ -187,9 +179,7 @@ export default function ArchivosPage() {
       selectOptions: distribucionOpts,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'distribucion_id', v),
       getValue: (r) => r.distribucion_id ?? '',
-      render: (r) => r.distribucion
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.distribucion.descriptor ?? r.distribucion.id.slice(0, 8)}</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => <TextCell value={r.distribucion ? (r.distribucion.descriptor ?? r.distribucion.id.slice(0, 8)) : null} />,
     },
   ]
 
