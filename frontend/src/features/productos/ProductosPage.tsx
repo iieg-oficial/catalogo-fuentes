@@ -107,14 +107,14 @@ export default function ProductosPage() {
       selectOptions: proyectos.map((p) => ({ value: p.id, label: p.nombre })),
     },
     {
-      header: 'Descripcion',
+      header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },
     {
-      header: 'Meta',
+      header: 'Metadata',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),

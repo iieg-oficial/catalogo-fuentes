@@ -106,7 +106,7 @@ export default function ProductoTablasPage() {
       getValue: (r) => r.producto_id,
     },
     {
-      header: 'Info. Tabla',
+      header: 'Información Tabla',
       icon: informacionTablasIcon(),
       render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{tablaMap[r.informacion_tablas_id] ?? r.informacion_tablas_id.slice(0, 8)}</span>,
       className: 'w-48',
@@ -118,7 +118,7 @@ export default function ProductoTablasPage() {
       getValue: (r) => r.informacion_tablas_id,
     },
     {
-      header: 'Fecha vinculacion',
+      header: 'Fecha vinculación',
       icon: fechaIcon(),
       render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_vinculacion) ?? '--'}</span>,
       getValue: (r) => r.fecha_vinculacion ?? '',

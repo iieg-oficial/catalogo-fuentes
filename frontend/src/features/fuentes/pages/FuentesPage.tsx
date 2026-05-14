@@ -155,7 +155,7 @@ export default function FuentesPage() {
       onEdit: (r, v) => handleEditCell(r, 'url', v),
     },
     {
-      header: 'Descripcion',
+      header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',

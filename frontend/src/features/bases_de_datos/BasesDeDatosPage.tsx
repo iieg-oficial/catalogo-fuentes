@@ -88,7 +88,7 @@ export default function BasesDeDatosPage() {
 
   const columns: Column<BaseDeDatos>[] = [
     {
-      header: 'Nombre BD',
+      header: 'Base de datos',
       icon: nombreIcon(),
       render: (r) => <TextCell value={r.db_nombre} />,
       className: 'w-48',
@@ -109,7 +109,7 @@ export default function BasesDeDatosPage() {
       getValue: (r) => r.dataset_id ?? '',
     },
     {
-      header: 'Descripcion esquema',
+      header: 'Descripción esquema',
       icon: descripcionIcon(),
       render: (r) => <JsonCell value={r.descripcion_esquema} />,
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
@@ -117,7 +117,7 @@ export default function BasesDeDatosPage() {
       inputType: 'json',
     },
     {
-      header: 'Meta',
+      header: 'Metadata',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),

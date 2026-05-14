@@ -4,7 +4,7 @@ export const CATALOG_LEVELS = [
   { key: 'proyectos', label: 'Proyectos', path: '/proyectos' },
   { key: 'productos', label: 'Productos', path: '/productos' },
   { key: 'producto-tablas', label: 'Producto Tablas', path: '/producto-tablas' },
-  { key: 'informacion-tablas', label: 'Info. Tablas', path: '/informacion-tablas' },
+  { key: 'informacion-tablas', label: 'Información Tablas', path: '/informacion-tablas' },
   { key: 'bases-de-datos', label: 'Bases de datos', path: '/bases-de-datos' },
   { key: 'datasets', label: 'Datasets', path: '/datasets' },
   { key: 'fuentes', label: 'Fuentes', path: '/fuentes' },

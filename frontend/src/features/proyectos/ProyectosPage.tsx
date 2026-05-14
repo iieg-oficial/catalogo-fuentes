@@ -89,14 +89,14 @@ export default function ProyectosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
     },
     {
-      header: 'Descripcion',
+      header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },
     {
-      header: 'Meta',
+      header: 'Metadata',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),
