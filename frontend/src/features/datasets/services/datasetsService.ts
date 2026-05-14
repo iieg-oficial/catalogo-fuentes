@@ -1,0 +1,38 @@
+import apiClient from '@/services/apiClient'
+import type { Dataset, DatasetDetail } from '@/types'
+
+interface DatasetFilters {
+  fuente_id?: string | null
+}
+
+export async function getDatasets(filters: DatasetFilters = {}): Promise<Dataset[]> {
+  const params: Record<string, string> = {}
+  if (filters.fuente_id) params.fuente_id = filters.fuente_id
+  const { data } = await apiClient.get<Dataset[]>('/datasets/', { params })
+  return data
+}
+
+export async function getDataset(id: string): Promise<DatasetDetail> {
+  const { data } = await apiClient.get<DatasetDetail>(`/datasets/${id}`)
+  return data
+}
+
+export async function createDataset(payload: {
+  nombre: string
+  fuente_id?: string
+  descripcion?: string
+  periodicidad?: string
+  tema_principal?: string
+}): Promise<Dataset> {
+  const { data } = await apiClient.post<Dataset>('/datasets/', payload)
+  return data
+}
+
+export async function updateDataset(id: string, payload: { nombre?: string; descripcion?: string; fuente_id?: string; periodicidad?: string; tema_principal?: string }): Promise<Dataset> {
+  const { data } = await apiClient.put<Dataset>(`/datasets/${id}`, payload)
+  return data
+}
+
+export async function deleteDataset(id: string): Promise<void> {
+  await apiClient.delete(`/datasets/${id}`)
+}

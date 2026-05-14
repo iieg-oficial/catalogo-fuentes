@@ -1,0 +1,80 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import ErrorState from '@/components/ErrorState'
+import CatalogGrid from '@/components/CatalogGrid'
+import { useAuthContext } from '@/context/AuthContext'
+import type { Column } from '@/components/DataTable'
+import type { InformacionTablas } from '@/types'
+import { getInformacionTablas, createInformacionTabla, deleteInformacionTabla } from '../services/informacionTablasService'
+import { nombreIcon, descripcionIcon, basesDeDatosIcon, jsonIcon } from '@/consts/sectionIcons'
+
+const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
+
+export default function InformacionTablasPage() {
+  const navigate = useNavigate()
+  const { canWrite } = useAuthContext()
+  const [items, setItems] = useState<InformacionTablas[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [search, setSearch] = useState('')
+  const [addingRow, setAddingRow] = useState(false)
+  const [newNombre, setNewNombre] = useState('')
+
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true); setError(false)
+    try { setItems(await getInformacionTablas()) } catch { setError(true) } finally { if (!silent) setLoading(false) }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const resetFields = () => { setNewNombre('') }
+
+  const handleSaveRow = async () => {
+    if (!newNombre.trim()) return
+    try { await createInformacionTabla({ nombre: newNombre }); setAddingRow(false); resetFields(); await load(true) } finally {}
+  }
+
+  const handleDeleteRows = async (keys: string[]) => {
+    await Promise.all(keys.map((id) => deleteInformacionTabla(id))); await load(true)
+  }
+
+  const filtered = items.filter((i) => {
+    const q = search.toLowerCase()
+    return !q || [i.nombre, i.descripcion, i.base_de_datos?.db_nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
+  })
+
+  const kd = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSaveRow()
+    if (e.key === 'Escape') { setAddingRow(false); resetFields() }
+  }
+
+  const columns: Column<InformacionTablas>[] = [
+    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre },
+    { header: 'Descripcion', icon: descripcionIcon(), render: (r) => r.descripcion ? <span className="text-ink/70 text-[13px]">{r.descripcion}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.descripcion ?? '' },
+    { header: 'Base de datos', icon: basesDeDatosIcon(), render: (r) => r.base_de_datos ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.db_nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.base_de_datos?.db_nombre ?? '' },
+    { header: 'Meta', icon: jsonIcon(), render: (r) => { const keys = Object.keys(r.meta ?? {}); return keys.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => JSON.stringify(r.meta ?? {}) },
+  ]
+
+  const addRowCells = (
+    <>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+    </>
+  )
+
+  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>)
+
+  if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
+  if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>
+
+  return (
+    <div className="flex-1 min-h-0 overflow-auto p-8">
+      <CatalogGrid eyebrow="Catalogo" title="Informacion de tablas" addLabel="Nueva tabla" entityLabel="tablas" rows={filtered} columns={columns} getKey={(r) => r.id} onRowClick={(r) => navigate(`/informacion-tablas/${r.id}`)} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} />
+    </div>
+  )
+}
