@@ -24,7 +24,7 @@ class DatasetBase(BaseModel):
     fecha_inicio_disponibilidad: date | None = None
     fecha_fin_disponibilidad: date | None = None
     observaciones_dataset: str | None = None
-    etiquetas: list = []
+    etiquetas: dict | None = None
     url_normativa_o_marco_legal: str | None = None
     fuente_id: uuid.UUID | None = None
 
@@ -51,7 +51,7 @@ class DatasetUpdate(BaseModel):
     fecha_inicio_disponibilidad: date | None = None
     fecha_fin_disponibilidad: date | None = None
     observaciones_dataset: str | None = None
-    etiquetas: list | None = None
+    etiquetas: dict | None = None
     url_normativa_o_marco_legal: str | None = None
     fuente_id: uuid.UUID | None = None
 

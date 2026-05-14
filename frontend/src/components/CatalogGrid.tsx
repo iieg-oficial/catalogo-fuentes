@@ -4,7 +4,6 @@ import { useSidebar } from '@/context/SidebarContext'
 import SingleSelectPanel from '@/components/SingleSelectPanel'
 import DatePickerPanel from '@/components/DatePickerPanel'
 import JsonEditorPanel from '@/components/JsonEditorPanel'
-import TagsEditorPanel from '@/components/TagsEditorPanel'
 import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
 
@@ -1135,18 +1134,6 @@ export default function CatalogGrid<T extends { id: string }>({
                               <JsonEditorPanel
                                 value={(() => { try { return JSON.parse(editingCell!.value) } catch { return {} } })()}
                                 onChange={(v) => { col.onEdit?.(row, JSON.stringify(v)); setEditingCell(null) }}
-                                onClose={() => setEditingCell(null)}
-                                top={editingCellPos.top}
-                                left={editingCellPos.left}
-                                label={col.header}
-                              />
-                            </>
-                          ) : isEditingThis && col.inputType === 'tags' ? (
-                            <>
-                              <span className="block truncate">{col.render(row)}</span>
-                              <TagsEditorPanel
-                                value={editingCell!.value ? editingCell!.value.split(',').map((t) => t.trim()).filter(Boolean) : []}
-                                onChange={(v) => { col.onEdit?.(row, v.join(', ')); setEditingCell(null) }}
                                 onClose={() => setEditingCell(null)}
                                 top={editingCellPos.top}
                                 left={editingCellPos.left}

@@ -29,7 +29,7 @@ class Dataset(Base):
     fecha_inicio_disponibilidad: Mapped[date | None] = mapped_column(Date)
     fecha_fin_disponibilidad: Mapped[date | None] = mapped_column(Date)
     observaciones_dataset: Mapped[str | None] = mapped_column(Text)
-    etiquetas: Mapped[list] = mapped_column(JSONB, nullable=False, default=list, server_default="[]")
+    etiquetas: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     url_normativa_o_marco_legal: Mapped[str | None] = mapped_column(Text)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))

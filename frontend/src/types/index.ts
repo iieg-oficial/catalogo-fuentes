@@ -100,7 +100,7 @@ export interface Dataset {
   fecha_inicio_disponibilidad: string | null
   fecha_fin_disponibilidad: string | null
   observaciones_dataset: string | null
-  etiquetas: unknown[]
+  etiquetas: Record<string, unknown> | null
   url_normativa_o_marco_legal: string | null
   fuente_id: string | null
   fuente: Fuente | null

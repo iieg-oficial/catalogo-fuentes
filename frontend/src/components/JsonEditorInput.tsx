@@ -35,7 +35,7 @@ export default function JsonEditorInput({ value, onChange, placeholder = 'JSON..
         className={`${inputCls} text-left ${hasData ? 'text-ink/80' : 'text-neutral-300'}`}
       >
         {hasData
-          ? <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
+          ? <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-medium bg-brand-500/10 text-brand-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
           : placeholder}
       </button>
       {open && (

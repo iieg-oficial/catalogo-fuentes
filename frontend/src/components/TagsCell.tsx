@@ -7,6 +7,18 @@ interface TagsCellProps {
 
 const CARD_WIDTH = 360
 
+function colorizeArray(tags: string[]): React.ReactNode[] {
+  const parts: React.ReactNode[] = ['[\n']
+  tags.forEach((tag, i) => {
+    parts.push('  ')
+    parts.push(<span key={i} className="text-brand-600 font-medium">&quot;{tag}&quot;</span>)
+    if (i < tags.length - 1) parts.push(',')
+    parts.push('\n')
+  })
+  parts.push(']')
+  return parts
+}
+
 export function TagsCell({ value }: TagsCellProps) {
   const tags = (value ?? []).map(String)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
@@ -51,7 +63,7 @@ export function TagsCell({ value }: TagsCellProps) {
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (!tags.length) return
-    navigator.clipboard.writeText(tags.join(', '))
+    navigator.clipboard.writeText(JSON.stringify(tags, null, 2))
     setCopied(true)
     if (copyTimer.current) clearTimeout(copyTimer.current)
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
@@ -61,21 +73,19 @@ export function TagsCell({ value }: TagsCellProps) {
 
   return (
     <>
-      <div
+      <span
         ref={ref}
-        className="flex flex-wrap gap-1 overflow-hidden max-h-[40px]"
+        className="block truncate text-[12px] text-ink/70"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={scheduleHide}
       >
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium bg-brand-500/10 text-brand-700 max-w-[140px] truncate"
-          >
-            {tag}
+        {tags.map((tag, i) => (
+          <span key={tag}>
+            {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
+            <span className="text-brand-700">{tag}</span>
           </span>
         ))}
-      </div>
+      </span>
       {tooltipPos && createPortal(
         <div
           className="fixed z-[9999] rounded-xl border border-ink/8 bg-white shadow-xl"
@@ -88,22 +98,15 @@ export function TagsCell({ value }: TagsCellProps) {
           onMouseEnter={() => { if (hideTimer.current) clearTimeout(hideTimer.current) }}
           onMouseLeave={scheduleHide}
         >
-          <div className="px-5 pt-5 pb-4 flex flex-wrap gap-1.5">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-medium bg-brand-500/10 text-brand-700"
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">{colorizeArray(tags)}</pre>
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
               onClick={handleCopy}
               className="flex items-center gap-1.5 text-[13px] text-ink/35 transition-colors hover:text-brand-600"
             >
-              <span>{copied ? 'Copiado' : 'Copiar'}</span>
+              <span>{copied ? 'Copiado' : 'Copiar JSON'}</span>
               {copied ? (
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="2 7 5.5 10.5 12 4" />

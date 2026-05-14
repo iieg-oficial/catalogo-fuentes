@@ -134,7 +134,7 @@ CREATE TABLE dataset (
     fecha_inicio_disponibilidad DATE,
     fecha_fin_disponibilidad DATE,
     observaciones_dataset TEXT,
-    etiquetas JSONB NOT NULL DEFAULT '[]'::jsonb,
+    etiquetas JSONB,
     url_normativa_o_marco_legal TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ,

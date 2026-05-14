@@ -16,6 +16,22 @@ function fmtVal(v: unknown): string {
   return JSON.stringify(v)
 }
 
+function colorizeJson(obj: unknown): React.ReactNode[] {
+  const raw = JSON.stringify(obj, null, 2)
+  const parts: React.ReactNode[] = []
+  const regex = /("(?:\\.|[^"\\])*")\s*:/g
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = regex.exec(raw)) !== null) {
+    if (match.index > last) parts.push(raw.slice(last, match.index))
+    parts.push(<span key={match.index} className="text-brand-600 font-medium">{match[1]}</span>)
+    parts.push(':')
+    last = match.index + match[0].length
+  }
+  if (last < raw.length) parts.push(raw.slice(last))
+  return parts
+}
+
 export function JsonCell({ value }: JsonCellProps) {
   const entries = Object.entries(value ?? {})
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
@@ -97,8 +113,8 @@ export function JsonCell({ value }: JsonCellProps) {
           onMouseLeave={scheduleHide}
         >
           <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
-            <pre className="font-mono text-[12px] leading-relaxed text-ink/75 whitespace-pre-wrap break-all">
-              {JSON.stringify(value, null, 2)}
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">
+              {colorizeJson(value)}
             </pre>
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">

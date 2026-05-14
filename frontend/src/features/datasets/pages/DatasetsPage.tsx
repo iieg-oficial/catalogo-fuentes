@@ -11,8 +11,8 @@ import { TextCell } from '@/components/TextCell'
 import { getDatasets, createDataset, updateDataset, deleteDataset } from '../services/datasetsService'
 import { getFuentes } from '@/features/fuentes/services/fuentesService'
 import DatePickerInput from '@/components/DatePickerInput'
-import TagsEditorInput from '@/components/TagsEditorInput'
-import { TagsCell } from '@/components/TagsCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -43,7 +43,7 @@ export default function DatasetsPage() {
   const [newFechaInicio, setNewFechaInicio] = useState('')
   const [newFechaFin, setNewFechaFin] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
-  const [newEtiquetas, setNewEtiquetas] = useState<string[]>([])
+  const [newEtiquetas, setNewEtiquetas] = useState<Record<string, unknown>>({})
   const [newUrlNormativa, setNewUrlNormativa] = useState('')
   const [newFuenteId, setNewFuenteId] = useState('')
 
@@ -64,7 +64,7 @@ export default function DatasetsPage() {
     setNewPeriodicidad(''); setNewVigente(''); setNewUrlPagina(''); setNewUrlMetodologia('')
     setNewUrlMetadatos(''); setNewDesagregacion(''); setNewCobertura(''); setNewUnidadObs('')
     setNewTema(''); setNewProposito(''); setNewFechaInicio(''); setNewFechaFin('')
-    setNewObservaciones(''); setNewEtiquetas([]); setNewUrlNormativa(''); setNewFuenteId('')
+    setNewObservaciones(''); setNewEtiquetas({}); setNewUrlNormativa(''); setNewFuenteId('')
   }
 
   const handleSaveRow = async () => {
@@ -88,7 +88,7 @@ export default function DatasetsPage() {
         fecha_inicio_disponibilidad: newFechaInicio || undefined,
         fecha_fin_disponibilidad: newFechaFin || undefined,
         observaciones_dataset: newObservaciones || undefined,
-        etiquetas: newEtiquetas.length ? newEtiquetas : undefined,
+        etiquetas: Object.keys(newEtiquetas).length ? newEtiquetas : undefined,
         url_normativa_o_marco_legal: newUrlNormativa || undefined,
         fuente_id: newFuenteId || undefined,
       })
@@ -139,7 +139,7 @@ export default function DatasetsPage() {
     { header: 'Inicio disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_inicio_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_inicio_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_inicio_disponibilidad', v), inputType: 'date' },
     { header: 'Fin disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_fin_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_fin_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_fin_disponibilidad', v), inputType: 'date' },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_dataset} />, getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
-    { header: 'Etiquetas', icon: jsonIcon(), render: (r) => <TagsCell value={r.etiquetas} />, getValue: (r) => (r.etiquetas ?? []).join(', '), onEdit: (r, v) => { const tags = v ? String(v).split(',').map((t) => t.trim()).filter(Boolean) : []; updateDataset(r.id, { etiquetas: tags }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: tags } : i))) }, inputType: 'tags' },
+    { header: 'Etiquetas', icon: jsonIcon(), render: (r) => <JsonCell value={r.etiquetas} />, getValue: (r) => JSON.stringify(r.etiquetas ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateDataset(r.id, { etiquetas: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: parsed } : i))) } catch {} }, inputType: 'json' },
     { header: 'URL normativa', icon: urlIcon(), render: (r) => <TextCell value={r.url_normativa_o_marco_legal} mono link />, getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
     { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => { updateDataset(r.id, { fuente_id: v }); const f = fuentes.find((x) => x.id === v) ?? null; setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, fuente_id: v || null, fuente: f } : i))) }, getValue: (r) => r.fuente_id ?? '' },
   ]
@@ -216,7 +216,7 @@ export default function DatasetsPage() {
       </td>
       {/* 18. Etiquetas */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <TagsEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />
+        <JsonEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />
       </td>
       {/* 19. URL normativa */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

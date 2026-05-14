@@ -37,7 +37,7 @@ export async function createDataset(payload: {
   unidad_observacion?: string
   fecha_inicio_disponibilidad?: string
   fecha_fin_disponibilidad?: string
-  etiquetas?: unknown[]
+  etiquetas?: Record<string, unknown>
 }): Promise<Dataset> {
   const { data } = await apiClient.post<Dataset>('/datasets/', payload)
   return data
@@ -63,7 +63,7 @@ export async function updateDataset(id: string, payload: {
   vigente?: boolean
   fecha_inicio_disponibilidad?: string
   fecha_fin_disponibilidad?: string
-  etiquetas?: unknown[]
+  etiquetas?: Record<string, unknown>
 }): Promise<Dataset> {
   const { data } = await apiClient.put<Dataset>(`/datasets/${id}`, payload)
   return data
