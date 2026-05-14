@@ -16,15 +16,16 @@ const TYPE_BADGE: Record<string, string> = {
 }
 
 const CARD_BG: Record<string, string> = {
-  proyectos:           'bg-brand-600',
-  productos:           'bg-violet-600',
-  fuentes:             'bg-teal-600',
-  datasets:            'bg-sky-700',
-  'ediciones-dataset': 'bg-blue-600',
-  distribuciones:      'bg-emerald-700',
-  'bases-de-datos':    'bg-indigo-600',
-  'informacion-tablas': 'bg-cyan-700',
-  archivos:            'bg-rose-700',
+  proyectos:            'bg-brand-600',
+  productos:            'bg-[#A63228]',
+  'producto-tablas':    'bg-[#2D5F8A]',
+  'informacion-tablas': 'bg-[#C4621D]',
+  'bases-de-datos':     'bg-[#7A2D5A]',
+  datasets:             'bg-[#2A7F6F]',
+  fuentes:              'bg-[#A07820]',
+  'ediciones-dataset':  'bg-[#3A7D44]',
+  distribuciones:       'bg-[#1A6E9A]',
+  archivos:             'bg-[#4A4A5A]',
 }
 
 const MODULE_ICONS: Record<string, React.ReactNode> = {
@@ -129,7 +130,7 @@ export default function HomePage() {
   const hasQuery = query.trim().length > 0
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-y-auto">
+    <div className="flex-1 flex flex-col bg-white overflow-y-auto scrollbar-hide">
       <div className="px-8 pt-10 pb-12 flex flex-col gap-10">
 
         {/* Header — logo + title */}
@@ -159,7 +160,7 @@ export default function HomePage() {
           >
             Módulos del catálogo
           </p>
-          <div className="grid grid-cols-4 md:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mx-auto" style={{ width: '90%' }}>
             {CATALOG_LEVELS.map((level) => {
               const count = counts[level.key as keyof typeof counts]
               const bg = CARD_BG[level.key] ?? 'bg-gray-600'
@@ -168,34 +169,22 @@ export default function HomePage() {
                   key={level.key}
                   onClick={() => navigate(level.path)}
                   aria-label={level.label}
-                  className={`group flex flex-col items-center justify-center gap-3
-                               p-5 h-[156px] rounded-xl text-white text-center
-                               ${bg} hover:opacity-90 hover:-translate-y-1 hover:shadow-lg
-                               shadow-sm transition duration-150 focus:outline-none
+                  className={`group flex flex-col items-center justify-center gap-3 rounded-xl text-white aspect-square
+                               ${bg} hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg
+                               shadow-sm transition-all duration-150 focus:outline-none
                                focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2`}
                 >
-                  {/* Icon bubble */}
-                  <div className="p-2.5 rounded-xl bg-white/20">
+                  <div className="p-2.5 rounded-lg bg-white/20">
                     {MODULE_ICONS[level.key]}
                   </div>
 
-                  {/* Label + count */}
-                  <div>
-                    <div
-                      className="text-xs font-bold uppercase tracking-wide text-white/80 leading-tight"
-                    >
-                      {level.label}
-                    </div>
-                    <div className="mt-1 tabular-nums leading-none">
-                      {ready ? (
-                        <span className="text-3xl font-bold text-white">
-                          {count ?? 0}
-                        </span>
-                      ) : (
-                        <span className="inline-block h-7 w-12 bg-white/20 rounded animate-pulse" />
-                      )}
-                    </div>
-                  </div>
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-white/80">
+                    {level.label}
+                  </h3>
+
+                  <span className="tabular-nums text-3xl font-bold text-white leading-none">
+                    {ready ? (count ?? 0) : '…'}
+                  </span>
                 </button>
               )
             })}

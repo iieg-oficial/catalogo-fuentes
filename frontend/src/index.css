@@ -8,6 +8,16 @@
   }
 }
 
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer components {
   .drawer-overlay {
     @apply fixed inset-0 bg-black/40 z-40 transition-opacity;
