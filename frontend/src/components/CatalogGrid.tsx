@@ -1116,7 +1116,9 @@ export default function CatalogGrid<T extends { id: string }>({
                               />
                             </>
                           ) : isEditingThis ? (
-                            <input autoFocus value={editingCell!.value}
+                            <input
+                              ref={(el) => { if (el && col.inputType === 'date') { el.focus(); try { el.showPicker() } catch {} } }}
+                              autoFocus type={col.inputType ?? 'text'} value={editingCell!.value}
                               onChange={(e) => setEditingCell((p) => p ? { ...p, value: e.target.value } : null)}
                               onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
                               onKeyDown={(e) => {

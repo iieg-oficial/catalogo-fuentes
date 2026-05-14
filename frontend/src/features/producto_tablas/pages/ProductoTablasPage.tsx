@@ -76,7 +76,7 @@ export default function ProductoTablasPage() {
 
   const fmtDate = (d: string | null | undefined) => {
     if (!d) return null
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) } catch { return d }
+    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
   const filtered = items.filter((i) => {
@@ -112,6 +112,7 @@ export default function ProductoTablasPage() {
       render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_vinculacion) ?? '--'}</span>,
       getValue: (r) => r.fecha_vinculacion ?? '',
       onEdit: (r, v) => handleEditCell(r, 'fecha_vinculacion', v),
+      inputType: 'date',
     },
     {
       header: 'Observaciones',

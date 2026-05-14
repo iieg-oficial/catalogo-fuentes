@@ -24,6 +24,7 @@ export interface Column<T> {
   getValue?: (row: T) => string
   selectOptions?: { value: string; label: string; group?: string }[]
   multiple?: boolean
+  inputType?: 'text' | 'date'
 }
 
 interface DataTableProps<T> {
@@ -525,8 +526,10 @@ export default function DataTable<T>({
                           </select>
                         ) : (
                           <input
+                            ref={(el) => { if (el && col.inputType === 'date') { el.focus(); try { el.showPicker() } catch {} } }}
                             autoFocus
                             aria-label={col.header}
+                            type={col.inputType ?? 'text'}
                             value={editingCell!.value}
                             onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
                             onBlur={() => {

@@ -106,9 +106,9 @@ export default function ArchivosPage() {
     return `${(b / (1024 * 1024)).toFixed(1)} MB`
   }
 
-  const fmtDatetime = (d: string | null | undefined) => {
+  const fmtDate = (d: string | null | undefined) => {
     if (!d) return null
-    try { return new Date(d).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) } catch { return d }
+    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
   const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.descriptor ?? d.id.slice(0, 8) }))
@@ -141,9 +141,10 @@ export default function ArchivosPage() {
     {
       header: 'Fecha ingesta',
       icon: fechaIcon(),
-      render: (r) => <span className="text-ink/70 text-[12px]">{fmtDatetime(r.fecha_ingesta_sistema) ?? '--'}</span>,
-      getValue: (r) => r.fecha_ingesta_sistema ? r.fecha_ingesta_sistema.slice(0, 16) : '',
+      render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_ingesta_sistema) ?? '--'}</span>,
+      getValue: (r) => r.fecha_ingesta_sistema ? r.fecha_ingesta_sistema.slice(0, 10) : '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'fecha_ingesta_sistema', v),
+      inputType: 'date',
     },
     {
       header: 'Tamano',
