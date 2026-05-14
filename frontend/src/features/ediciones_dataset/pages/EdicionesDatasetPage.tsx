@@ -10,6 +10,7 @@ import type { EdicionDataset, Dataset } from '@/types'
 import { TextCell } from '@/components/TextCell'
 import { getEdicionesDataset, createEdicionDataset, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
+import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -131,15 +132,15 @@ export default function EdicionesDatasetPage() {
       </td>
       {/* 3. Publicacion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newFechaPublicacion} onChange={(e) => setNewFechaPublicacion(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newFechaPublicacion} onChange={setNewFechaPublicacion} placeholder="Publicacion..." onKeyDown={kd} />
       </td>
       {/* 4. Periodo inicio */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newPeriodoInicio} onChange={(e) => setNewPeriodoInicio(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newPeriodoInicio} onChange={setNewPeriodoInicio} placeholder="Periodo inicio..." onKeyDown={kd} />
       </td>
       {/* 5. Periodo fin */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newPeriodoFin} onChange={(e) => setNewPeriodoFin(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newPeriodoFin} onChange={setNewPeriodoFin} placeholder="Periodo fin..." onKeyDown={kd} />
       </td>
       {/* 6. Tipo periodo */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
@@ -147,11 +148,11 @@ export default function EdicionesDatasetPage() {
       </td>
       {/* 7. Levantamiento inicio */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newLevantamientoInicio} onChange={(e) => setNewLevantamientoInicio(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newLevantamientoInicio} onChange={setNewLevantamientoInicio} placeholder="Lev. inicio..." onKeyDown={kd} />
       </td>
       {/* 8. Levantamiento fin */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newLevantamientoFin} onChange={(e) => setNewLevantamientoFin(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newLevantamientoFin} onChange={setNewLevantamientoFin} placeholder="Lev. fin..." onKeyDown={kd} />
       </td>
       {/* 9. URL documentacion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

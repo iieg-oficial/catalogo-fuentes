@@ -10,6 +10,7 @@ import type { Dataset, Fuente } from '@/types'
 import { TextCell } from '@/components/TextCell'
 import { getDatasets, createDataset, updateDataset, deleteDataset } from '../services/datasetsService'
 import { getFuentes } from '@/features/fuentes/services/fuentesService'
+import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -201,11 +202,11 @@ export default function DatasetsPage() {
       </td>
       {/* 15. Inicio disponibilidad */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newFechaInicio} onChange={(e) => setNewFechaInicio(e.target.value)} className={inputCls} />
+        <DatePickerInput value={newFechaInicio} onChange={setNewFechaInicio} placeholder="Inicio disp..." />
       </td>
       {/* 16. Fin disponibilidad */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newFechaFin} onChange={(e) => setNewFechaFin(e.target.value)} className={inputCls} />
+        <DatePickerInput value={newFechaFin} onChange={setNewFechaFin} placeholder="Fin disp..." />
       </td>
       {/* 17. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

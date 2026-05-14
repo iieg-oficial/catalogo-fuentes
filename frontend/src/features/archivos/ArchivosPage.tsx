@@ -10,6 +10,7 @@ import type { Archivo, Distribucion } from '@/types'
 import { TextCell } from '@/components/TextCell'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from './services/archivosService'
 import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
+import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -204,7 +205,7 @@ export default function ArchivosPage() {
       </td>
       {/* 4. Fecha ingesta */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="datetime-local" value={newFechaIngesta} onChange={(e) => setNewFechaIngesta(e.target.value)} className={inputCls} />
+        <DatePickerInput value={newFechaIngesta} onChange={setNewFechaIngesta} placeholder="Fecha ingesta..." onKeyDown={kd} />
       </td>
       {/* 5. Tamano (bytes) */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import SingleSelectPanel from '@/components/SingleSelectPanel'
+import DatePickerPanel from '@/components/DatePickerPanel'
 import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
 
@@ -1115,10 +1116,20 @@ export default function CatalogGrid<T extends { id: string }>({
                                 label={col.header}
                               />
                             </>
+                          ) : isEditingThis && col.inputType === 'date' ? (
+                            <>
+                              <span className="block truncate">{col.render(row)}</span>
+                              <DatePickerPanel
+                                value={editingCell!.value}
+                                onChange={(v) => { col.onEdit?.(row, v); setEditingCell(null) }}
+                                onClose={() => setEditingCell(null)}
+                                top={editingCellPos.top}
+                                left={editingCellPos.left}
+                              />
+                            </>
                           ) : isEditingThis ? (
                             <input
-                              ref={(el) => { if (el && col.inputType === 'date') { el.focus(); try { el.showPicker() } catch {} } }}
-                              autoFocus type={col.inputType ?? 'text'} value={editingCell!.value}
+                              autoFocus value={editingCell!.value}
                               onChange={(e) => setEditingCell((p) => p ? { ...p, value: e.target.value } : null)}
                               onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
                               onKeyDown={(e) => {

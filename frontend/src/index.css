@@ -18,6 +18,140 @@
   }
 }
 
+/* DatePickerPanel — custom react-day-picker styles */
+.rdp-panel .rdp-custom {
+  --brand-500: #6E258B;
+  --brand-100: #F7F0FA;
+  --brand-600: #5C2472;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.rdp-panel .rdp-months {
+  display: flex;
+  flex-direction: column;
+}
+
+.rdp-panel .rdp-month {
+  width: 100%;
+}
+
+.rdp-panel .rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 6px 0 10px;
+}
+
+.rdp-panel .rdp-caption-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1625;
+  text-transform: capitalize;
+}
+
+.rdp-panel .rdp-nav {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.rdp-panel .rdp-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.rdp-panel .rdp-nav-btn:hover {
+  background: var(--brand-100);
+}
+
+.rdp-panel .rdp-chevron {
+  width: 16px;
+  height: 16px;
+  color: var(--brand-500);
+}
+
+.rdp-panel .rdp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rdp-panel .rdp-head-row {
+  border-bottom: 1px solid rgba(26, 22, 37, 0.06);
+}
+
+.rdp-panel .rdp-head-cell {
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(26, 22, 37, 0.4);
+  text-align: center;
+  width: calc(100% / 7);
+}
+
+.rdp-panel .rdp-cell {
+  text-align: center;
+  padding: 1px;
+}
+
+.rdp-panel .rdp-day-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1625;
+  transition: all 0.1s;
+}
+
+.rdp-panel .rdp-day-btn:hover {
+  background: var(--brand-100);
+  color: var(--brand-600);
+}
+
+.rdp-panel .rdp-outside .rdp-day-btn {
+  color: rgba(26, 22, 37, 0.22);
+}
+
+.rdp-panel .rdp-today .rdp-day-btn {
+  font-weight: 700;
+  background: var(--brand-100);
+  color: var(--brand-500);
+}
+
+.rdp-panel .rdp-selected .rdp-day-btn {
+  background: var(--brand-500);
+  color: #fff;
+  font-weight: 600;
+}
+
+.rdp-panel .rdp-selected .rdp-day-btn:hover {
+  background: var(--brand-600);
+  color: #fff;
+}
+
 @layer utilities {
   .nav-item-enter {
     animation: nav-slide-in 0.22s ease-out both;

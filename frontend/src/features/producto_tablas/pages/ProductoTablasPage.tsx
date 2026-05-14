@@ -10,6 +10,7 @@ import { getProductoTablas, createProductoTabla, updateProductoTabla, deleteProd
 import { getProductos } from '@/features/productos/services/productosService'
 import { getInformacionTablas } from '@/features/informacion_tablas/services/informacionTablasService'
 import { TextCell } from '@/components/TextCell'
+import DatePickerInput from '@/components/DatePickerInput'
 import { productosIcon, informacionTablasIcon, fechaIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -144,7 +145,7 @@ export default function ProductoTablasPage() {
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input type="date" value={newFechaVinculacion} onChange={(e) => setNewFechaVinculacion(e.target.value)} onKeyDown={kd} className={inputCls} />
+        <DatePickerInput value={newFechaVinculacion} onChange={setNewFechaVinculacion} placeholder="Fecha vinculacion..." onKeyDown={kd} />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
