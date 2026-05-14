@@ -14,7 +14,7 @@ function fmtDisplay(iso: string): string {
   if (!iso) return ''
   const [y, m, d] = iso.split('-').map(Number)
   const date = new Date(y, m - 1, d)
-  return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 export default function DatePickerInput({ value, onChange, placeholder = 'Fecha...', onKeyDown }: DatePickerInputProps) {

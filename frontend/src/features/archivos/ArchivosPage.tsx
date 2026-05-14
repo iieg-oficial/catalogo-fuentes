@@ -109,7 +109,7 @@ export default function ArchivosPage() {
 
   const fmtDate = (d: string | null | undefined) => {
     if (!d) return null
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
+    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
   const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.descriptor ?? d.id.slice(0, 8) }))

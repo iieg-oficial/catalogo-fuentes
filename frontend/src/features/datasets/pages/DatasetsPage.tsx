@@ -115,7 +115,7 @@ export default function DatasetsPage() {
 
   const fmtDate = (d: string | null | undefined) => {
     if (!d) return null
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
+    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
 

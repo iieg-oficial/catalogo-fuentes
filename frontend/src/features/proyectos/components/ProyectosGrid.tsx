@@ -539,7 +539,7 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
 
   if (def.type === 'date') {
     const fmt = (() => {
-      try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) }
+      try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) }
       catch { return value }
     })()
     return <span className={`text-[12px] text-ink/55 ${editCls}`}>{fmt}</span>
