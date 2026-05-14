@@ -42,4 +42,4 @@ def require_roles(*roles: str):
 require_superadmin = require_roles("superadmin")
 require_admin = require_roles("admin", "superadmin")
 require_write = require_roles("admin", "maintainer", "superadmin")
-require_any = require_roles("admin", "maintainer", "viewer", "visualizer", "superadmin")
+require_any = require_roles("admin", "maintainer", "viewer", "superadmin")

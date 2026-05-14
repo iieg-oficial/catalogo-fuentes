@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 import models  # noqa: F401
 from config import settings
-from consts.roles import ADMIN, MAINTAINER, SUPERADMIN, VIEWER, VISUALIZER
+from consts.roles import ADMIN, MAINTAINER, SUPERADMIN, VIEWER
 from models.archivo import Archivo
 from models.base_de_datos import BaseDeDatos
 from models.dataset import Dataset
@@ -51,9 +51,8 @@ async def seed_rbac(db: AsyncSession) -> dict[str, Rol]:
     rol_superadmin = Rol(nombre=SUPERADMIN, descripcion="Control total del sistema")
     rol_admin = Rol(nombre=ADMIN, descripcion="Administración de usuarios y catálogo")
     rol_maintainer = Rol(nombre=MAINTAINER, descripcion="Edición del catálogo")
-    rol_viewer = Rol(nombre=VIEWER, descripcion="Solo lectura (legado)")
-    rol_visualizer = Rol(nombre=VISUALIZER, descripcion="Solo lectura")
-    db.add_all([rol_superadmin, rol_admin, rol_maintainer, rol_viewer, rol_visualizer])
+    rol_viewer = Rol(nombre=VIEWER, descripcion="Solo lectura")
+    db.add_all([rol_superadmin, rol_admin, rol_maintainer, rol_viewer])
     await db.flush()
 
     links = [
@@ -67,7 +66,6 @@ async def seed_rbac(db: AsyncSession) -> dict[str, Rol]:
         PermisoRol(permiso_id=p_catalog_read.id, rol_id=rol_maintainer.id),
         PermisoRol(permiso_id=p_catalog_write.id, rol_id=rol_maintainer.id),
         PermisoRol(permiso_id=p_catalog_read.id, rol_id=rol_viewer.id),
-        PermisoRol(permiso_id=p_catalog_read.id, rol_id=rol_visualizer.id),
     ]
     db.add_all(links)
     await db.flush()
@@ -78,7 +76,6 @@ async def seed_rbac(db: AsyncSession) -> dict[str, Rol]:
         ADMIN: rol_admin,
         MAINTAINER: rol_maintainer,
         VIEWER: rol_viewer,
-        VISUALIZER: rol_visualizer,
     }
 
 
@@ -126,13 +123,13 @@ async def seed_users(db: AsyncSession, roles: dict[str, Rol]) -> None:
         hashed_password=hash_password("Editor1234!"),
         rol_id=roles[MAINTAINER].id,
     )
-    visualizer = Usuario(
+    viewer = Usuario(
         correo="consulta@iieg.gob.mx",
         nombre="Consulta",
         hashed_password=hash_password("Viewer1234!"),
-        rol_id=roles[VISUALIZER].id,
+        rol_id=roles[VIEWER].id,
     )
-    db.add_all([superadmin, admin, maintainer, visualizer])
+    db.add_all([superadmin, admin, maintainer, viewer])
     await db.flush()
     logger.info("Users seeded.")
 

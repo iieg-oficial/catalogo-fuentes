@@ -38,7 +38,7 @@ just dev-stop       # detener backend y frontend
 | superadmin@iieg.gob.mx | Super1234! | superadmin |
 | admin@iieg.gob.mx | Admin1234! | admin |
 | editor@iieg.gob.mx | Editor1234! | maintainer |
-| consulta@iieg.gob.mx | Viewer1234! | visualizer |
+| consulta@iieg.gob.mx | Viewer1234! | viewer |
 
 ## Producción
 

@@ -15,8 +15,8 @@ from services.usuarios import create_usuario
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-ADMIN_CREATABLE_ROLES = {"maintainer", "visualizer", "viewer"}
-SUPERADMIN_CREATABLE_ROLES = {"superadmin", "admin", "maintainer", "visualizer", "viewer"}
+ADMIN_CREATABLE_ROLES = {"maintainer", "viewer"}
+SUPERADMIN_CREATABLE_ROLES = {"superadmin", "admin", "maintainer", "viewer"}
 
 
 @router.post("/login", response_model=TokenResponse)
