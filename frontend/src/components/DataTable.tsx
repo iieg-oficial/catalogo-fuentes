@@ -1,6 +1,19 @@
 import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+
+interface ListOption {
+  label: string
+  color?: string
+}
+
+interface MetaColumnDef {
+  key: string
+  label?: string
+  type: ColumnType
+  color?: string
+  options?: ListOption[]
+}
 
 export interface Column<T> {
   header: string

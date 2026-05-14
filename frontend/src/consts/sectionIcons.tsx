@@ -31,12 +31,36 @@ export function productosIcon({ size = 12, stroke = 'currentColor' }: IconProps 
   </>)
 }
 
-export function tablasIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+export function fuentesIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <path d="M2 12.5h10" />
+    <path d="M3.5 12.5v-9L7 1.5l3.5 2v9" />
+    <path d="M5.5 12.5V9.5h3v3" />
+    <path d="M5.5 5h.5M8 5h.5M5.5 7h.5M8 7h.5" />
+  </>)
+}
+
+export function datasetsIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
   return icon(size, stroke, <>
     <rect x="1.5" y="2" width="11" height="10" rx="1" />
     <path d="M1.5 5.5h11" />
     <path d="M5.5 5.5v6.5" />
     <path d="M9 5.5v6.5" />
+  </>)
+}
+
+export function edicionesIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <path d="M4 1.5h6a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9a1 1 0 011-1z" />
+    <path d="M4.5 1.5h5v2h-5z" />
+    <path d="M5 6h4M5 8.5h4M5 11h2.5" />
+  </>)
+}
+
+export function distribucionesIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <path d="M5.5 8.5A3 3 0 009 9.5l1.5-1.5A3 3 0 007 3L5.5 4.5" />
+    <path d="M8.5 5.5A3 3 0 005 4.5L3.5 6A3 3 0 007 11l1.5-1.5" />
   </>)
 }
 
@@ -48,18 +72,12 @@ export function basesDeDatosIcon({ size = 12, stroke = 'currentColor' }: IconPro
   </>)
 }
 
-export function instrumentosIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+export function informacionTablasIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
   return icon(size, stroke, <>
-    <path d="M4 1.5h6a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9a1 1 0 011-1z" />
-    <path d="M4.5 1.5h5v2h-5z" />
-    <path d="M5 6h4M5 8.5h4M5 11h2.5" />
-  </>)
-}
-
-export function urlsIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
-  return icon(size, stroke, <>
-    <path d="M5.5 8.5A3 3 0 009 9.5l1.5-1.5A3 3 0 007 3L5.5 4.5" />
-    <path d="M8.5 5.5A3 3 0 005 4.5L3.5 6A3 3 0 007 11l1.5-1.5" />
+    <rect x="1.5" y="2" width="11" height="10" rx="1" />
+    <path d="M1.5 5.5h11" />
+    <path d="M5.5 5.5v6.5" />
+    <path d="M9 5.5v6.5" />
   </>)
 }
 
@@ -87,8 +105,6 @@ export function usuariosIcon({ size = 12, stroke = 'currentColor' }: IconProps =
     <path d="M11.5 8.5c1.2.5 2 1.7 2 4" />
   </>)
 }
-
-// ── Column-specific icons ─────────────────────────────────────────────────────
 
 export function nombreIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
   return icon(size, stroke, <path d="M2 4h10M2 7h7M2 10h9" />)
@@ -149,5 +165,28 @@ export function frecuenciaIcon({ size = 12, stroke = 'currentColor' }: IconProps
   return icon(size, stroke, <>
     <path d="M2.5 9.5A5 5 0 1011.5 7" />
     <path d="M11.5 4v3h-3" />
+  </>)
+}
+
+export function urlIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <path d="M6 8l2-2" />
+    <path d="M4.5 9.5L3 11a1.4 1.4 0 010-2l2-2a1.4 1.4 0 012 0" />
+    <path d="M9.5 4.5L11 3a1.4 1.4 0 010 2l-2 2a1.4 1.4 0 01-2 0" />
+  </>)
+}
+
+export function productoTablasIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <rect x="1.5" y="2" width="4" height="4" rx="0.5" />
+    <rect x="8.5" y="8" width="4" height="4" rx="0.5" />
+    <path d="M5.5 4L8.5 10" />
+  </>)
+}
+
+export function jsonIcon({ size = 12, stroke = 'currentColor' }: IconProps = {}): ReactNode {
+  return icon(size, stroke, <>
+    <path d="M4 2.5C3 2.5 2.5 3 2.5 4v1.5c0 .8-.5 1.5-1 1.5.5 0 1 .7 1 1.5V10c0 1 .5 1.5 1.5 1.5" />
+    <path d="M10 2.5c1 0 1.5.5 1.5 1.5v1.5c0 .8.5 1.5 1 1.5-.5 0-1 .7-1 1.5V10c0 1-.5 1.5-1.5 1.5" />
   </>)
 }

@@ -2,14 +2,12 @@ import apiClient from '@/services/apiClient'
 import type { Archivo } from '@/types'
 
 interface ArchivoFilters {
-  url_id?: string | null
-  instrumento_id?: string | null
+  distribucion_id?: string | null
 }
 
 export async function getArchivos(filters: ArchivoFilters = {}): Promise<Archivo[]> {
   const params: Record<string, string> = {}
-  if (filters.url_id) params.url_id = filters.url_id
-  if (filters.instrumento_id) params.instrumento_id = filters.instrumento_id
+  if (filters.distribucion_id) params.distribucion_id = filters.distribucion_id
   const { data } = await apiClient.get<Archivo[]>('/archivos/', { params })
   return data
 }
@@ -20,16 +18,16 @@ export async function getArchivo(id: string): Promise<Archivo> {
 }
 
 export async function createArchivo(payload: {
-  url_id: string
-  descripcion?: string
-  fecha_publicacion?: string
-  fecha_fuente?: string
+  nombre_archivo: string
+  distribucion_id?: string
+  rol_archivo?: string
+  observaciones_archivo?: string
 }): Promise<Archivo> {
   const { data } = await apiClient.post<Archivo>('/archivos/', payload)
   return data
 }
 
-export async function updateArchivo(id: string, payload: { descripcion?: string; fecha_publicacion?: string; meta?: Record<string, unknown> }): Promise<Archivo> {
+export async function updateArchivo(id: string, payload: { nombre_archivo?: string; rol_archivo?: string; observaciones_archivo?: string; distribucion_id?: string }): Promise<Archivo> {
   const { data } = await apiClient.put<Archivo>(`/archivos/${id}`, payload)
   return data
 }

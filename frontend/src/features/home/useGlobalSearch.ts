@@ -24,10 +24,12 @@ interface SearchEntry {
 export interface CatalogCounts {
   proyectos: number
   productos: number
-  tablas: number
+  fuentes: number
+  datasets: number
+  'ediciones-dataset': number
+  distribuciones: number
   'bases-de-datos': number
-  instrumentos: number
-  urls: number
+  'informacion-tablas': number
   archivos: number
 }
 
@@ -79,14 +81,16 @@ export function useGlobalSearch() {
 
   useEffect(() => {
     const build = async () => {
-      const [p, prod, t, bd, inst, u, arch] = await Promise.allSettled([
-        apiClient.get<any[]>('/proyectos/'),
-        apiClient.get<any[]>('/productos/'),
-        apiClient.get<any[]>('/tablas/'),
-        apiClient.get<any[]>('/bases-de-datos/'),
-        apiClient.get<any[]>('/instrumentos/'),
-        apiClient.get<any[]>('/urls/'),
-        apiClient.get<any[]>('/archivos/'),
+      const [p, prod, fue, ds, ed, dist, bd, it, arch] = await Promise.allSettled([
+        apiClient.get<Record<string, unknown>[]>('/proyectos/'),
+        apiClient.get<Record<string, unknown>[]>('/productos/'),
+        apiClient.get<Record<string, unknown>[]>('/fuentes/'),
+        apiClient.get<Record<string, unknown>[]>('/datasets/'),
+        apiClient.get<Record<string, unknown>[]>('/ediciones-dataset/'),
+        apiClient.get<Record<string, unknown>[]>('/distribuciones/'),
+        apiClient.get<Record<string, unknown>[]>('/bases-de-datos/'),
+        apiClient.get<Record<string, unknown>[]>('/informacion-tablas/'),
+        apiClient.get<Record<string, unknown>[]>('/archivos/'),
       ])
 
       const entries: SearchEntry[] = []
@@ -95,78 +99,101 @@ export function useGlobalSearch() {
       if (p.status === 'fulfilled') {
         const data = p.value.data
         c.proyectos = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'proyecto', typeLabel: 'Proyecto',
-          label: r.nombre, subtitle: r.descripcion ?? undefined,
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'proyecto', typeLabel: 'Proyecto',
+          label: String(r.nombre ?? ''), subtitle: r.descripcion ? String(r.descripcion) : undefined,
           path: `/proyectos/${r.id}`,
-          text: [r.nombre, r.descripcion].filter(Boolean).join(' '),
+          text: [r.nombre, r.descripcion].filter(Boolean).map(String).join(' '),
         }))
       }
 
       if (prod.status === 'fulfilled') {
         const data = prod.value.data
         c.productos = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'producto', typeLabel: 'Producto',
-          label: r.nombre, subtitle: r.proyecto?.nombre,
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'producto', typeLabel: 'Producto',
+          label: String(r.nombre ?? ''), subtitle: (r.proyecto as Record<string, unknown> | null)?.nombre ? String((r.proyecto as Record<string, unknown>).nombre) : undefined,
           path: `/productos/${r.id}`,
-          text: [r.nombre, r.descripcion, r.proyecto?.nombre].filter(Boolean).join(' '),
+          text: [r.nombre, r.descripcion, (r.proyecto as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
         }))
       }
 
-      if (t.status === 'fulfilled') {
-        const data = t.value.data
-        c.tablas = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'tabla', typeLabel: 'Tabla',
-          label: r.nombre, subtitle: r.base_de_datos?.nombre,
-          path: `/tablas/${r.id}`,
-          text: [r.nombre, r.base_de_datos?.nombre].filter(Boolean).join(' '),
+      if (fue.status === 'fulfilled') {
+        const data = fue.value.data
+        c.fuentes = data.length
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'fuente', typeLabel: 'Fuente',
+          label: String(r.nombre ?? ''), subtitle: r.sector ? String(r.sector) : undefined,
+          path: `/fuentes/${r.id}`,
+          text: [r.nombre, r.sector, r.descripcion].filter(Boolean).map(String).join(' '),
+        }))
+      }
+
+      if (ds.status === 'fulfilled') {
+        const data = ds.value.data
+        c.datasets = data.length
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'dataset', typeLabel: 'Dataset',
+          label: String(r.nombre ?? ''), subtitle: r.tema_principal ? String(r.tema_principal) : undefined,
+          path: `/datasets/${r.id}`,
+          text: [r.nombre, r.descripcion, r.tema_principal].filter(Boolean).map(String).join(' '),
+        }))
+      }
+
+      if (ed.status === 'fulfilled') {
+        const data = ed.value.data
+        c['ediciones-dataset'] = data.length
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'edicion_dataset', typeLabel: 'Edicion',
+          label: String(r.nombre ?? ''), subtitle: (r.dataset as Record<string, unknown> | null)?.nombre ? String((r.dataset as Record<string, unknown>).nombre) : undefined,
+          path: `/ediciones-dataset/${r.id}`,
+          text: [r.nombre, (r.dataset as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
+        }))
+      }
+
+      if (dist.status === 'fulfilled') {
+        const data = dist.value.data
+        c.distribuciones = data.length
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'distribucion', typeLabel: 'Distribucion',
+          label: String(r.descriptor ?? String(r.id).slice(0, 8)),
+          subtitle: r.url ? String(r.url) : undefined,
+          path: `/distribuciones/${r.id}`,
+          text: [r.descriptor, r.url].filter(Boolean).map(String).join(' '),
         }))
       }
 
       if (bd.status === 'fulfilled') {
         const data = bd.value.data
         c['bases-de-datos'] = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'base_de_datos', typeLabel: 'Base de datos',
-          label: r.nombre, subtitle: r.tema ?? undefined,
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'base_de_datos', typeLabel: 'Base de datos',
+          label: String(r.db_nombre ?? ''), subtitle: (r.dataset as Record<string, unknown> | null)?.nombre ? String((r.dataset as Record<string, unknown>).nombre) : undefined,
           path: `/bases-de-datos/${r.id}`,
-          text: [r.nombre, r.tema, r.descripcion].filter(Boolean).join(' '),
+          text: [r.db_nombre, (r.dataset as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
         }))
       }
 
-      if (inst.status === 'fulfilled') {
-        const data = inst.value.data
-        c.instrumentos = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'instrumento', typeLabel: 'Instrumento',
-          label: r.nombre, subtitle: r.base_de_datos?.nombre,
-          path: `/instrumentos/${r.id}`,
-          text: [r.nombre, r.descripcion, r.base_de_datos?.nombre].filter(Boolean).join(' '),
-        }))
-      }
-
-      if (u.status === 'fulfilled') {
-        const data = u.value.data
-        c.urls = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'url', typeLabel: 'URL',
-          label: r.url, subtitle: r.instrumento?.nombre,
-          path: `/urls/${r.id}`,
-          text: [r.url, r.instrumento?.nombre].filter(Boolean).join(' '),
+      if (it.status === 'fulfilled') {
+        const data = it.value.data
+        c['informacion-tablas'] = data.length
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'informacion_tablas', typeLabel: 'Tabla',
+          label: String(r.nombre ?? ''), subtitle: (r.base_de_datos as Record<string, unknown> | null)?.db_nombre ? String((r.base_de_datos as Record<string, unknown>).db_nombre) : undefined,
+          path: `/informacion-tablas/${r.id}`,
+          text: [r.nombre, r.descripcion, (r.base_de_datos as Record<string, unknown> | null)?.db_nombre].filter(Boolean).map(String).join(' '),
         }))
       }
 
       if (arch.status === 'fulfilled') {
         const data = arch.value.data
         c.archivos = data.length
-        data.forEach((r: any) => entries.push({
-          id: r.id, type: 'archivo', typeLabel: 'Archivo',
-          label: r.descripcion || r.url_ref?.url || 'Sin descripción',
-          subtitle: r.url_ref?.instrumento?.nombre,
+        data.forEach((r) => entries.push({
+          id: String(r.id), type: 'archivo', typeLabel: 'Archivo',
+          label: String(r.nombre_archivo ?? ''),
+          subtitle: (r.distribucion as Record<string, unknown> | null)?.descriptor ? String((r.distribucion as Record<string, unknown>).descriptor) : undefined,
           path: `/archivos/${r.id}`,
-          text: [r.descripcion, r.url_ref?.url, r.url_ref?.instrumento?.nombre].filter(Boolean).join(' '),
+          text: [r.nombre_archivo, r.observaciones_archivo, (r.distribucion as Record<string, unknown> | null)?.descriptor].filter(Boolean).map(String).join(' '),
         }))
       }
 

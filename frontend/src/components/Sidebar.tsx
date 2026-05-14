@@ -1,29 +1,34 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { CATALOG_LEVELS } from '@/consts'
 import {
-  proyectosIcon, productosIcon, tablasIcon, basesDeDatosIcon,
-  instrumentosIcon, urlsIcon, archivosIcon, entidadesIcon, usuariosIcon,
+  proyectosIcon, productosIcon, fuentesIcon, datasetsIcon,
+  edicionesIcon, distribucionesIcon, basesDeDatosIcon,
+  informacionTablasIcon, archivosIcon, productoTablasIcon,
+  entidadesIcon, usuariosIcon,
 } from '@/consts/sectionIcons'
 import { useSidebar } from '@/context/SidebarContext'
-import type { User } from '@/types'
+import type { Usuario } from '@/types'
 
 interface Props {
-  user: User | null
+  user: Usuario | null
   onLogout: () => void
 }
 
-const CATALOG_ICONS = {
-  proyectos:       () => proyectosIcon({ size: 14 }),
-  productos:       () => productosIcon({ size: 14 }),
-  tablas:          () => tablasIcon({ size: 14 }),
-  'bases-de-datos': () => basesDeDatosIcon({ size: 14 }),
-  instrumentos:    () => instrumentosIcon({ size: 14 }),
-  urls:            () => urlsIcon({ size: 14 }),
-  archivos:        () => archivosIcon({ size: 14 }),
+const CATALOG_ICONS: Record<string, () => React.ReactNode> = {
+  proyectos:            () => proyectosIcon({ size: 14 }),
+  productos:            () => productosIcon({ size: 14 }),
+  fuentes:              () => fuentesIcon({ size: 14 }),
+  datasets:             () => datasetsIcon({ size: 14 }),
+  'ediciones-dataset':  () => edicionesIcon({ size: 14 }),
+  distribuciones:       () => distribucionesIcon({ size: 14 }),
+  'bases-de-datos':     () => basesDeDatosIcon({ size: 14 }),
+  'informacion-tablas': () => informacionTablasIcon({ size: 14 }),
+  archivos:             () => archivosIcon({ size: 14 }),
+  'producto-tablas':    () => productoTablasIcon({ size: 14 }),
 }
 
-function userInitials(email: string): string {
-  const [local] = email.split('@')
+function userInitials(correo: string): string {
+  const [local] = correo.split('@')
   const parts = local.split(/[._-]/)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
   return local.slice(0, 2).toUpperCase()
@@ -50,7 +55,6 @@ export default function Sidebar({ user, onLogout }: Props) {
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}
     >
-      {/* Logo */}
       <div className="px-5 py-6 flex items-center justify-between">
         <button
           onClick={() => { navigate('/'); closeSidebar() }}
@@ -65,7 +69,7 @@ export default function Sidebar({ user, onLogout }: Props) {
           className="md:hidden p-1 rounded text-white/50 hover:text-white
                      transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-          aria-label="Cerrar menú"
+          aria-label="Cerrar menu"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             <path d="M3 3l10 10M13 3L3 13" />
@@ -73,10 +77,9 @@ export default function Sidebar({ user, onLogout }: Props) {
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegación principal">
+      <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegacion principal">
         <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
-          Catálogo
+          Catalogo
         </p>
 
         {CATALOG_LEVELS.map((level) => (
@@ -101,7 +104,7 @@ export default function Sidebar({ user, onLogout }: Props) {
         ))}
 
         <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
-          Administración
+          Administracion
         </p>
 
         <NavLink
@@ -120,9 +123,9 @@ export default function Sidebar({ user, onLogout }: Props) {
           )}
         </NavLink>
 
-        {(user?.role === 'admin' || user?.role === 'superadmin') && (
+        {(user?.rol?.nombre === 'admin' || user?.rol?.nombre === 'superadmin') && (
           <NavLink
-            to="/users"
+            to="/usuarios"
             onClick={closeSidebar}
             className={({ isActive }) => navItemClass(isActive)}
           >
@@ -139,21 +142,20 @@ export default function Sidebar({ user, onLogout }: Props) {
         )}
       </nav>
 
-      {/* User footer */}
       <div className="px-4 py-3.5 border-t border-white/[8%] flex items-center gap-2.5">
         <div
           className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center shrink-0
                      text-[11px] font-bold text-white/90 ring-1 ring-white/10"
         >
-          {user?.email ? userInitials(user.email) : '?'}
+          {user?.correo ? userInitials(user.correo) : '?'}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.email}</p>
-          <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.role}</p>
+          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.correo}</p>
+          <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
         </div>
         <button
           onClick={() => { onLogout(); navigate('/login') }}
-          title="Cerrar sesión"
+          title="Cerrar sesion"
           className="w-6 h-6 rounded flex items-center justify-center
                      text-white/50 hover:text-white transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"

@@ -8,17 +8,22 @@ import ProyectosPage from '@/features/proyectos/ProyectosPage'
 import ProyectoDetailPage from '@/features/proyectos/ProyectoDetailPage'
 import ProductosPage from '@/features/productos/ProductosPage'
 import ProductoDetailPage from '@/features/productos/ProductoDetailPage'
-import TablasPage from '@/features/tablas/TablasPage'
-import TablaDetailPage from '@/features/tablas/TablaDetailPage'
+import FuentesPage from '@/features/fuentes/pages/FuentesPage'
+import FuenteDetailPage from '@/features/fuentes/pages/FuenteDetailPage'
+import DatasetsPage from '@/features/datasets/pages/DatasetsPage'
+import DatasetDetailPage from '@/features/datasets/pages/DatasetDetailPage'
+import EdicionesDatasetPage from '@/features/ediciones_dataset/pages/EdicionesDatasetPage'
+import EdicionDatasetDetailPage from '@/features/ediciones_dataset/pages/EdicionDatasetDetailPage'
+import DistribucionesPage from '@/features/distribuciones/pages/DistribucionesPage'
+import DistribucionDetailPage from '@/features/distribuciones/pages/DistribucionDetailPage'
 import BasesDeDatosPage from '@/features/bases_de_datos/BasesDeDatosPage'
 import BaseDeDatosDetailPage from '@/features/bases_de_datos/BaseDeDatosDetailPage'
-import InstrumentosPage from '@/features/instrumentos/InstrumentosPage'
-import InstrumentoDetailPage from '@/features/instrumentos/InstrumentoDetailPage'
-import UrlsPage from '@/features/urls/UrlsPage'
-import UrlDetailPage from '@/features/urls/UrlDetailPage'
+import InformacionTablasPage from '@/features/informacion_tablas/pages/InformacionTablasPage'
+import InformacionTablaDetailPage from '@/features/informacion_tablas/pages/InformacionTablaDetailPage'
 import ArchivosPage from '@/features/archivos/ArchivosPage'
 import ArchivoDetailPage from '@/features/archivos/ArchivoDetailPage'
-import UsersPage from '@/features/users/UsersPage'
+import ProductoTablasPage from '@/features/producto_tablas/pages/ProductoTablasPage'
+import UsuariosPage from '@/features/usuarios/pages/UsuariosPage'
 import EntidadesPage from '@/features/entidades/EntidadesPage'
 import HomePage from '@/features/home/HomePage'
 
@@ -32,18 +37,23 @@ function CatalogRoutes() {
         <Route path="proyectos/:id" element={<ProyectoDetailPage />} />
         <Route path="productos" element={<ProductosPage />} />
         <Route path="productos/:id" element={<ProductoDetailPage />} />
-        <Route path="tablas" element={<TablasPage />} />
-        <Route path="tablas/:id" element={<TablaDetailPage />} />
+        <Route path="fuentes" element={<FuentesPage />} />
+        <Route path="fuentes/:id" element={<FuenteDetailPage />} />
+        <Route path="datasets" element={<DatasetsPage />} />
+        <Route path="datasets/:id" element={<DatasetDetailPage />} />
+        <Route path="ediciones-dataset" element={<EdicionesDatasetPage />} />
+        <Route path="ediciones-dataset/:id" element={<EdicionDatasetDetailPage />} />
+        <Route path="distribuciones" element={<DistribucionesPage />} />
+        <Route path="distribuciones/:id" element={<DistribucionDetailPage />} />
         <Route path="bases-de-datos" element={<BasesDeDatosPage />} />
         <Route path="bases-de-datos/:id" element={<BaseDeDatosDetailPage />} />
-        <Route path="instrumentos" element={<InstrumentosPage />} />
-        <Route path="instrumentos/:id" element={<InstrumentoDetailPage />} />
-        <Route path="urls" element={<UrlsPage />} />
-        <Route path="urls/:id" element={<UrlDetailPage />} />
+        <Route path="informacion-tablas" element={<InformacionTablasPage />} />
+        <Route path="informacion-tablas/:id" element={<InformacionTablaDetailPage />} />
         <Route path="archivos" element={<ArchivosPage />} />
         <Route path="archivos/:id" element={<ArchivoDetailPage />} />
+        <Route path="producto-tablas" element={<ProductoTablasPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
-        {canManageUsers && <Route path="users" element={<UsersPage />} />}
+        {canManageUsers && <Route path="usuarios" element={<UsuariosPage />} />}
         <Route index element={<HomePage />} />
       </Routes>
     </Layout>

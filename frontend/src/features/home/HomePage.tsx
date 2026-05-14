@@ -4,23 +4,27 @@ import { CATALOG_LEVELS } from '@/consts'
 import { useGlobalSearch } from './useGlobalSearch'
 
 const TYPE_BADGE: Record<string, string> = {
-  proyecto:      'bg-brand-100 text-brand-700',
-  producto:      'bg-violet-50 text-violet-700',
-  tabla:         'bg-sky-50 text-sky-700',
-  base_de_datos: 'bg-blue-50 text-blue-700',
-  instrumento:   'bg-emerald-50 text-emerald-700',
-  url:           'bg-orange-50 text-orange-700',
-  archivo:       'bg-rose-50 text-rose-700',
+  proyecto:           'bg-brand-100 text-brand-700',
+  producto:           'bg-violet-50 text-violet-700',
+  fuente:             'bg-teal-50 text-teal-700',
+  dataset:            'bg-sky-50 text-sky-700',
+  edicion_dataset:    'bg-blue-50 text-blue-700',
+  distribucion:       'bg-emerald-50 text-emerald-700',
+  base_de_datos:      'bg-indigo-50 text-indigo-700',
+  informacion_tablas: 'bg-cyan-50 text-cyan-700',
+  archivo:            'bg-rose-50 text-rose-700',
 }
 
 const CARD_BG: Record<string, string> = {
-  proyectos:        'bg-brand-600',
-  productos:        'bg-violet-600',
-  tablas:           'bg-blue-700',
-  'bases-de-datos': 'bg-indigo-600',
-  instrumentos:     'bg-emerald-700',
-  urls:             'bg-orange-600',
-  archivos:         'bg-rose-700',
+  proyectos:           'bg-brand-600',
+  productos:           'bg-violet-600',
+  fuentes:             'bg-teal-600',
+  datasets:            'bg-sky-700',
+  'ediciones-dataset': 'bg-blue-600',
+  distribuciones:      'bg-emerald-700',
+  'bases-de-datos':    'bg-indigo-600',
+  'informacion-tablas': 'bg-cyan-700',
+  archivos:            'bg-rose-700',
 }
 
 const MODULE_ICONS: Record<string, React.ReactNode> = {
@@ -35,10 +39,33 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
       <path d="M1.5 5L8 8.5l6.5-3.5M8 8.5V14.5" />
     </svg>
   ),
-  tablas: (
+  fuentes: (
+    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 14h12" />
+      <path d="M4 14V4l4-2.5L12 4v10" />
+      <path d="M6.5 14v-4h3v4" />
+      <path d="M6.5 5.5h.5M9 5.5h.5M6.5 8h.5M9 8h.5" />
+    </svg>
+  ),
+  datasets: (
     <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
-      <path d="M1.5 6.5h13M1.5 11h13M6.5 1.5v13" />
+      <rect x="1.5" y="2" width="13" height="12" rx="1.5" />
+      <path d="M1.5 6.5h13" />
+      <path d="M6.5 6.5v7.5" />
+      <path d="M11 6.5v7.5" />
+    </svg>
+  ),
+  'ediciones-dataset': (
+    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.5 1.5h7a1 1 0 011 1v11a1 1 0 01-1 1h-7a1 1 0 01-1-1v-11a1 1 0 011-1z" />
+      <path d="M5 1.5h6v2.5H5z" />
+      <path d="M5.5 7h5M5.5 10h5M5.5 13h3" />
+    </svg>
+  ),
+  distribuciones: (
+    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <path d="M6.5 9.5a4 4 0 005.5.5l1.5-1.5a4 4 0 00-5.5-5.5L7 4" />
+      <path d="M9.5 6.5A4 4 0 004 6L2.5 7.5A4 4 0 008 13l1-1" />
     </svg>
   ),
   'bases-de-datos': (
@@ -48,16 +75,10 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
       <path d="M2.5 8v3c0 1.1 2.46 2 5.5 2s5.5-.9 5.5-2V8" />
     </svg>
   ),
-  instrumentos: (
-    <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="1.5" width="8" height="13" rx="1" />
-      <path d="M6.5 1.5v2h3v-2M6 7h4M6 10h2.5" />
-    </svg>
-  ),
-  urls: (
+  'informacion-tablas': (
     <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-      <path d="M6.5 9.5a4 4 0 005.5.5l1.5-1.5a4 4 0 00-5.5-5.5L7 4" />
-      <path d="M9.5 6.5A4 4 0 004 6L2.5 7.5A4 4 0 008 13l1-1" />
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1.5" />
+      <path d="M1.5 6.5h13M1.5 11h13M6.5 1.5v13" />
     </svg>
   ),
   archivos: (
@@ -205,7 +226,7 @@ export default function HomePage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={ready ? 'Buscar proyectos, productos, tablas, instrumentos…' : 'Cargando catálogo…'}
+              placeholder={ready ? 'Buscar proyectos, datasets, fuentes, distribuciones…' : 'Cargando catálogo…'}
               disabled={!ready}
               autoComplete="off"
               className="w-full h-16 pl-14 pr-20 text-lg border-2 border-gray-200 rounded-2xl
