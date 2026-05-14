@@ -181,6 +181,7 @@ CREATE TABLE archivo (
     rol_archivo VARCHAR,
     fecha_ingesta_sistema TIMESTAMPTZ,
     tamano_bytes BIGINT,
+    hash_sha256 VARCHAR(64),
     archivos_relacionados JSONB NOT NULL DEFAULT '{}'::jsonb,
     ruta_almacenamiento TEXT,
     observaciones_archivo TEXT,

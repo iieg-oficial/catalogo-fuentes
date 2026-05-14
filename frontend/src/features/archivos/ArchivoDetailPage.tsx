@@ -135,6 +135,12 @@ export default function ArchivoDetailPage() {
                 <dd className="text-[13px] text-ink/80 break-words font-mono">{item.ruta_almacenamiento}</dd>
               </div>
             )}
+            {item.hash_sha256 && (
+              <div className="py-2">
+                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Hash SHA-256</dt>
+                <dd className="text-[13px] text-ink/80 break-all font-mono">{item.hash_sha256}</dd>
+              </div>
+            )}
             {item.fecha_ingesta_sistema && (
               <div className="py-2">
                 <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ingesta</dt>

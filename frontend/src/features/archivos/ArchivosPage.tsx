@@ -33,6 +33,7 @@ export default function ArchivosPage() {
   const [newObservaciones, setNewObservaciones] = useState('')
   const [newFechaIngesta, setNewFechaIngesta] = useState('')
   const [newTamano, setNewTamano] = useState('')
+  const [newHashSha256, setNewHashSha256] = useState('')
   const [newArchivosRelacionados, setNewArchivosRelacionados] = useState<Record<string, unknown>>({})
   const [newDistribucionId, setNewDistribucionId] = useState('')
 
@@ -55,7 +56,7 @@ export default function ArchivosPage() {
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
     setNewRutaAlmacenamiento(''); setNewObservaciones('')
-    setNewFechaIngesta(''); setNewTamano(''); setNewArchivosRelacionados({})
+    setNewFechaIngesta(''); setNewTamano(''); setNewHashSha256(''); setNewArchivosRelacionados({})
     setNewDistribucionId('')
   }
 
@@ -68,6 +69,7 @@ export default function ArchivosPage() {
         rol_archivo: newRol || undefined,
         fecha_ingesta_sistema: newFechaIngesta || undefined,
         tamano_bytes: newTamano ? Number(newTamano) : undefined,
+        hash_sha256: newHashSha256 || undefined,
         archivos_relacionados: Object.keys(newArchivosRelacionados).length ? newArchivosRelacionados : undefined,
         ruta_almacenamiento: newRutaAlmacenamiento || undefined,
         observaciones_archivo: newObservaciones || undefined,
@@ -118,7 +120,7 @@ export default function ArchivosPage() {
 
   const columns: Column<Archivo>[] = [
     {
-      header: 'Nombre archivo',
+      header: 'archivo',
       icon: nombreIcon(),
       render: (r) => <TextCell value={r.nombre_archivo} />,
       className: 'w-48',
@@ -126,7 +128,7 @@ export default function ArchivosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre_archivo', v),
     },
     {
-      header: 'Ruta en distribucion',
+      header: 'Ruta en distribución',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.ruta_relativa_en_distribucion} mono />,
       getValue: (r) => r.ruta_relativa_en_distribucion ?? '',
@@ -140,6 +142,13 @@ export default function ArchivosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'rol_archivo', v),
     },
     {
+      header: 'Hash SHA-256',
+      icon: descripcionIcon(),
+      render: (r) => <TextCell value={r.hash_sha256} mono />,
+      getValue: (r) => r.hash_sha256 ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'hash_sha256', v),
+    },
+    {
       header: 'Fecha ingesta',
       icon: fechaIcon(),
       render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_ingesta_sistema) ?? '--'}</span>,
@@ -148,7 +157,7 @@ export default function ArchivosPage() {
       inputType: 'date',
     },
     {
-      header: 'Tamano',
+      header: 'Tamaño',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[12px] font-mono">{fmtBytes(r.tamano_bytes) ?? '--'}</span>,
       getValue: (r) => r.tamano_bytes?.toString() ?? '',
@@ -177,7 +186,7 @@ export default function ArchivosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'observaciones_archivo', v),
     },
     {
-      header: 'Distribucion',
+      header: 'Distribución',
       icon: distribucionesIcon(),
       selectOptions: distribucionOpts,
       onEdit: (r, v) => {
@@ -204,7 +213,11 @@ export default function ArchivosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol..." className={inputCls} />
       </td>
-      {/* 4. Fecha ingesta */}
+      {/* 4. Hash SHA-256 */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newHashSha256} onChange={(e) => setNewHashSha256(e.target.value)} onKeyDown={kd} placeholder="Hash SHA-256..." className={inputCls} />
+      </td>
+      {/* 5. Fecha ingesta */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <DatePickerInput value={newFechaIngesta} onChange={setNewFechaIngesta} placeholder="Fecha ingesta..." onKeyDown={kd} />
       </td>
