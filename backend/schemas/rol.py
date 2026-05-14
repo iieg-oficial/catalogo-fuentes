@@ -3,28 +3,30 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from schemas.permiso import PermisoRead
 
-class ProyectoBase(BaseModel):
+
+class RolBase(BaseModel):
     nombre: str
     descripcion: str | None = None
-    meta: dict = {}
-    usuario_id: uuid.UUID | None = None
 
 
-class ProyectoCreate(ProyectoBase):
+class RolCreate(RolBase):
     pass
 
 
-class ProyectoUpdate(BaseModel):
+class RolUpdate(BaseModel):
     nombre: str | None = None
     descripcion: str | None = None
-    meta: dict | None = None
-    usuario_id: uuid.UUID | None = None
 
 
-class ProyectoRead(ProyectoBase):
+class RolRead(RolBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
+
+
+class RolDetail(RolRead):
+    permisos: list[PermisoRead] = []

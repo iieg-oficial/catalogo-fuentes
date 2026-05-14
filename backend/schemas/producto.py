@@ -7,7 +7,7 @@ from schemas.proyecto import ProyectoRead
 
 
 class ProductoBase(BaseModel):
-    proyecto_id: uuid.UUID
+    proyecto_id: uuid.UUID | None = None
     nombre: str
     descripcion: str | None = None
     meta: dict = {}
@@ -26,12 +26,8 @@ class ProductoUpdate(BaseModel):
 
 class ProductoRead(ProductoBase):
     id: uuid.UUID
-    proyecto_id: uuid.UUID | None = None
+    proyecto: ProyectoRead | None = None
+    created_at: datetime
     updated_at: datetime | None = None
-    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
-
-
-class ProductoWithProyecto(ProductoRead):
-    proyecto: ProyectoRead | None = None

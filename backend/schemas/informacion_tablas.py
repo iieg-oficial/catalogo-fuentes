@@ -3,27 +3,30 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from schemas.refs import BaseDeDatosRef
 
-class ProyectoBase(BaseModel):
+
+class InformacionTablasBase(BaseModel):
     nombre: str
     descripcion: str | None = None
     meta: dict = {}
-    usuario_id: uuid.UUID | None = None
+    base_de_datos_id: uuid.UUID | None = None
 
 
-class ProyectoCreate(ProyectoBase):
+class InformacionTablasCreate(InformacionTablasBase):
     pass
 
 
-class ProyectoUpdate(BaseModel):
+class InformacionTablasUpdate(BaseModel):
     nombre: str | None = None
     descripcion: str | None = None
     meta: dict | None = None
-    usuario_id: uuid.UUID | None = None
+    base_de_datos_id: uuid.UUID | None = None
 
 
-class ProyectoRead(ProyectoBase):
+class InformacionTablasRead(InformacionTablasBase):
     id: uuid.UUID
+    base_de_datos: BaseDeDatosRef | None = None
     created_at: datetime
     updated_at: datetime | None = None
 

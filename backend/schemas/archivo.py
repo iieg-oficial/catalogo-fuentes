@@ -1,17 +1,22 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
 from pydantic import BaseModel
 
-from schemas.url import UrlRead
+from schemas.refs import DistribucionRef
 
 
 class ArchivoBase(BaseModel):
-    url_id: uuid.UUID
-    descripcion: str | None = None
-    fecha_publicacion: date | None = None
-    fecha_fuente: str | None = None
-    meta: dict = {}
+    nombre_archivo: str
+    ruta_relativa_en_distribucion: str | None = None
+    rol_archivo: str | None = None
+    fecha_ingesta_sistema: datetime | None = None
+    tamano_bytes: int | None = None
+    hash_sha256: str | None = None
+    archivos_relacionados: dict = {}
+    ruta_almacenamiento: str | None = None
+    observaciones_archivo: str | None = None
+    distribucion_id: uuid.UUID | None = None
 
 
 class ArchivoCreate(ArchivoBase):
@@ -19,22 +24,22 @@ class ArchivoCreate(ArchivoBase):
 
 
 class ArchivoUpdate(BaseModel):
-    url_id: uuid.UUID | None = None
-    descripcion: str | None = None
-    fecha_publicacion: date | None = None
-    fecha_fuente: str | None = None
-    meta: dict | None = None
+    nombre_archivo: str | None = None
+    ruta_relativa_en_distribucion: str | None = None
+    rol_archivo: str | None = None
+    fecha_ingesta_sistema: datetime | None = None
+    tamano_bytes: int | None = None
+    hash_sha256: str | None = None
+    archivos_relacionados: dict | None = None
+    ruta_almacenamiento: str | None = None
+    observaciones_archivo: str | None = None
+    distribucion_id: uuid.UUID | None = None
 
 
 class ArchivoRead(ArchivoBase):
     id: uuid.UUID
-    url_id: uuid.UUID | None = None
-    url_ref: UrlRead | None = None
+    distribucion: DistribucionRef | None = None
+    created_at: datetime
     updated_at: datetime | None = None
-    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}
-
-
-class ArchivoDetail(ArchivoRead):
-    pass

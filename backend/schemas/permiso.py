@@ -4,25 +4,21 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class ProyectoBase(BaseModel):
+class PermisoBase(BaseModel):
     nombre: str
     descripcion: str | None = None
-    meta: dict = {}
-    usuario_id: uuid.UUID | None = None
 
 
-class ProyectoCreate(ProyectoBase):
+class PermisoCreate(PermisoBase):
     pass
 
 
-class ProyectoUpdate(BaseModel):
+class PermisoUpdate(BaseModel):
     nombre: str | None = None
     descripcion: str | None = None
-    meta: dict | None = None
-    usuario_id: uuid.UUID | None = None
 
 
-class ProyectoRead(ProyectoBase):
+class PermisoRead(PermisoBase):
     id: uuid.UUID
     created_at: datetime
     updated_at: datetime | None = None
