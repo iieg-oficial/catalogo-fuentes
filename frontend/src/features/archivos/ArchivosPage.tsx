@@ -21,6 +21,7 @@ export default function ArchivosPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newRol, setNewRol] = useState('')
+  const [newObservaciones, setNewObservaciones] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -36,12 +37,12 @@ export default function ArchivosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewRol('') }
+  const resetFields = () => { setNewNombre(''); setNewRol(''); setNewObservaciones('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createArchivo({ nombre_archivo: newNombre, rol_archivo: newRol || undefined })
+      await createArchivo({ nombre_archivo: newNombre, rol_archivo: newRol || undefined, observaciones_archivo: newObservaciones || undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -49,7 +50,7 @@ export default function ArchivosPage() {
     }
   }
 
-  const handleEditPrimaryCell = (row: Archivo, field: 'nombre_archivo' | 'rol_archivo', value: string) => {
+  const handleEditPrimaryCell = (row: Archivo, field: string, value: string) => {
     updateArchivo(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
@@ -99,6 +100,7 @@ export default function ArchivosPage() {
         ? <span className="font-mono text-[12px] text-ink/70 truncate block" style={{ maxWidth: 160 }}>{r.ruta_relativa_en_distribucion}</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.ruta_relativa_en_distribucion ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_relativa_en_distribucion', v),
     },
     {
       header: 'Rol',
@@ -128,6 +130,7 @@ export default function ArchivosPage() {
         ? <span className="font-mono text-[11px] text-ink/50 truncate block" style={{ maxWidth: 100 }}>{r.hash_sha256.slice(0, 16)}...</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.hash_sha256 ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'hash_sha256', v),
     },
     {
       header: 'Archivos relacionados',
@@ -147,12 +150,14 @@ export default function ArchivosPage() {
         ? <span className="font-mono text-[12px] text-ink/70 truncate block" style={{ maxWidth: 180 }}>{r.ruta_almacenamiento}</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.ruta_almacenamiento ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_almacenamiento', v),
     },
     {
       header: 'Observaciones',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.observaciones_archivo ?? '--'}</span>,
       getValue: (r) => r.observaciones_archivo ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'observaciones_archivo', v),
     },
     {
       header: 'Distribucion',
@@ -174,7 +179,11 @@ export default function ArchivosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
+      </td>
+      {emptyTd}
     </>
   )
 

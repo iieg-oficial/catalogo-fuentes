@@ -21,12 +21,13 @@ export async function createEdicionDataset(payload: {
   nombre: string
   dataset_id?: string
   fecha_publicacion?: string
+  observaciones_edicion?: string
 }): Promise<EdicionDataset> {
   const { data } = await apiClient.post<EdicionDataset>('/ediciones-dataset/', payload)
   return data
 }
 
-export async function updateEdicionDataset(id: string, payload: { nombre?: string; dataset_id?: string; fecha_publicacion?: string }): Promise<EdicionDataset> {
+export async function updateEdicionDataset(id: string, payload: { nombre?: string; dataset_id?: string; fecha_publicacion?: string; periodo_referencia_inicio?: string; periodo_referencia_fin?: string; tipo_periodo_referencia?: string; fecha_levantamiento_inicio?: string; fecha_levantamiento_fin?: string; url_documentacion_edicion?: string; url_comunicado_publicacion?: string; observaciones_edicion?: string; version_publicacion?: string; es_version_corregida?: boolean }): Promise<EdicionDataset> {
   const { data } = await apiClient.put<EdicionDataset>(`/ediciones-dataset/${id}`, payload)
   return data
 }

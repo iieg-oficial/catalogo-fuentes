@@ -20,7 +20,10 @@ export default function DatasetsPage() {
   const [search, setSearch] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
+  const [newNombreCorto, setNewNombreCorto] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newPeriodicidad, setNewPeriodicidad] = useState('')
+  const [newTema, setNewTema] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -30,17 +33,17 @@ export default function DatasetsPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDesc('') }
+  const resetFields = () => { setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewPeriodicidad(''); setNewTema('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createDataset({ nombre: newNombre, descripcion: newDesc || undefined })
+      await createDataset({ nombre: newNombre, nombre_corto: newNombreCorto || undefined, descripcion: newDesc || undefined, periodicidad: newPeriodicidad || undefined, tema_principal: newTema || undefined })
       setAddingRow(false); resetFields(); await load(true)
     } finally {}
   }
 
-  const handleEditPrimaryCell = (row: Dataset, field: 'nombre' | 'descripcion', value: string) => {
+  const handleEditCell = (row: Dataset, field: string, value: string) => {
     updateDataset(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
@@ -68,25 +71,25 @@ export default function DatasetsPage() {
   const link = (v: string | null | undefined) => v ? <a href={v} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{v}</a> : <span className="text-ink/30 text-[13px]">--</span>
 
   const columns: Column<Dataset>[] = [
-    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v) },
-    { header: 'Nombre corto', icon: nombreIcon(), render: (r) => txt(r.nombre_corto), getValue: (r) => r.nombre_corto ?? '' },
-    { header: 'Descripcion', icon: descripcionIcon(), render: (r) => txt(r.descripcion), getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v) },
-    { header: 'ID persistente', icon: descripcionIcon(), render: (r) => txt(r.identificador_persistente), getValue: (r) => r.identificador_persistente ?? '' },
-    { header: 'Periodicidad', icon: frecuenciaIcon(), render: (r) => txt(r.periodicidad), getValue: (r) => r.periodicidad ?? '' },
+    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
+    { header: 'Nombre corto', icon: nombreIcon(), render: (r) => txt(r.nombre_corto), getValue: (r) => r.nombre_corto ?? '', onEdit: (r, v) => handleEditCell(r, 'nombre_corto', v) },
+    { header: 'Descripcion', icon: descripcionIcon(), render: (r) => txt(r.descripcion), getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
+    { header: 'ID persistente', icon: descripcionIcon(), render: (r) => txt(r.identificador_persistente), getValue: (r) => r.identificador_persistente ?? '', onEdit: (r, v) => handleEditCell(r, 'identificador_persistente', v) },
+    { header: 'Periodicidad', icon: frecuenciaIcon(), render: (r) => txt(r.periodicidad), getValue: (r) => r.periodicidad ?? '', onEdit: (r, v) => handleEditCell(r, 'periodicidad', v) },
     { header: 'Vigente', icon: estadoIcon(), render: (r) => r.vigente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>, getValue: (r) => r.vigente ? 'Si' : 'No' },
-    { header: 'URL principal', icon: urlIcon(), render: (r) => link(r.url_pagina_principal), getValue: (r) => r.url_pagina_principal ?? '' },
-    { header: 'URL metodologia', icon: urlIcon(), render: (r) => link(r.url_metodologia_general), getValue: (r) => r.url_metodologia_general ?? '' },
-    { header: 'URL metadatos', icon: urlIcon(), render: (r) => link(r.url_metadatos_general), getValue: (r) => r.url_metadatos_general ?? '' },
-    { header: 'Desagregacion geo', icon: descripcionIcon(), render: (r) => txt(r.desagregacion_geografica), getValue: (r) => r.desagregacion_geografica ?? '' },
-    { header: 'Cobertura temporal', icon: descripcionIcon(), render: (r) => txt(r.cobertura_temporal_general), getValue: (r) => r.cobertura_temporal_general ?? '' },
-    { header: 'Unidad observacion', icon: descripcionIcon(), render: (r) => txt(r.unidad_observacion), getValue: (r) => r.unidad_observacion ?? '' },
-    { header: 'Tema', icon: temaIcon(), render: (r) => r.tema_principal ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{r.tema_principal}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.tema_principal ?? '' },
-    { header: 'Proposito', icon: descripcionIcon(), render: (r) => txt(r.proposito), getValue: (r) => r.proposito ?? '' },
+    { header: 'URL principal', icon: urlIcon(), render: (r) => link(r.url_pagina_principal), getValue: (r) => r.url_pagina_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_pagina_principal', v) },
+    { header: 'URL metodologia', icon: urlIcon(), render: (r) => link(r.url_metodologia_general), getValue: (r) => r.url_metodologia_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metodologia_general', v) },
+    { header: 'URL metadatos', icon: urlIcon(), render: (r) => link(r.url_metadatos_general), getValue: (r) => r.url_metadatos_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metadatos_general', v) },
+    { header: 'Desagregacion geo', icon: descripcionIcon(), render: (r) => txt(r.desagregacion_geografica), getValue: (r) => r.desagregacion_geografica ?? '', onEdit: (r, v) => handleEditCell(r, 'desagregacion_geografica', v) },
+    { header: 'Cobertura temporal', icon: descripcionIcon(), render: (r) => txt(r.cobertura_temporal_general), getValue: (r) => r.cobertura_temporal_general ?? '', onEdit: (r, v) => handleEditCell(r, 'cobertura_temporal_general', v) },
+    { header: 'Unidad observacion', icon: descripcionIcon(), render: (r) => txt(r.unidad_observacion), getValue: (r) => r.unidad_observacion ?? '', onEdit: (r, v) => handleEditCell(r, 'unidad_observacion', v) },
+    { header: 'Tema', icon: temaIcon(), render: (r) => r.tema_principal ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{r.tema_principal}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.tema_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'tema_principal', v) },
+    { header: 'Proposito', icon: descripcionIcon(), render: (r) => txt(r.proposito), getValue: (r) => r.proposito ?? '', onEdit: (r, v) => handleEditCell(r, 'proposito', v) },
     { header: 'Inicio disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_inicio_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_inicio_disponibilidad ?? '' },
     { header: 'Fin disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_fin_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_fin_disponibilidad ?? '' },
-    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_dataset), getValue: (r) => r.observaciones_dataset ?? '' },
+    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_dataset), getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
     { header: 'Etiquetas', icon: jsonIcon(), render: (r) => { const t = r.etiquetas ?? []; return t.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{t.length} tags</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => JSON.stringify(r.etiquetas ?? []) },
-    { header: 'URL normativa', icon: urlIcon(), render: (r) => link(r.url_normativa_o_marco_legal), getValue: (r) => r.url_normativa_o_marco_legal ?? '' },
+    { header: 'URL normativa', icon: urlIcon(), render: (r) => link(r.url_normativa_o_marco_legal), getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
     { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.fuente?.nombre ?? '' },
   ]
 
@@ -96,11 +99,21 @@ export default function DatasetsPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
       </td>
-      {emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newNombreCorto} onChange={(e) => setNewNombreCorto(e.target.value)} onKeyDown={kd} placeholder="Nombre corto..." className={inputCls} />
+      </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newPeriodicidad} onChange={(e) => setNewPeriodicidad(e.target.value)} onKeyDown={kd} placeholder="Periodicidad..." className={inputCls} />
+      </td>
+      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newTema} onChange={(e) => setNewTema(e.target.value)} onKeyDown={kd} placeholder="Tema..." className={inputCls} />
+      </td>
+      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
     </>
   )
 

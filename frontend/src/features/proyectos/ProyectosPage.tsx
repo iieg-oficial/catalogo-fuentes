@@ -21,6 +21,7 @@ export default function ProyectosPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newMeta, setNewMeta] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -39,12 +40,13 @@ export default function ProyectosPage() {
   const resetFields = () => {
     setNewNombre('')
     setNewDesc('')
+    setNewMeta('')
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined })
+      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined, meta: newMeta ? JSON.parse(newMeta) : undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -125,7 +127,15 @@ export default function ProyectosPage() {
           className={inputCls}
         />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input
+          value={newMeta}
+          onChange={(e) => setNewMeta(e.target.value)}
+          onKeyDown={kd}
+          placeholder="JSON..."
+          className={inputCls}
+        />
+      </td>
     </>
   )
 

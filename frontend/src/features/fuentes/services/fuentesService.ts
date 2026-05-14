@@ -25,7 +25,20 @@ export async function createFuente(payload: {
   return data
 }
 
-export async function updateFuente(id: string, payload: { nombre?: string; descripcion?: string; nombre_corto?: string; sector?: string; ambito?: string; url?: string }): Promise<Fuente> {
+export async function updateFuente(id: string, payload: {
+  nombre?: string
+  descripcion?: string
+  nombre_corto?: string
+  sector?: string
+  ambito?: string
+  url?: string
+  es_fuente_oficial?: boolean
+  es_publicador?: boolean
+  jurisdiccion?: string
+  url_terminos_uso?: string
+  url_aviso_privacidad?: string
+  contacto_institucional?: string
+}): Promise<Fuente> {
   const { data } = await apiClient.put<Fuente>(`/fuentes/${id}`, payload)
   return data
 }

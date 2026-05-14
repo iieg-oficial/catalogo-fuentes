@@ -25,6 +25,7 @@ export default function ProductosPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newProyectoId, setNewProyectoId] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newMeta, setNewMeta] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -42,12 +43,12 @@ export default function ProductosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc('') }
+  const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newProyectoId) return
     try {
-      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined })
+      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined, meta: newMeta ? JSON.parse(newMeta) : undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -139,7 +140,9 @@ export default function ProductosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newMeta} onChange={(e) => setNewMeta(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+      </td>
     </>
   )
 

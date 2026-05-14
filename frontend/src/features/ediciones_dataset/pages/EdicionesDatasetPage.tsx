@@ -6,7 +6,7 @@ import CatalogGrid from '@/components/CatalogGrid'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { EdicionDataset } from '@/types'
-import { getEdicionesDataset, createEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
+import { getEdicionesDataset, createEdicionDataset, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -20,6 +20,8 @@ export default function EdicionesDatasetPage() {
   const [search, setSearch] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
+  const [newFechaPublicacion, setNewFechaPublicacion] = useState('')
+  const [newObservaciones, setNewObservaciones] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
@@ -28,11 +30,16 @@ export default function EdicionesDatasetPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre('') }
+  const resetFields = () => { setNewNombre(''); setNewFechaPublicacion(''); setNewObservaciones('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
-    try { await createEdicionDataset({ nombre: newNombre }); setAddingRow(false); resetFields(); await load(true) } finally {}
+    try { await createEdicionDataset({ nombre: newNombre, fecha_publicacion: newFechaPublicacion || undefined, observaciones_edicion: newObservaciones || undefined }); setAddingRow(false); resetFields(); await load(true) } finally {}
+  }
+
+  const handleEditCell = (row: EdicionDataset, field: string, value: string) => {
+    updateEdicionDataset(row.id, { [field]: value })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
 
   const handleDeleteRows = async (keys: string[]) => {
@@ -58,18 +65,18 @@ export default function EdicionesDatasetPage() {
   const link = (v: string | null | undefined) => v ? <a href={v} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{v}</a> : <span className="text-ink/30 text-[13px]">--</span>
 
   const columns: Column<EdicionDataset>[] = [
-    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre },
+    { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Dataset', icon: datasetsIcon(), render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.dataset?.nombre ?? '' },
     { header: 'Publicacion', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_publicacion) ?? '--'}</span>, getValue: (r) => r.fecha_publicacion ?? '' },
     { header: 'Periodo inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_inicio) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_inicio ?? '' },
     { header: 'Periodo fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_fin) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_fin ?? '' },
-    { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => txt(r.tipo_periodo_referencia), getValue: (r) => r.tipo_periodo_referencia ?? '' },
+    { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => txt(r.tipo_periodo_referencia), getValue: (r) => r.tipo_periodo_referencia ?? '', onEdit: (r, v) => handleEditCell(r, 'tipo_periodo_referencia', v) },
     { header: 'Levantamiento inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_inicio) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_inicio ?? '' },
     { header: 'Levantamiento fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_levantamiento_fin) ?? '--'}</span>, getValue: (r) => r.fecha_levantamiento_fin ?? '' },
-    { header: 'URL documentacion', icon: urlIcon(), render: (r) => link(r.url_documentacion_edicion), getValue: (r) => r.url_documentacion_edicion ?? '' },
-    { header: 'URL comunicado', icon: urlIcon(), render: (r) => link(r.url_comunicado_publicacion), getValue: (r) => r.url_comunicado_publicacion ?? '' },
-    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_edicion), getValue: (r) => r.observaciones_edicion ?? '' },
-    { header: 'Version', icon: descripcionIcon(), render: (r) => txt(r.version_publicacion), getValue: (r) => r.version_publicacion ?? '' },
+    { header: 'URL documentacion', icon: urlIcon(), render: (r) => link(r.url_documentacion_edicion), getValue: (r) => r.url_documentacion_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_documentacion_edicion', v) },
+    { header: 'URL comunicado', icon: urlIcon(), render: (r) => link(r.url_comunicado_publicacion), getValue: (r) => r.url_comunicado_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_comunicado_publicacion', v) },
+    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_edicion), getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
+    { header: 'Version', icon: descripcionIcon(), render: (r) => txt(r.version_publicacion), getValue: (r) => r.version_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'version_publicacion', v) },
     { header: 'Corregida', icon: estadoIcon(), render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span>, getValue: (r) => r.es_version_corregida ? 'Si' : 'No' },
   ]
 
@@ -79,7 +86,15 @@ export default function EdicionesDatasetPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      {emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="date" value={newFechaPublicacion} onChange={(e) => setNewFechaPublicacion(e.target.value)} onKeyDown={kd} className={inputCls} />
+      </td>
+      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
+      </td>
+      {emptyTd}{emptyTd}
     </>
   )
 

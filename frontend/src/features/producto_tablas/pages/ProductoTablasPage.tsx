@@ -6,10 +6,12 @@ import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { ProductoTabla, Producto, InformacionTablas } from '@/types'
-import { getProductoTablas, createProductoTabla, deleteProductoTabla } from '../services/productoTablasService'
+import { getProductoTablas, createProductoTabla, updateProductoTabla, deleteProductoTabla } from '../services/productoTablasService'
 import { getProductos } from '@/features/productos/services/productosService'
 import { getInformacionTablas } from '@/features/informacion_tablas/services/informacionTablasService'
 import { productosIcon, informacionTablasIcon, fechaIcon, descripcionIcon } from '@/consts/sectionIcons'
+
+const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function ProductoTablasPage() {
   const { canWrite } = useAuthContext()
@@ -22,6 +24,8 @@ export default function ProductoTablasPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newProductoId, setNewProductoId] = useState('')
   const [newTablaId, setNewTablaId] = useState('')
+  const [newFechaVinculacion, setNewFechaVinculacion] = useState('')
+  const [newObservaciones, setNewObservaciones] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -44,16 +48,21 @@ export default function ProductoTablasPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewProductoId(''); setNewTablaId('') }
+  const resetFields = () => { setNewProductoId(''); setNewTablaId(''); setNewFechaVinculacion(''); setNewObservaciones('') }
 
   const handleSaveRow = async () => {
     if (!newProductoId || !newTablaId) return
     try {
-      await createProductoTabla({ producto_id: newProductoId, informacion_tablas_id: newTablaId })
+      await createProductoTabla({ producto_id: newProductoId, informacion_tablas_id: newTablaId, fecha_vinculacion: newFechaVinculacion || undefined, observaciones: newObservaciones || undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
     } finally {}
+  }
+
+  const handleEditCell = (row: ProductoTabla, field: string, value: string) => {
+    updateProductoTabla(row.id, { [field]: value })
+    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
 
   const handleDeleteRows = async (keys: string[]) => {
@@ -101,12 +110,14 @@ export default function ProductoTablasPage() {
       icon: fechaIcon(),
       render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_vinculacion) ?? '--'}</span>,
       getValue: (r) => r.fecha_vinculacion ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'fecha_vinculacion', v),
     },
     {
       header: 'Observaciones',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.observaciones ?? '--'}</span>,
       getValue: (r) => r.observaciones ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'observaciones', v),
     },
   ]
 
@@ -130,8 +141,12 @@ export default function ProductoTablasPage() {
           label="Tabla"
         />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="date" value={newFechaVinculacion} onChange={(e) => setNewFechaVinculacion(e.target.value)} onKeyDown={kd} className={inputCls} />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
+      </td>
     </>
   )
 

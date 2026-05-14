@@ -11,7 +11,7 @@ export async function getProyecto(id: string): Promise<ProyectoDetail> {
   return data
 }
 
-export async function createProyecto(payload: { nombre: string; descripcion?: string; usuario_id?: string }): Promise<Proyecto> {
+export async function createProyecto(payload: { nombre: string; descripcion?: string; usuario_id?: string; meta?: Record<string, unknown> }): Promise<Proyecto> {
   const { data } = await apiClient.post<Proyecto>('/proyectos/', payload)
   return data
 }

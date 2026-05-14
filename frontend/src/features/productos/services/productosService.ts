@@ -16,6 +16,7 @@ export async function createProducto(payload: {
   nombre: string
   proyecto_id: string
   descripcion?: string
+  meta?: Record<string, unknown>
 }): Promise<Producto> {
   const { data } = await apiClient.post<Producto>('/productos/', payload)
   return data

@@ -34,6 +34,16 @@ export async function createProductoTabla(
   return res.json()
 }
 
+export async function updateProductoTabla(id: string, data: { fecha_vinculacion?: string; observaciones?: string }): Promise<ProductoTabla> {
+  const res = await fetch(`${API_URL}/producto-tablas/${id}`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to update producto-tabla')
+  return res.json()
+}
+
 export async function deleteProductoTabla(id: string): Promise<void> {
   const res = await fetch(`${API_URL}/producto-tablas/${id}`, {
     method: 'DELETE',

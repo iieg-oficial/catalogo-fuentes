@@ -20,7 +20,11 @@ export default function FuentesPage() {
   const [search, setSearch] = useState('')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
+  const [newNombreCorto, setNewNombreCorto] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newSector, setNewSector] = useState('')
+  const [newAmbito, setNewAmbito] = useState('')
+  const [newUrl, setNewUrl] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -36,12 +40,12 @@ export default function FuentesPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDesc('') }
+  const resetFields = () => { setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewSector(''); setNewAmbito(''); setNewUrl('') }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createFuente({ nombre: newNombre, descripcion: newDesc || undefined })
+      await createFuente({ nombre: newNombre, nombre_corto: newNombreCorto || undefined, descripcion: newDesc || undefined, sector: newSector || undefined, ambito: newAmbito || undefined, url: newUrl || undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -49,7 +53,7 @@ export default function FuentesPage() {
     }
   }
 
-  const handleEditPrimaryCell = (row: Fuente, field: 'nombre' | 'descripcion', value: string) => {
+  const handleEditCell = (row: Fuente, field: string, value: string) => {
     updateFuente(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
@@ -78,25 +82,28 @@ export default function FuentesPage() {
       render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
       className: 'w-48',
       getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+      onEdit: (r, v) => handleEditCell(r, 'nombre', v),
     },
     {
       header: 'Nombre corto',
       icon: nombreIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.nombre_corto ?? '--'}</span>,
       getValue: (r) => r.nombre_corto ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'nombre_corto', v),
     },
     {
       header: 'Sector',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.sector ?? '--'}</span>,
       getValue: (r) => r.sector ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'sector', v),
     },
     {
       header: 'Ambito',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.ambito ?? '--'}</span>,
       getValue: (r) => r.ambito ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'ambito', v),
     },
     {
       header: 'Oficial',
@@ -111,6 +118,7 @@ export default function FuentesPage() {
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.jurisdiccion ?? '--'}</span>,
       getValue: (r) => r.jurisdiccion ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'jurisdiccion', v),
     },
     {
       header: 'URL',
@@ -119,13 +127,14 @@ export default function FuentesPage() {
         ? <a href={r.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url}</a>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'url', v),
     },
     {
       header: 'Descripcion',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.descripcion ?? '--'}</span>,
       getValue: (r) => r.descripcion ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+      onEdit: (r, v) => handleEditCell(r, 'descripcion', v),
     },
     {
       header: 'Publicador',
@@ -142,6 +151,7 @@ export default function FuentesPage() {
         ? <a href={r.url_terminos_uso} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url_terminos_uso}</a>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url_terminos_uso ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'url_terminos_uso', v),
     },
     {
       header: 'URL aviso privacidad',
@@ -150,12 +160,14 @@ export default function FuentesPage() {
         ? <a href={r.url_aviso_privacidad} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url_aviso_privacidad}</a>
         : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url_aviso_privacidad ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'url_aviso_privacidad', v),
     },
     {
       header: 'Contacto institucional',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[13px]">{r.contacto_institucional ?? '--'}</span>,
       getValue: (r) => r.contacto_institucional ?? '',
+      onEdit: (r, v) => handleEditCell(r, 'contacto_institucional', v),
     },
   ]
 
@@ -165,7 +177,19 @@ export default function FuentesPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
       </td>
-      {emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}{emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newNombreCorto} onChange={(e) => setNewNombreCorto(e.target.value)} onKeyDown={kd} placeholder="Nombre corto..." className={inputCls} />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newSector} onChange={(e) => setNewSector(e.target.value)} onKeyDown={kd} placeholder="Sector..." className={inputCls} />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newAmbito} onChange={(e) => setNewAmbito(e.target.value)} onKeyDown={kd} placeholder="Ambito..." className={inputCls} />
+      </td>
+      {emptyTd}{emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="URL..." className={inputCls} />
+      </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>

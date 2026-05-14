@@ -21,12 +21,13 @@ export async function createDistribucion(payload: {
   edicion_dataset_id?: string
   descriptor?: string
   url?: string
+  observaciones_distribucion?: string
 }): Promise<Distribucion> {
   const { data } = await apiClient.post<Distribucion>('/distribuciones/', payload)
   return data
 }
 
-export async function updateDistribucion(id: string, payload: { descriptor?: string; url?: string; edicion_dataset_id?: string }): Promise<Distribucion> {
+export async function updateDistribucion(id: string, payload: { descriptor?: string; url?: string; edicion_dataset_id?: string; requiere_autenticacion?: boolean; requiere_registro?: boolean; es_url_persistente?: boolean; estado_url_ultima_revision?: string; observaciones_distribucion?: string }): Promise<Distribucion> {
   const { data } = await apiClient.put<Distribucion>(`/distribuciones/${id}`, payload)
   return data
 }
