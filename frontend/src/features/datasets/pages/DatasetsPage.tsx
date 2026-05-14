@@ -10,6 +10,7 @@ import type { Dataset, Fuente } from '@/types'
 import { getDatasets, createDataset, updateDataset, deleteDataset } from '../services/datasetsService'
 import { getFuentes } from '@/features/fuentes/services/fuentesService'
 import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
+import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -117,7 +118,7 @@ export default function DatasetsPage() {
   }
 
   const txt = (v: string | null | undefined) => <span className="text-ink/70 text-[13px]">{v ?? '--'}</span>
-  const link = (v: string | null | undefined) => v ? <a href={v} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{v}</a> : <span className="text-ink/30 text-[13px]">--</span>
+  const link = (v: string | null | undefined) => v ? <UrlCell url={v} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>
 
   const columns: Column<Dataset>[] = [
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },

@@ -9,6 +9,7 @@ import type { Column } from '@/components/DataTable'
 import type { Fuente } from '@/types'
 import { getFuentes, createFuente, updateFuente, deleteFuente } from '../services/fuentesService'
 import { nombreIcon, descripcionIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
+import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -149,9 +150,7 @@ export default function FuentesPage() {
     {
       header: 'URL',
       icon: urlIcon(),
-      render: (r) => r.url
-        ? <a href={r.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url}</a>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => r.url ? <UrlCell url={r.url} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url', v),
     },
@@ -175,18 +174,14 @@ export default function FuentesPage() {
     {
       header: 'URL terminos uso',
       icon: urlIcon(),
-      render: (r) => r.url_terminos_uso
-        ? <a href={r.url_terminos_uso} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url_terminos_uso}</a>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => r.url_terminos_uso ? <UrlCell url={r.url_terminos_uso} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url_terminos_uso ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url_terminos_uso', v),
     },
     {
       header: 'URL aviso privacidad',
       icon: urlIcon(),
-      render: (r) => r.url_aviso_privacidad
-        ? <a href={r.url_aviso_privacidad} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 180 }}>{r.url_aviso_privacidad}</a>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+      render: (r) => r.url_aviso_privacidad ? <UrlCell url={r.url_aviso_privacidad} maxWidth={180} /> : <span className="text-ink/30 text-[13px]">--</span>,
       getValue: (r) => r.url_aviso_privacidad ?? '',
       onEdit: (r, v) => handleEditCell(r, 'url_aviso_privacidad', v),
     },

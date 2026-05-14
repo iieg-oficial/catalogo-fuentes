@@ -10,6 +10,7 @@ import type { Distribucion, EdicionDataset } from '@/types'
 import { getDistribuciones, createDistribucion, updateDistribucion, deleteDistribucion } from '../services/distribucionesService'
 import { getEdicionesDataset } from '@/features/ediciones_dataset/services/edicionesDatasetService'
 import { nombreIcon, descripcionIcon, estadoIcon, edicionesIcon, urlIcon } from '@/consts/sectionIcons'
+import { UrlCell } from '@/components/UrlCell'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -88,7 +89,7 @@ export default function DistribucionesPage() {
 
   const columns: Column<Distribucion>[] = [
     { header: 'Descripcion', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.descriptor ?? r.id.slice(0, 8)}</span>, className: 'w-48', getValue: (r) => r.descriptor ?? '', onEdit: (r, v) => handleEditCell(r, 'descriptor', v) },
-    { header: 'URL', icon: urlIcon(), render: (r) => r.url ? <a href={r.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="font-mono text-[12px] text-brand-600 hover:underline truncate block" style={{ maxWidth: 200 }}>{r.url}</a> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
+    { header: 'URL', icon: urlIcon(), render: (r) => r.url ? <UrlCell url={r.url} maxWidth={200} /> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
     { header: 'Edicion', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => handleEditCell(r, 'edicion_dataset_id', v), getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span> },
     { header: 'Req. autenticacion', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_autenticacion', v === 'true'), getValue: (r) => r.requiere_autenticacion ? 'true' : 'false', render: (r) => r.requiere_autenticacion ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
     { header: 'Req. registro', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_registro', v === 'true'), getValue: (r) => r.requiere_registro ? 'true' : 'false', render: (r) => r.requiere_registro ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },

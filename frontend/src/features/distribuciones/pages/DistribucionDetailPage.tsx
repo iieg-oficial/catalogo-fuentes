@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
+import { UrlCell } from '@/components/UrlCell'
 import type { DistribucionDetail } from '@/types'
 import { getDistribucion } from '../services/distribucionesService'
 
@@ -70,7 +71,7 @@ export default function DistribucionDetailPage() {
           {item.url && (
             <section>
               <SectionHeading>Enlace</SectionHeading>
-              <a href={item.url} target="_blank" rel="noreferrer" className="text-[14px] text-brand-600 hover:text-brand-700 break-all transition-colors duration-150 font-mono">{item.url}</a>
+              <UrlCell url={item.url} wrap />
             </section>
           )}
 

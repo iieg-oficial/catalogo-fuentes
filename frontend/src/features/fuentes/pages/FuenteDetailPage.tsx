@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
+import { UrlCell } from '@/components/UrlCell'
 import type { FuenteDetail } from '@/types'
 import { getFuente } from '../services/fuentesService'
 
@@ -116,7 +117,7 @@ export default function FuenteDetailPage() {
           <dl className="divide-y divide-ink/[5%]">
             {item.ambito && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ambito</dt><dd className="text-[13px] text-ink/80">{item.ambito}</dd></div>}
             {item.jurisdiccion && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Jurisdiccion</dt><dd className="text-[13px] text-ink/80">{item.jurisdiccion}</dd></div>}
-            {item.url && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>URL</dt><dd className="text-[13px] text-brand-600 break-all"><a href={item.url} target="_blank" rel="noreferrer">{item.url}</a></dd></div>}
+            {item.url && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>URL</dt><dd className="text-[13px]"><UrlCell url={item.url} wrap /></dd></div>}
             {item.contacto_institucional && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Contacto</dt><dd className="text-[13px] text-ink/80">{item.contacto_institucional}</dd></div>}
           </dl>
           {item.updated_at && (
