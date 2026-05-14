@@ -14,19 +14,16 @@ class Proyecto(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre: Mapped[str] = mapped_column(String, nullable=False)
     descripcion: Mapped[str | None] = mapped_column(Text)
-    meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
+    meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    updated_by_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )
-    updated_by: Mapped["User | None"] = relationship("User", foreign_keys=[updated_by_id])
 
+    usuario_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("usuario.id", ondelete="SET NULL"), nullable=True
+    )
+
+    usuario: Mapped["Usuario | None"] = relationship("Usuario", back_populates="proyectos")
     productos: Mapped[list["Producto"]] = relationship(
         "Producto", back_populates="proyecto", passive_deletes=True
     )
-
-    @property
-    def updated_by_email(self) -> str | None:
-        return self.updated_by.email if self.updated_by else None

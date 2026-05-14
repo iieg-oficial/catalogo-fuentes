@@ -1,7 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Text, text
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,23 +12,21 @@ class Archivo(Base):
     __tablename__ = "archivo"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    url_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("url.id", ondelete="SET NULL"), nullable=True
-    )
-    descripcion: Mapped[str | None] = mapped_column(Text)
-    fecha_publicacion: Mapped[date | None] = mapped_column(Date)
-    fecha_fuente: Mapped[str | None] = mapped_column(String)
-    meta: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict, server_default="{}")
+    nombre_archivo: Mapped[str] = mapped_column(String, nullable=False)
+    ruta_relativa_en_distribucion: Mapped[str | None] = mapped_column(String)
+    rol_archivo: Mapped[str | None] = mapped_column(String)
+    fecha_ingesta_sistema: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    tamano_bytes: Mapped[int | None] = mapped_column(BigInteger)
+    hash_sha256: Mapped[str | None] = mapped_column(String)
+    archivos_relacionados: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
+    ruta_almacenamiento: Mapped[str | None] = mapped_column(Text)
+    observaciones_archivo: Mapped[str | None] = mapped_column(Text)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    updated_by_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+
+    distribucion_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("distribucion.id", ondelete="SET NULL"), nullable=True
     )
-    updated_by: Mapped["User | None"] = relationship("User", foreign_keys=[updated_by_id])
 
-    url_ref: Mapped["Url | None"] = relationship("Url", back_populates="archivos")
-
-    @property
-    def updated_by_email(self) -> str | None:
-        return self.updated_by.email if self.updated_by else None
+    distribucion: Mapped["Distribucion | None"] = relationship("Distribucion", back_populates="archivos")
