@@ -6,17 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
 from exceptions.http import not_found
-from models.user import User
 from routes.dependencies import get_current_user, require_write
 from schemas.detail import ProductoDetail
-from schemas.producto import ProductoCreate, ProductoUpdate, ProductoWithProyecto
+from schemas.producto import ProductoCreate, ProductoRead, ProductoUpdate
 from services import productos as svc
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/productos", tags=["productos"])
 
 
-@router.get("/", response_model=list[ProductoWithProyecto])
+@router.get("/", response_model=list[ProductoRead])
 async def list_productos(
     skip: int = 0,
     limit: int = 10_000,
@@ -39,7 +38,7 @@ async def get_producto(
     return obj
 
 
-@router.post("/", response_model=ProductoWithProyecto, status_code=201)
+@router.post("/", response_model=ProductoRead, status_code=201)
 async def create_producto(
     data: ProductoCreate,
     db: AsyncSession = Depends(get_db),
@@ -48,14 +47,14 @@ async def create_producto(
     return await svc.create_producto(db, data)
 
 
-@router.put("/{producto_id}", response_model=ProductoWithProyecto)
+@router.put("/{producto_id}", response_model=ProductoRead)
 async def update_producto(
     producto_id: uuid.UUID,
     data: ProductoUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_write),
+    _=Depends(require_write),
 ):
-    obj = await svc.update_producto(db, producto_id, data, current_user.id)
+    obj = await svc.update_producto(db, producto_id, data)
     if not obj:
         raise not_found("Producto")
     return obj

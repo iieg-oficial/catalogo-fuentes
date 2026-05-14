@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import settings
 from db import get_db
 from exceptions.http import forbidden, unauthorized
-from models.user import User
-from services.auth import get_user_by_email
+from models.usuario import Usuario
+from services.auth import get_usuario_by_correo
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -15,24 +15,24 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> Usuario:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        email: str | None = payload.get("sub")
-        if email is None:
+        correo: str | None = payload.get("sub")
+        if correo is None:
             raise unauthorized()
     except JWTError:
         raise unauthorized()
 
-    user = await get_user_by_email(db, email)
-    if user is None or not user.is_active:
+    usuario = await get_usuario_by_correo(db, correo)
+    if usuario is None or not usuario.activo:
         raise unauthorized()
-    return user
+    return usuario
 
 
 def require_roles(*roles: str):
-    async def dependency(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role.value not in roles:
+    async def dependency(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+        if not current_user.rol or current_user.rol.nombre not in roles:
             raise forbidden()
         return current_user
 

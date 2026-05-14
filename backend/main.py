@@ -5,20 +5,24 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import models  # noqa: F401 — ensures all models are registered before use
 from routes.auth import router as auth_router
+from routes.permisos import router as permisos_router
+from routes.roles import router as roles_router
+from routes.usuarios import router as usuarios_router
 from routes.proyectos import router as proyectos_router
 from routes.productos import router as productos_router
+from routes.fuentes import router as fuentes_router
+from routes.datasets import router as datasets_router
+from routes.ediciones_dataset import router as ediciones_dataset_router
+from routes.distribuciones import router as distribuciones_router
 from routes.bases_de_datos import router as bases_de_datos_router
-from routes.tablas import router as tablas_router
-from routes.instrumentos import router as instrumentos_router
-from routes.urls import router as urls_router
+from routes.informacion_tablas import router as informacion_tablas_router
+from routes.producto_tablas import router as producto_tablas_router
 from routes.archivos import router as archivos_router
-from routes.users import router as users_router
-from routes.meta_columns import router as meta_columns_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Dashboard Tracking API", version="1.0.0")
+app = FastAPI(title="Dashboard Tracking API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,15 +33,19 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(permisos_router)
+app.include_router(roles_router)
+app.include_router(usuarios_router)
 app.include_router(proyectos_router)
 app.include_router(productos_router)
+app.include_router(fuentes_router)
+app.include_router(datasets_router)
+app.include_router(ediciones_dataset_router)
+app.include_router(distribuciones_router)
 app.include_router(bases_de_datos_router)
-app.include_router(tablas_router)
-app.include_router(instrumentos_router)
-app.include_router(urls_router)
+app.include_router(informacion_tablas_router)
+app.include_router(producto_tablas_router)
 app.include_router(archivos_router)
-app.include_router(users_router)
-app.include_router(meta_columns_router)
 
 
 @app.get("/health")

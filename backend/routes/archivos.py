@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
 from exceptions.http import not_found
-from models.user import User
 from routes.dependencies import get_current_user, require_write
 from schemas.archivo import ArchivoCreate, ArchivoRead, ArchivoUpdate
 from services import archivos as svc
@@ -19,14 +18,11 @@ router = APIRouter(prefix="/archivos", tags=["archivos"])
 async def list_archivos(
     skip: int = 0,
     limit: int = 10_000,
-    url_id: uuid.UUID | None = None,
-    instrumento_id: uuid.UUID | None = None,
+    distribucion_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return await svc.list_archivos(
-        db, skip=skip, limit=limit, url_id=url_id, instrumento_id=instrumento_id
-    )
+    return await svc.list_archivos(db, skip=skip, limit=limit, distribucion_id=distribucion_id)
 
 
 @router.get("/{archivo_id}", response_model=ArchivoRead)
@@ -55,9 +51,9 @@ async def update_archivo(
     archivo_id: uuid.UUID,
     data: ArchivoUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_write),
+    _=Depends(require_write),
 ):
-    obj = await svc.update_archivo(db, archivo_id, data, current_user.id)
+    obj = await svc.update_archivo(db, archivo_id, data)
     if not obj:
         raise not_found("Archivo")
     return obj
