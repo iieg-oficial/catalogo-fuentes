@@ -5,7 +5,16 @@ interface JsonCellProps {
   value: Record<string, unknown> | null | undefined
 }
 
-const CARD_WIDTH = 420
+const CARD_WIDTH = 440
+
+function isNested(val: unknown): boolean {
+  return typeof val === 'object' && val !== null
+}
+
+function fmtVal(v: unknown): string {
+  if (typeof v === 'string') return v
+  return JSON.stringify(v)
+}
 
 export function JsonCell({ value }: JsonCellProps) {
   const entries = Object.entries(value ?? {})
@@ -61,22 +70,20 @@ export function JsonCell({ value }: JsonCellProps) {
 
   return (
     <>
-      <div
+      <span
         ref={ref}
-        className="flex flex-wrap gap-1 overflow-hidden max-h-[40px]"
+        className="block truncate text-[12px] text-ink/70"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={scheduleHide}
       >
-        {entries.map(([k, v]) => (
-          <span
-            key={k}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] bg-amber-500/8 text-amber-800 max-w-[200px] truncate"
-          >
-            <span className="font-medium">{k}:</span>
-            <span className="text-amber-700/70 truncate">{typeof v === 'string' ? v : JSON.stringify(v)}</span>
+        {entries.map(([k, v], i) => (
+          <span key={k}>
+            {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
+            <span className="font-medium text-brand-700">{k}: </span>
+            <span className="text-ink/55">{isNested(v) ? '{...}' : fmtVal(v)}</span>
           </span>
         ))}
-      </div>
+      </span>
       {tooltipPos && createPortal(
         <div
           className="fixed z-[9999] rounded-xl border border-ink/8 bg-white shadow-xl"
@@ -89,17 +96,10 @@ export function JsonCell({ value }: JsonCellProps) {
           onMouseEnter={() => { if (hideTimer.current) clearTimeout(hideTimer.current) }}
           onMouseLeave={scheduleHide}
         >
-          <div className="px-5 pt-5 pb-4">
-            <table className="w-full">
-              <tbody>
-                {entries.map(([k, v]) => (
-                  <tr key={k} className="border-b border-ink/[4%] last:border-b-0">
-                    <td className="py-1.5 pr-3 text-[13px] font-medium text-ink/70 align-top whitespace-nowrap">{k}</td>
-                    <td className="py-1.5 text-[13px] text-ink/55 break-all">{typeof v === 'string' ? v : JSON.stringify(v)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/75 whitespace-pre-wrap break-all">
+              {JSON.stringify(value, null, 2)}
+            </pre>
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
