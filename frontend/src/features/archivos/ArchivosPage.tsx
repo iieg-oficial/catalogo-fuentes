@@ -27,6 +27,9 @@ export default function ArchivosPage() {
   const [newRol, setNewRol] = useState('')
   const [newRutaAlmacenamiento, setNewRutaAlmacenamiento] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
+  const [newFechaIngesta, setNewFechaIngesta] = useState('')
+  const [newTamano, setNewTamano] = useState('')
+  const [newArchivosRelacionados, setNewArchivosRelacionados] = useState('')
   const [newDistribucionId, setNewDistribucionId] = useState('')
 
   const load = async (silent = false) => {
@@ -47,7 +50,9 @@ export default function ArchivosPage() {
 
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
-    setNewRutaAlmacenamiento(''); setNewObservaciones(''); setNewDistribucionId('')
+    setNewRutaAlmacenamiento(''); setNewObservaciones('')
+    setNewFechaIngesta(''); setNewTamano(''); setNewArchivosRelacionados('')
+    setNewDistribucionId('')
   }
 
   const handleSaveRow = async () => {
@@ -57,6 +62,9 @@ export default function ArchivosPage() {
         nombre_archivo: newNombre,
         ruta_relativa_en_distribucion: newRutaRelativa || undefined,
         rol_archivo: newRol || undefined,
+        fecha_ingesta_sistema: newFechaIngesta || undefined,
+        tamano_bytes: newTamano ? Number(newTamano) : undefined,
+        archivos_relacionados: newArchivosRelacionados ? JSON.parse(newArchivosRelacionados) : undefined,
         ruta_almacenamiento: newRutaAlmacenamiento || undefined,
         observaciones_archivo: newObservaciones || undefined,
         distribucion_id: newDistribucionId || undefined,
@@ -135,13 +143,15 @@ export default function ArchivosPage() {
       header: 'Fecha ingesta',
       icon: fechaIcon(),
       render: (r) => <span className="text-ink/70 text-[12px]">{fmtDatetime(r.fecha_ingesta_sistema) ?? '--'}</span>,
-      getValue: (r) => r.fecha_ingesta_sistema ?? '',
+      getValue: (r) => r.fecha_ingesta_sistema ? r.fecha_ingesta_sistema.slice(0, 16) : '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'fecha_ingesta_sistema', v),
     },
     {
       header: 'Tamano',
       icon: descripcionIcon(),
       render: (r) => <span className="text-ink/70 text-[12px] font-mono">{fmtBytes(r.tamano_bytes) ?? '--'}</span>,
       getValue: (r) => r.tamano_bytes?.toString() ?? '',
+      onEdit: (r, v) => { const n = Number(v); if (!isNaN(n)) { updateArchivo(r.id, { tamano_bytes: n }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tamano_bytes: n } : i))) } },
     },
     {
       header: 'SHA-256',
@@ -162,6 +172,7 @@ export default function ArchivosPage() {
           : <span className="text-ink/30 text-[13px]">--</span>
       },
       getValue: (r) => JSON.stringify(r.archivos_relacionados ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateArchivo(r.id, { archivos_relacionados: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivos_relacionados: parsed } : i))) } catch { /* invalid JSON */ } },
     },
     {
       header: 'Ruta almacenamiento',
@@ -207,14 +218,20 @@ export default function ArchivosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol..." className={inputCls} />
       </td>
-      {/* 4. Fecha ingesta (auto) */}
+      {/* 4. Fecha ingesta */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="datetime-local" value={newFechaIngesta} onChange={(e) => setNewFechaIngesta(e.target.value)} className={inputCls} />
+      </td>
+      {/* 5. Tamano (bytes) */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="number" value={newTamano} onChange={(e) => setNewTamano(e.target.value)} onKeyDown={kd} placeholder="Bytes..." className={inputCls} />
+      </td>
+      {/* 6. SHA-256 */}
       {emptyTd}
-      {/* 5. Tamano (auto) */}
-      {emptyTd}
-      {/* 6. SHA-256 (auto) */}
-      {emptyTd}
-      {/* 7. Archivos relacionados (not on create) */}
-      {emptyTd}
+      {/* 7. Archivos relacionados */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newArchivosRelacionados} onChange={(e) => setNewArchivosRelacionados(e.target.value)} onKeyDown={kd} placeholder='{"key": "val"}' className={inputCls} />
+      </td>
       {/* 8. Ruta almacenamiento */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRutaAlmacenamiento} onChange={(e) => setNewRutaAlmacenamiento(e.target.value)} onKeyDown={kd} placeholder="Ruta almac..." className={inputCls} />

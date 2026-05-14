@@ -39,6 +39,7 @@ export default function DatasetsPage() {
   const [newFechaInicio, setNewFechaInicio] = useState('')
   const [newFechaFin, setNewFechaFin] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
+  const [newEtiquetas, setNewEtiquetas] = useState('')
   const [newUrlNormativa, setNewUrlNormativa] = useState('')
   const [newFuenteId, setNewFuenteId] = useState('')
 
@@ -59,7 +60,7 @@ export default function DatasetsPage() {
     setNewPeriodicidad(''); setNewVigente(''); setNewUrlPagina(''); setNewUrlMetodologia('')
     setNewUrlMetadatos(''); setNewDesagregacion(''); setNewCobertura(''); setNewUnidadObs('')
     setNewTema(''); setNewProposito(''); setNewFechaInicio(''); setNewFechaFin('')
-    setNewObservaciones(''); setNewUrlNormativa(''); setNewFuenteId('')
+    setNewObservaciones(''); setNewEtiquetas(''); setNewUrlNormativa(''); setNewFuenteId('')
   }
 
   const handleSaveRow = async () => {
@@ -83,6 +84,7 @@ export default function DatasetsPage() {
         fecha_inicio_disponibilidad: newFechaInicio || undefined,
         fecha_fin_disponibilidad: newFechaFin || undefined,
         observaciones_dataset: newObservaciones || undefined,
+        etiquetas: newEtiquetas ? newEtiquetas.split(',').map((t) => t.trim()).filter(Boolean) : undefined,
         url_normativa_o_marco_legal: newUrlNormativa || undefined,
         fuente_id: newFuenteId || undefined,
       })
@@ -132,15 +134,14 @@ export default function DatasetsPage() {
     { header: 'Unidad observacion', icon: descripcionIcon(), render: (r) => txt(r.unidad_observacion), getValue: (r) => r.unidad_observacion ?? '', onEdit: (r, v) => handleEditCell(r, 'unidad_observacion', v) },
     { header: 'Tema', icon: temaIcon(), render: (r) => r.tema_principal ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{r.tema_principal}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.tema_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'tema_principal', v) },
     { header: 'Proposito', icon: descripcionIcon(), render: (r) => txt(r.proposito), getValue: (r) => r.proposito ?? '', onEdit: (r, v) => handleEditCell(r, 'proposito', v) },
-    { header: 'Inicio disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_inicio_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_inicio_disponibilidad ?? '' },
-    { header: 'Fin disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_fin_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_fin_disponibilidad ?? '' },
+    { header: 'Inicio disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_inicio_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_inicio_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_inicio_disponibilidad', v) },
+    { header: 'Fin disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_fin_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_fin_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_fin_disponibilidad', v) },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => txt(r.observaciones_dataset), getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
-    { header: 'Etiquetas', icon: jsonIcon(), render: (r) => { const t = r.etiquetas ?? []; return t.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{t.length} tags</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => JSON.stringify(r.etiquetas ?? []) },
+    { header: 'Etiquetas', icon: jsonIcon(), render: (r) => { const t = r.etiquetas ?? []; return t.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{t.length} tags</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => (r.etiquetas ?? []).join(', '), onEdit: (r, v) => { const tags = v ? String(v).split(',').map((t) => t.trim()).filter(Boolean) : []; updateDataset(r.id, { etiquetas: tags }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: tags } : i))) } },
     { header: 'URL normativa', icon: urlIcon(), render: (r) => link(r.url_normativa_o_marco_legal), getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
     { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => handleEditCell(r, 'fuente_id', v), getValue: (r) => r.fuente_id ?? '' },
   ]
 
-  const emptyTd = <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
   const addRowCells = (
     <>
       {/* 1. Nombre */}
@@ -212,7 +213,9 @@ export default function DatasetsPage() {
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
       </td>
       {/* 18. Etiquetas */}
-      {emptyTd}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newEtiquetas} onChange={(e) => setNewEtiquetas(e.target.value)} onKeyDown={kd} placeholder="tag1, tag2..." className={inputCls} />
+      </td>
       {/* 19. URL normativa */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newUrlNormativa} onChange={(e) => setNewUrlNormativa(e.target.value)} onKeyDown={kd} placeholder="URL normativa..." className={inputCls} />

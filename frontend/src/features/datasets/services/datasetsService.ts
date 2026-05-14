@@ -63,7 +63,7 @@ export async function updateDataset(id: string, payload: {
   vigente?: boolean
   fecha_inicio_disponibilidad?: string
   fecha_fin_disponibilidad?: string
-  etiquetas?: Record<string, unknown>
+  etiquetas?: unknown[]
 }): Promise<Dataset> {
   const { data } = await apiClient.put<Dataset>(`/datasets/${id}`, payload)
   return data

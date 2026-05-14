@@ -6,8 +6,9 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { EdicionDataset } from '@/types'
+import type { EdicionDataset, Dataset } from '@/types'
 import { getEdicionesDataset, createEdicionDataset, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
+import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, estadoIcon, urlIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -16,6 +17,7 @@ export default function EdicionesDatasetPage() {
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<EdicionDataset[]>([])
+  const [datasets, setDatasets] = useState<Dataset[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [search, setSearch] = useState('')
@@ -32,10 +34,14 @@ export default function EdicionesDatasetPage() {
   const [newObservaciones, setNewObservaciones] = useState('')
   const [newVersionPublicacion, setNewVersionPublicacion] = useState('')
   const [newEsCorregida, setNewEsCorregida] = useState('')
+  const [newDatasetId, setNewDatasetId] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
-    try { setItems(await getEdicionesDataset()) } catch { setError(true) } finally { if (!silent) setLoading(false) }
+    try {
+      const [eds, ds] = await Promise.all([getEdicionesDataset(), getDatasets()])
+      setItems(eds); setDatasets(ds)
+    } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
@@ -44,7 +50,7 @@ export default function EdicionesDatasetPage() {
     setNewNombre(''); setNewFechaPublicacion(''); setNewPeriodoInicio(''); setNewPeriodoFin('')
     setNewTipoPeriodo(''); setNewLevantamientoInicio(''); setNewLevantamientoFin('')
     setNewUrlDocumentacion(''); setNewUrlComunicado(''); setNewObservaciones('')
-    setNewVersionPublicacion(''); setNewEsCorregida('')
+    setNewVersionPublicacion(''); setNewEsCorregida(''); setNewDatasetId('')
   }
 
   const handleSaveRow = async () => {
@@ -52,6 +58,7 @@ export default function EdicionesDatasetPage() {
     try {
       await createEdicionDataset({
         nombre: newNombre,
+        dataset_id: newDatasetId || undefined,
         fecha_publicacion: newFechaPublicacion || undefined,
         periodo_referencia_inicio: newPeriodoInicio || undefined,
         periodo_referencia_fin: newPeriodoFin || undefined,
@@ -99,7 +106,7 @@ export default function EdicionesDatasetPage() {
 
   const columns: Column<EdicionDataset>[] = [
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <span className="font-medium text-ink">{r.nombre}</span>, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
-    { header: 'Dataset', icon: datasetsIcon(), render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.dataset?.nombre ?? '' },
+    { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })), onEdit: (r, v) => { updateEdicionDataset(r.id, { dataset_id: v }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i))) }, render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.dataset_id ?? '' },
     { header: 'Publicacion', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_publicacion) ?? '--'}</span>, getValue: (r) => r.fecha_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_publicacion', v) },
     { header: 'Periodo inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_inicio) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_inicio', v) },
     { header: 'Periodo fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_fin) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_fin', v) },
@@ -113,16 +120,16 @@ export default function EdicionesDatasetPage() {
     { header: 'Corregida', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_version_corregida', v === 'true'), getValue: (r) => r.es_version_corregida ? 'true' : 'false', render: (r) => r.es_version_corregida ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">Si</span> : <span className="text-ink/30 text-[13px]">No</span> },
   ]
 
-  /* 13 columns: Nombre, Dataset, Publicacion, Periodo inicio, Periodo fin, Tipo periodo, Levantamiento inicio, Levantamiento fin, URL documentacion, URL comunicado, Observaciones, Version, Corregida */
-  const emptyTd = <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
   const addRowCells = (
     <>
       {/* 1. Nombre */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
       </td>
-      {/* 2. Dataset (not editable on create) */}
-      {emptyTd}
+      {/* 2. Dataset */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newDatasetId} onChange={setNewDatasetId} options={datasets.map((d) => ({ value: d.id, label: d.nombre }))} placeholder="Dataset..." label="Dataset" />
+      </td>
       {/* 3. Publicacion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input type="date" value={newFechaPublicacion} onChange={(e) => setNewFechaPublicacion(e.target.value)} onKeyDown={kd} className={inputCls} />
