@@ -11,6 +11,8 @@ import { TextCell } from '@/components/TextCell'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from './services/archivosService'
 import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
 import DatePickerInput from '@/components/DatePickerInput'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -31,7 +33,7 @@ export default function ArchivosPage() {
   const [newObservaciones, setNewObservaciones] = useState('')
   const [newFechaIngesta, setNewFechaIngesta] = useState('')
   const [newTamano, setNewTamano] = useState('')
-  const [newArchivosRelacionados, setNewArchivosRelacionados] = useState('')
+  const [newArchivosRelacionados, setNewArchivosRelacionados] = useState<Record<string, unknown>>({})
   const [newDistribucionId, setNewDistribucionId] = useState('')
 
   const load = async (silent = false) => {
@@ -53,7 +55,7 @@ export default function ArchivosPage() {
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
     setNewRutaAlmacenamiento(''); setNewObservaciones('')
-    setNewFechaIngesta(''); setNewTamano(''); setNewArchivosRelacionados('')
+    setNewFechaIngesta(''); setNewTamano(''); setNewArchivosRelacionados({})
     setNewDistribucionId('')
   }
 
@@ -66,7 +68,7 @@ export default function ArchivosPage() {
         rol_archivo: newRol || undefined,
         fecha_ingesta_sistema: newFechaIngesta || undefined,
         tamano_bytes: newTamano ? Number(newTamano) : undefined,
-        archivos_relacionados: newArchivosRelacionados ? JSON.parse(newArchivosRelacionados) : undefined,
+        archivos_relacionados: Object.keys(newArchivosRelacionados).length ? newArchivosRelacionados : undefined,
         ruta_almacenamiento: newRutaAlmacenamiento || undefined,
         observaciones_archivo: newObservaciones || undefined,
         distribucion_id: newDistribucionId || undefined,
@@ -157,9 +159,10 @@ export default function ArchivosPage() {
     {
       header: 'Archivos relacionados',
       icon: jsonIcon(),
-      render: (r) => <TextCell value={Object.keys(r.archivos_relacionados ?? {}).length ? JSON.stringify(r.archivos_relacionados) : null} mono />,
+      render: (r) => <JsonCell value={r.archivos_relacionados} />,
       getValue: (r) => JSON.stringify(r.archivos_relacionados ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateArchivo(r.id, { archivos_relacionados: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivos_relacionados: parsed } : i))) } catch { /* invalid JSON */ } },
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateArchivo(r.id, { archivos_relacionados: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivos_relacionados: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
     {
       header: 'Ruta almacenamiento',
@@ -213,7 +216,7 @@ export default function ArchivosPage() {
       </td>
       {/* 6. Archivos relacionados */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newArchivosRelacionados} onChange={(e) => setNewArchivosRelacionados(e.target.value)} onKeyDown={kd} placeholder='{"key": "val"}' className={inputCls} />
+        <JsonEditorInput value={newArchivosRelacionados} onChange={setNewArchivosRelacionados} label="Archivos relacionados" />
       </td>
       {/* 8. Ruta almacenamiento */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

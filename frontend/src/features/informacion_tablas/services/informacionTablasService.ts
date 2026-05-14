@@ -21,6 +21,7 @@ export async function createInformacionTabla(payload: {
   nombre: string
   base_de_datos_id?: string
   descripcion?: string
+  meta?: Record<string, unknown>
 }): Promise<InformacionTablas> {
   const { data } = await apiClient.post<InformacionTablas>('/informacion-tablas/', payload)
   return data

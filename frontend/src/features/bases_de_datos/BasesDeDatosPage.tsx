@@ -10,6 +10,8 @@ import type { BaseDeDatos, Dataset } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from './services/basesDeDatosService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { TextCell } from '@/components/TextCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { nombreIcon, datasetsIcon, jsonIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -25,8 +27,8 @@ export default function BasesDeDatosPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDatasetId, setNewDatasetId] = useState('')
-  const [newDescripcionEsquema, setNewDescripcionEsquema] = useState('')
-  const [newMeta, setNewMeta] = useState('')
+  const [newDescripcionEsquema, setNewDescripcionEsquema] = useState<Record<string, unknown>>({})
+  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -44,7 +46,7 @@ export default function BasesDeDatosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDatasetId(''); setNewDescripcionEsquema(''); setNewMeta('') }
+  const resetFields = () => { setNewNombre(''); setNewDatasetId(''); setNewDescripcionEsquema({}); setNewMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
@@ -52,8 +54,8 @@ export default function BasesDeDatosPage() {
       await createBaseDeDatos({
         db_nombre: newNombre,
         dataset_id: newDatasetId || undefined,
-        descripcion_esquema: newDescripcionEsquema ? JSON.parse(newDescripcionEsquema) : undefined,
-        meta: newMeta ? JSON.parse(newMeta) : undefined,
+        descripcion_esquema: Object.keys(newDescripcionEsquema).length ? newDescripcionEsquema : undefined,
+        meta: Object.keys(newMeta).length ? newMeta : undefined,
       })
       setAddingRow(false)
       resetFields()
@@ -107,21 +109,20 @@ export default function BasesDeDatosPage() {
       getValue: (r) => r.dataset_id ?? '',
     },
     {
-      header: 'Descripcion',
+      header: 'Descripcion esquema',
       icon: descripcionIcon(),
-      render: (r) => <TextCell value={Object.keys(r.descripcion_esquema ?? {}).length ? JSON.stringify(r.descripcion_esquema) : null} mono />,
+      render: (r) => <JsonCell value={r.descripcion_esquema} />,
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
     {
       header: 'Meta',
       icon: jsonIcon(),
-      render: (r) => {
-        const keys = Object.keys(r.meta ?? {})
-        return keys.length
-          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
-          : <span className="text-ink/30 text-[13px]">--</span>
-      },
+      render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
   ]
 
@@ -140,10 +141,10 @@ export default function BasesDeDatosPage() {
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newDescripcionEsquema} onChange={(e) => setNewDescripcionEsquema(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newMeta} onChange={(e) => setNewMeta(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>
     </>
   )

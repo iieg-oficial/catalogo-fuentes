@@ -8,6 +8,8 @@ import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { InformacionTablas, BaseDeDatos } from '@/types'
 import { TextCell } from '@/components/TextCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { getInformacionTablas, createInformacionTabla, updateInformacionTabla, deleteInformacionTabla } from '../services/informacionTablasService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
 import { nombreIcon, descripcionIcon, basesDeDatosIcon, jsonIcon } from '@/consts/sectionIcons'
@@ -26,6 +28,7 @@ export default function InformacionTablasPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newDescripcion, setNewDescripcion] = useState('')
   const [newBaseDeDatosId, setNewBaseDeDatosId] = useState('')
+  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
@@ -38,11 +41,11 @@ export default function InformacionTablasPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDescripcion(''); setNewBaseDeDatosId('') }
+  const resetFields = () => { setNewNombre(''); setNewDescripcion(''); setNewBaseDeDatosId(''); setNewMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
-    try { await createInformacionTabla({ nombre: newNombre, descripcion: newDescripcion || undefined, base_de_datos_id: newBaseDeDatosId || undefined }); setAddingRow(false); resetFields(); await load(true) } finally {}
+    try { await createInformacionTabla({ nombre: newNombre, descripcion: newDescripcion || undefined, base_de_datos_id: newBaseDeDatosId || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined }); setAddingRow(false); resetFields(); await load(true) } finally {}
   }
 
   const handleEditCell = (row: InformacionTablas, field: string, value: string) => {
@@ -73,7 +76,7 @@ export default function InformacionTablasPage() {
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Descripcion', icon: descripcionIcon(), render: (r) => <TextCell value={r.descripcion} />, getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
     { header: 'Base de datos', icon: basesDeDatosIcon(), selectOptions: basesDeDatos.map((b) => ({ value: b.id, label: b.db_nombre })), onEdit: (r, v) => handleEditCell(r, 'base_de_datos_id', v), render: (r) => r.base_de_datos ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.db_nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.base_de_datos_id ?? '' },
-    { header: 'Meta', icon: jsonIcon(), render: (r) => { const keys = Object.keys(r.meta ?? {}); return keys.length ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span> : <span className="text-ink/30 text-[13px]">--</span> }, getValue: (r) => JSON.stringify(r.meta ?? {}) },
+    { header: 'Meta', icon: jsonIcon(), render: (r) => <JsonCell value={r.meta} />, getValue: (r) => JSON.stringify(r.meta ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateInformacionTabla(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} }, inputType: 'json' },
   ]
 
   const addRowCells = (
@@ -93,7 +96,9 @@ export default function InformacionTablasPage() {
           label="Base de datos"
         />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
+      </td>
     </>
   )
 

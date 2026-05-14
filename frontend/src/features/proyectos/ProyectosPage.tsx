@@ -8,6 +8,8 @@ import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
 import { TextCell } from '@/components/TextCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { nombreIcon, descripcionIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
@@ -22,7 +24,7 @@ export default function ProyectosPage() {
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [newMeta, setNewMeta] = useState('')
+  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -41,13 +43,13 @@ export default function ProyectosPage() {
   const resetFields = () => {
     setNewNombre('')
     setNewDesc('')
-    setNewMeta('')
+    setNewMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined, meta: newMeta ? JSON.parse(newMeta) : undefined })
+      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -96,13 +98,10 @@ export default function ProyectosPage() {
     {
       header: 'Meta',
       icon: jsonIcon(),
-      render: (r) => {
-        const keys = Object.keys(r.meta ?? {})
-        return keys.length
-          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
-          : <span className="text-ink/30 text-[13px]">--</span>
-      },
+      render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProyecto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
   ]
 
@@ -129,13 +128,7 @@ export default function ProyectosPage() {
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input
-          value={newMeta}
-          onChange={(e) => setNewMeta(e.target.value)}
-          onKeyDown={kd}
-          placeholder="JSON..."
-          className={inputCls}
-        />
+        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>
     </>
   )

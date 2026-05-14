@@ -8,6 +8,8 @@ import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Producto, Proyecto } from '@/types'
 import { TextCell } from '@/components/TextCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
 import { getProductos, createProducto, updateProducto, deleteProducto } from './services/productosService'
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
 import { nombreIcon, descripcionIcon, proyectosIcon, jsonIcon } from '@/consts/sectionIcons'
@@ -26,7 +28,7 @@ export default function ProductosPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newProyectoId, setNewProyectoId] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [newMeta, setNewMeta] = useState('')
+  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -44,12 +46,12 @@ export default function ProductosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta('') }
+  const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim() || !newProyectoId) return
     try {
-      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined, meta: newMeta ? JSON.parse(newMeta) : undefined })
+      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -114,13 +116,10 @@ export default function ProductosPage() {
     {
       header: 'Meta',
       icon: jsonIcon(),
-      render: (r) => {
-        const keys = Object.keys(r.meta ?? {})
-        return keys.length
-          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-amber-500/10 text-amber-700">{keys.length} {keys.length === 1 ? 'campo' : 'campos'}</span>
-          : <span className="text-ink/30 text-[13px]">--</span>
-      },
+      render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProducto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
   ]
 
@@ -142,7 +141,7 @@ export default function ProductosPage() {
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newMeta} onChange={(e) => setNewMeta(e.target.value)} onKeyDown={kd} placeholder="JSON..." className={inputCls} />
+        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>
     </>
   )
