@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.producto_tabla import ProductoTabla
-from schemas.producto_tabla import ProductoTablaCreate
+from schemas.producto_tabla import ProductoTablaCreate, ProductoTablaUpdate
 
 
 async def list_producto_tablas(
@@ -25,6 +25,20 @@ async def list_producto_tablas(
 async def create_producto_tabla(db: AsyncSession, data: ProductoTablaCreate) -> ProductoTabla:
     obj = ProductoTabla(**data.model_dump())
     db.add(obj)
+    await db.commit()
+    await db.refresh(obj)
+    return obj
+
+
+async def update_producto_tabla(
+    db: AsyncSession, pt_id: uuid.UUID, data: ProductoTablaUpdate
+) -> ProductoTabla | None:
+    result = await db.execute(select(ProductoTabla).where(ProductoTabla.id == pt_id))
+    obj = result.scalar_one_or_none()
+    if not obj:
+        return None
+    for k, v in data.model_dump(exclude_unset=True).items():
+        setattr(obj, k, v)
     await db.commit()
     await db.refresh(obj)
     return obj

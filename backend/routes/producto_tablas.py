@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db import get_db
 from exceptions.http import not_found
 from routes.dependencies import get_current_user, require_write
-from schemas.producto_tabla import ProductoTablaCreate, ProductoTablaRead
+from schemas.producto_tabla import ProductoTablaCreate, ProductoTablaUpdate, ProductoTablaRead
 from services import producto_tablas as svc
 
 router = APIRouter(prefix="/producto-tablas", tags=["producto-tablas"])
@@ -31,6 +31,19 @@ async def create_producto_tabla(
     _=Depends(require_write),
 ):
     return await svc.create_producto_tabla(db, data)
+
+
+@router.put("/{pt_id}", response_model=ProductoTablaRead)
+async def update_producto_tabla(
+    pt_id: uuid.UUID,
+    data: ProductoTablaUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(require_write),
+):
+    obj = await svc.update_producto_tabla(db, pt_id, data)
+    if not obj:
+        raise not_found("ProductoTabla")
+    return obj
 
 
 @router.delete("/{pt_id}", status_code=204)

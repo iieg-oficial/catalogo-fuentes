@@ -11,6 +11,11 @@ class ProductoTablaCreate(BaseModel):
     observaciones: str | None = None
 
 
+class ProductoTablaUpdate(BaseModel):
+    fecha_vinculacion: date | None = None
+    observaciones: str | None = None
+
+
 class ProductoTablaRead(BaseModel):
     id: uuid.UUID
     producto_id: uuid.UUID
