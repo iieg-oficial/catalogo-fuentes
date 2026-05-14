@@ -12,6 +12,8 @@ class ProductoTablaCreate(BaseModel):
 
 
 class ProductoTablaUpdate(BaseModel):
+    producto_id: uuid.UUID | None = None
+    informacion_tablas_id: uuid.UUID | None = None
     fecha_vinculacion: date | None = None
     observaciones: str | None = None
 

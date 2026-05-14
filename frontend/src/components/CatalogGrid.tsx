@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
+
+export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
 import DatePickerPanel from '@/components/DatePickerPanel'
 import JsonEditorPanel from '@/components/JsonEditorPanel'
@@ -1073,6 +1075,7 @@ export default function CatalogGrid<T extends { id: string }>({
                       const colKey = `__col_${ci}`
                       const isEditingThis = !!col.onEdit && editingCell?.rowKey === rowKey && editingCell?.colKey === colKey
                       const isMultiSelect = col.multiple && !!col.selectOptions
+                      const cellCtx = { rowIndex: page * PAGE_SIZE + rowIndex, columnName: col.header }
                       return (
                         <td
                           key={ci}
@@ -1092,9 +1095,10 @@ export default function CatalogGrid<T extends { id: string }>({
                             }
                           } : undefined}
                         >
+                          <CellContext.Provider value={cellCtx}>
                           {isEditingThis && isMultiSelect ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <MultiSelectPanel
                                 options={col.selectOptions!}
                                 value={editingCell!.value}
@@ -1106,7 +1110,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             </>
                           ) : isEditingThis && col.selectOptions ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <SingleSelectPanel
                                 options={col.selectOptions}
                                 value={editingCell!.value}
@@ -1119,7 +1123,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             </>
                           ) : isEditingThis && col.inputType === 'date' ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <DatePickerPanel
                                 value={editingCell!.value}
                                 onChange={(v) => { col.onEdit?.(row, v); setEditingCell(null) }}
@@ -1130,7 +1134,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             </>
                           ) : isEditingThis && col.inputType === 'json' ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <JsonEditorPanel
                                 value={(() => { try { return JSON.parse(editingCell!.value) } catch { return {} } })()}
                                 onChange={(v) => { col.onEdit?.(row, JSON.stringify(v)); setEditingCell(null) }}
@@ -1153,9 +1157,10 @@ export default function CatalogGrid<T extends { id: string }>({
                               onClick={(e) => e.stopPropagation()} />
                           ) : (
                             <span className={col.onEdit ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
-                              {col.render(row)}
+                              {col.render(row, rowIndex, col.header)}
                             </span>
                           )}
+                          </CellContext.Provider>
                         </td>
                       )
                     })}

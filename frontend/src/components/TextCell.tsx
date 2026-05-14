@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { createPortal } from 'react-dom'
+import { CellContext } from '@/components/CatalogGrid'
 
 interface TextCellProps {
   value: string | null | undefined
@@ -7,10 +8,19 @@ interface TextCellProps {
   link?: boolean
 }
 
-const CARD_WIDTH = 540
+const MAX_CARD_WIDTH = 540
+const CARD_PADDING = 80
+
+function measureText(text: string, font: string): number {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')!
+  ctx.font = font
+  return ctx.measureText(text).width
+}
 
 export function TextCell({ value, mono = false, link = false }: TextCellProps) {
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
+  const cellCtx = useContext(CellContext)
+  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean; width: number } | null>(null)
   const [copied, setCopied] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -38,15 +48,18 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
   const handleMouseEnter = useCallback(() => {
     cancelTimers()
     const el = ref.current
-    if (!el || el.scrollWidth <= el.clientWidth) return
+    if (!el || !value) return
     showTimer.current = setTimeout(() => {
+      const font = mono ? '13px ui-monospace, monospace' : '15px system-ui, sans-serif'
+      const textWidth = Math.ceil(measureText(value, font) * 1.15) + CARD_PADDING
+      const cardWidth = Math.min(Math.max(textWidth, 180), MAX_CARD_WIDTH)
       const rect = el.getBoundingClientRect()
       const showAbove = rect.bottom + 200 > window.innerHeight
       const top = showAbove ? rect.top - 8 : rect.bottom + 8
-      const left = Math.min(rect.left, window.innerWidth - CARD_WIDTH - 16)
-      setTooltipPos({ top, left: Math.max(8, left), above: showAbove })
+      const left = Math.min(rect.left, window.innerWidth - cardWidth - 16)
+      setTooltipPos({ top, left: Math.max(8, left), above: showAbove, width: cardWidth })
     }, 300)
-  }, [cancelTimers])
+  }, [cancelTimers, value, mono])
 
   const handleCopy = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
@@ -79,13 +92,20 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
           style={{
             top: tooltipPos.top,
             left: tooltipPos.left,
-            width: CARD_WIDTH,
+            width: tooltipPos.width,
+            maxWidth: MAX_CARD_WIDTH,
             transform: tooltipPos.above ? 'translateY(-100%)' : undefined,
           }}
           onMouseEnter={() => { if (hideTimer.current) clearTimeout(hideTimer.current) }}
           onMouseLeave={scheduleHide}
         >
-          <div className="px-7 pt-6 pb-5">
+          {cellCtx && (
+            <div className="flex items-center justify-between px-5 pt-3 pb-0">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{cellCtx.columnName}</span>
+              <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
+            </div>
+          )}
+          <div className={`px-7 ${cellCtx ? 'pt-3' : 'pt-6'} pb-5`}>
             {link ? (
               <a
                 href={value}

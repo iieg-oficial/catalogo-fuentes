@@ -18,7 +18,7 @@ interface MetaColumnDef {
 export interface Column<T> {
   header: string
   icon?: ReactNode
-  render: (row: T) => ReactNode
+  render: (row: T, index?: number, columnHeader?: string) => ReactNode
   className?: string
   onEdit?: (row: T, newValue: string) => void
   getValue?: (row: T) => string

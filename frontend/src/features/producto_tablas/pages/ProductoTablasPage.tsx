@@ -98,14 +98,24 @@ export default function ProductoTablasPage() {
       icon: productosIcon(),
       render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{prodMap[r.producto_id] ?? r.producto_id.slice(0, 8)}</span>,
       className: 'w-48',
-      getValue: (r) => prodMap[r.producto_id] ?? '',
+      selectOptions: productos.map((p) => ({ value: p.id, label: p.nombre })),
+      onEdit: (r, v) => {
+        updateProductoTabla(r.id, { producto_id: v })
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, producto_id: v } : i)))
+      },
+      getValue: (r) => r.producto_id,
     },
     {
       header: 'Info. Tabla',
       icon: informacionTablasIcon(),
       render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-violet-500/10 text-violet-700">{tablaMap[r.informacion_tablas_id] ?? r.informacion_tablas_id.slice(0, 8)}</span>,
       className: 'w-48',
-      getValue: (r) => tablaMap[r.informacion_tablas_id] ?? '',
+      selectOptions: tablas.map((t) => ({ value: t.id, label: t.nombre })),
+      onEdit: (r, v) => {
+        updateProductoTabla(r.id, { informacion_tablas_id: v })
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, informacion_tablas_id: v } : i)))
+      },
+      getValue: (r) => r.informacion_tablas_id,
     },
     {
       header: 'Fecha vinculacion',

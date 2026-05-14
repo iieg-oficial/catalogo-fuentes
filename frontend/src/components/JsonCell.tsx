@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { createPortal } from 'react-dom'
+import { CellContext } from '@/components/CatalogGrid'
 
 interface JsonCellProps {
   value: Record<string, unknown> | null | undefined
@@ -33,6 +34,7 @@ function colorizeJson(obj: unknown): React.ReactNode[] {
 }
 
 export function JsonCell({ value }: JsonCellProps) {
+  const cellCtx = useContext(CellContext)
   const entries = Object.entries(value ?? {})
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -112,7 +114,13 @@ export function JsonCell({ value }: JsonCellProps) {
           onMouseEnter={() => { if (hideTimer.current) clearTimeout(hideTimer.current) }}
           onMouseLeave={scheduleHide}
         >
-          <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
+          {cellCtx && (
+            <div className="flex items-center justify-between px-5 pt-3 pb-0">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{cellCtx.columnName}</span>
+              <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
+            </div>
+          )}
+          <div className={`px-5 ${cellCtx ? 'pt-3' : 'pt-5'} pb-4 max-h-80 overflow-y-auto`}>
             <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">
               {colorizeJson(value)}
             </pre>

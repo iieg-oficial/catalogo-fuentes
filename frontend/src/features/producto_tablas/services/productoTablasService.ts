@@ -34,7 +34,7 @@ export async function createProductoTabla(
   return res.json()
 }
 
-export async function updateProductoTabla(id: string, data: { fecha_vinculacion?: string; observaciones?: string }): Promise<ProductoTabla> {
+export async function updateProductoTabla(id: string, data: { producto_id?: string; informacion_tablas_id?: string; fecha_vinculacion?: string; observaciones?: string }): Promise<ProductoTabla> {
   const res = await fetch(`${API_URL}/producto-tablas/${id}`, {
     method: 'PUT',
     headers: headers(),
