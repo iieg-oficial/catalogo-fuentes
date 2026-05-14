@@ -4,9 +4,10 @@ from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from config import settings
-from models.user import User
+from models.usuario import Usuario
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -19,21 +20,23 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-def create_access_token(subject: str, role: str) -> str:
+def create_access_token(subject: str, rol: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
-    payload = {"sub": subject, "role": role, "exp": expire}
+    payload = {"sub": subject, "rol": rol, "exp": expire}
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
-    result = await db.execute(select(User).where(User.email == email))
+async def get_usuario_by_correo(db: AsyncSession, correo: str) -> Usuario | None:
+    result = await db.execute(
+        select(Usuario).options(selectinload(Usuario.rol)).where(Usuario.correo == correo)
+    )
     return result.scalar_one_or_none()
 
 
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
-    user = await get_user_by_email(db, email)
-    if not user or not user.is_active or not user.hashed_password:
+async def authenticate_usuario(db: AsyncSession, correo: str, password: str) -> Usuario | None:
+    usuario = await get_usuario_by_correo(db, correo)
+    if not usuario or not usuario.activo or not usuario.hashed_password:
         return None
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, usuario.hashed_password):
         return None
-    return user
+    return usuario
