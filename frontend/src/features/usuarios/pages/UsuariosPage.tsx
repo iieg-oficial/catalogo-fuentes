@@ -315,17 +315,31 @@ export default function UsuariosPage() {
   }
 
   const handleToggleActive = async (usuario: Usuario) => {
+    const next = !usuario.activo
+    setUsers((prev) => prev.map((u) =>
+      u.id === usuario.id ? { ...u, activo: next } : u
+    ))
     try {
-      const updated = await updateUsuario(usuario.id, { activo: !usuario.activo })
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
-    } catch { /* silent */ }
+      await updateUsuario(usuario.id, { activo: next })
+    } catch {
+      setUsers((prev) => prev.map((u) =>
+        u.id === usuario.id ? { ...u, activo: usuario.activo } : u
+      ))
+    }
   }
 
   const handleChangeRole = async (usuario: Usuario, rolId: string) => {
+    const newRol = roles.find((r) => r.id === rolId) ?? null
+    setUsers((prev) => prev.map((u) =>
+      u.id === usuario.id ? { ...u, rol_id: rolId, rol: newRol } : u
+    ))
     try {
-      const updated = await updateUsuario(usuario.id, { rol_id: rolId })
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
-    } catch { /* silent */ }
+      await updateUsuario(usuario.id, { rol_id: rolId })
+    } catch {
+      setUsers((prev) => prev.map((u) =>
+        u.id === usuario.id ? { ...u, rol_id: usuario.rol_id, rol: usuario.rol } : u
+      ))
+    }
   }
 
   const canEditRole = (target: Usuario): boolean => {
@@ -336,8 +350,8 @@ export default function UsuariosPage() {
   }
 
   const allowedRoles = (): Rol[] => {
-    if (isSuperAdmin) return roles.filter((r) => ['admin', 'maintainer', 'visualizer'].includes(r.nombre))
-    if (isAdmin) return roles.filter((r) => ['maintainer', 'visualizer'].includes(r.nombre))
+    if (isSuperAdmin) return roles.filter((r) => ['admin', 'maintainer', 'viewer'].includes(r.nombre))
+    if (isAdmin) return roles.filter((r) => ['maintainer', 'viewer'].includes(r.nombre))
     return []
   }
 
