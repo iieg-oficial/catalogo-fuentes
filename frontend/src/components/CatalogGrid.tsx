@@ -1,10 +1,27 @@
-import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
+
+export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
+import DatePickerPanel from '@/components/DatePickerPanel'
+import JsonEditorPanel from '@/components/JsonEditorPanel'
 import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
-import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
+
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+
+interface ListOption {
+  label: string
+  color?: string
+}
+
+interface MetaColumnDef {
+  key: string
+  label?: string
+  type: ColumnType
+  options?: ListOption[]
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -407,7 +424,7 @@ function GridColHeader({
         backgroundColor: '#FBFAFC',
         borderBottom: '1px solid rgba(26,22,37,.10)',
         width: width ?? 'auto',
-        minWidth: typeof width === 'number' ? width : undefined,
+        minWidth: typeof width === 'number' ? width : 320,
         whiteSpace: 'nowrap',
         verticalAlign: 'middle',
         padding: 0,
@@ -930,7 +947,7 @@ export default function CatalogGrid<T extends { id: string }>({
       {/* Grid */}
       <div className="rounded-lg border border-ink/[10%] shadow-sm overflow-hidden bg-white">
         <div className="overflow-x-auto" style={{ maxHeight: '560px', overflowY: 'auto' }}>
-          <table className="min-w-full border-collapse text-[13px]">
+          <table className="border-collapse text-[13px]" style={{ tableLayout: 'fixed', width: '100%', minWidth: totalCols * 320 }}>
             <thead>
               <tr onMouseEnter={() => setHeaderHovered(true)} onMouseLeave={() => setHeaderHovered(false)}>
                 <th
@@ -1058,6 +1075,7 @@ export default function CatalogGrid<T extends { id: string }>({
                       const colKey = `__col_${ci}`
                       const isEditingThis = !!col.onEdit && editingCell?.rowKey === rowKey && editingCell?.colKey === colKey
                       const isMultiSelect = col.multiple && !!col.selectOptions
+                      const cellCtx = { rowIndex: page * PAGE_SIZE + rowIndex, columnName: col.header }
                       return (
                         <td
                           key={ci}
@@ -1068,7 +1086,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             overflow: isEditingThis && isMultiSelect ? 'visible' : 'hidden',
                             position: 'relative',
                           }}
-                          onClick={col.onEdit ? (e) => {
+                          onClick={col.onEdit && canWrite ? (e) => {
                             e.stopPropagation()
                             if (!isEditingThis) {
                               const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
@@ -1077,9 +1095,10 @@ export default function CatalogGrid<T extends { id: string }>({
                             }
                           } : undefined}
                         >
+                          <CellContext.Provider value={cellCtx}>
                           {isEditingThis && isMultiSelect ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <MultiSelectPanel
                                 options={col.selectOptions!}
                                 value={editingCell!.value}
@@ -1091,7 +1110,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             </>
                           ) : isEditingThis && col.selectOptions ? (
                             <>
-                              <span className="block truncate">{col.render(row)}</span>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
                               <SingleSelectPanel
                                 options={col.selectOptions}
                                 value={editingCell!.value}
@@ -1102,8 +1121,32 @@ export default function CatalogGrid<T extends { id: string }>({
                                 label={col.header}
                               />
                             </>
+                          ) : isEditingThis && col.inputType === 'date' ? (
+                            <>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
+                              <DatePickerPanel
+                                value={editingCell!.value}
+                                onChange={(v) => { col.onEdit?.(row, v); setEditingCell(null) }}
+                                onClose={() => setEditingCell(null)}
+                                top={editingCellPos.top}
+                                left={editingCellPos.left}
+                              />
+                            </>
+                          ) : isEditingThis && col.inputType === 'json' ? (
+                            <>
+                              <span className="block truncate">{col.render(row, rowIndex, col.header)}</span>
+                              <JsonEditorPanel
+                                value={(() => { try { return JSON.parse(editingCell!.value) } catch { return {} } })()}
+                                onChange={(v) => { col.onEdit?.(row, JSON.stringify(v)); setEditingCell(null) }}
+                                onClose={() => setEditingCell(null)}
+                                top={editingCellPos.top}
+                                left={editingCellPos.left}
+                                label={col.header}
+                              />
+                            </>
                           ) : isEditingThis ? (
-                            <input autoFocus value={editingCell!.value}
+                            <input
+                              autoFocus value={editingCell!.value}
                               onChange={(e) => setEditingCell((p) => p ? { ...p, value: e.target.value } : null)}
                               onBlur={() => { col.onEdit?.(row, editingCell!.value); setEditingCell(null) }}
                               onKeyDown={(e) => {
@@ -1113,10 +1156,11 @@ export default function CatalogGrid<T extends { id: string }>({
                               className={INLINE_INPUT_CLS}
                               onClick={(e) => e.stopPropagation()} />
                           ) : (
-                            <span className={col.onEdit ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
-                              {col.render(row)}
+                            <span className={col.onEdit && canWrite ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
+                              {col.render(row, rowIndex, col.header)}
                             </span>
                           )}
+                          </CellContext.Provider>
                         </td>
                       )
                     })}
@@ -1130,7 +1174,7 @@ export default function CatalogGrid<T extends { id: string }>({
                           key={def.key}
                           className="border-r border-ink/[5%] px-2.5"
                           style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
-                          onClick={onEditMetaCell ? (e) => {
+                          onClick={onEditMetaCell && canWrite ? (e) => {
                             e.stopPropagation()
                             const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
                             setEditingCellPos({ top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 268) })
@@ -1189,7 +1233,7 @@ export default function CatalogGrid<T extends { id: string }>({
                                 className={INLINE_INPUT_CLS} onClick={(e) => e.stopPropagation()} />
                             )
                           ) : (
-                            <MetaCellView value={currentVal} def={def} editable={!!onEditMetaCell} />
+                            <MetaCellView value={currentVal} def={def} editable={!!onEditMetaCell && !!canWrite} />
                           )}
                         </td>
                       )
@@ -1270,7 +1314,7 @@ export default function CatalogGrid<T extends { id: string }>({
                 </tr>
               )}
 
-              {!addRowCells && onAdd && (
+              {!addRowCells && canWrite && onAdd && (
                 <tr className="hover:bg-brand-500/[2%] transition-colors" style={{ background: '#fff' }}>
                   <td colSpan={totalCols} className="px-3 py-2.5">
                     <button

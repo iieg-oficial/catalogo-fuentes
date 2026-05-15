@@ -1,6 +1,4 @@
+SUPERADMIN = "superadmin"
 ADMIN = "admin"
 MAINTAINER = "maintainer"
 VIEWER = "viewer"
-
-WRITE_ROLES = [ADMIN, MAINTAINER]
-ALL_ROLES = [ADMIN, MAINTAINER, VIEWER]

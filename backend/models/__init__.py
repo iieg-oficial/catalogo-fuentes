@@ -1,24 +1,31 @@
-from models.tabla_producto import tabla_producto
+from models.permiso import Permiso
+from models.rol import Rol
+from models.permiso_rol import PermisoRol
+from models.usuario import Usuario
 from models.proyecto import Proyecto
 from models.producto import Producto
+from models.fuente import Fuente
+from models.dataset import Dataset
+from models.edicion_dataset import EdicionDataset
+from models.distribucion import Distribucion
 from models.base_de_datos import BaseDeDatos
-from models.tabla import Tabla
-from models.instrumento import Instrumento
-from models.url import Url
+from models.informacion_tablas import InformacionTablas
+from models.producto_tabla import ProductoTabla
 from models.archivo import Archivo
-from models.user import User, UserRole
-from models.meta_column_config import MetaColumnConfig
 
 __all__ = [
-    "tabla_producto",
+    "Permiso",
+    "Rol",
+    "PermisoRol",
+    "Usuario",
     "Proyecto",
     "Producto",
+    "Fuente",
+    "Dataset",
+    "EdicionDataset",
+    "Distribucion",
     "BaseDeDatos",
-    "Tabla",
-    "Instrumento",
-    "Url",
+    "InformacionTablas",
+    "ProductoTabla",
     "Archivo",
-    "User",
-    "UserRole",
-    "MetaColumnConfig",
 ]

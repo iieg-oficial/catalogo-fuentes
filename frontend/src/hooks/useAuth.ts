@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TOKEN_KEY } from '@/consts'
-import type { User } from '@/types'
+import type { Usuario } from '@/types'
 import apiClient from '@/services/apiClient'
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<Usuario | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchMe = useCallback(async () => {
@@ -14,7 +14,7 @@ export function useAuth() {
       return
     }
     try {
-      const { data } = await apiClient.get<User>('/auth/me')
+      const { data } = await apiClient.get<Usuario>('/auth/me')
       setUser(data)
     } catch {
       localStorage.removeItem(TOKEN_KEY)

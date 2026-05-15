@@ -1,16 +1,30 @@
 import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+
+interface ListOption {
+  label: string
+  color?: string
+}
+
+interface MetaColumnDef {
+  key: string
+  label?: string
+  type: ColumnType
+  color?: string
+  options?: ListOption[]
+}
 
 export interface Column<T> {
   header: string
   icon?: ReactNode
-  render: (row: T) => ReactNode
+  render: (row: T, index?: number, columnHeader?: string) => ReactNode
   className?: string
   onEdit?: (row: T, newValue: string) => void
   getValue?: (row: T) => string
   selectOptions?: { value: string; label: string; group?: string }[]
   multiple?: boolean
+  inputType?: 'text' | 'date' | 'json'
 }
 
 interface DataTableProps<T> {
@@ -512,8 +526,10 @@ export default function DataTable<T>({
                           </select>
                         ) : (
                           <input
+                            ref={(el) => { if (el && col.inputType === 'date') { el.focus(); try { el.showPicker() } catch {} } }}
                             autoFocus
                             aria-label={col.header}
+                            type={col.inputType ?? 'text'}
                             value={editingCell!.value}
                             onChange={(e) => setEditingCell((prev) => prev ? { ...prev, value: e.target.value } : null)}
                             onBlur={() => {

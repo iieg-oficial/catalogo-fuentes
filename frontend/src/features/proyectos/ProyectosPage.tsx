@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
-import ColFormModal from '@/components/ColFormModal'
 import { useAuthContext } from '@/context/AuthContext'
-import { useMetaColumns, type ColumnType, type ListOption, type MetaColumnDef } from '@/hooks/useMetaColumns'
 import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from './services/proyectosService'
-import { nombreIcon, descripcionIcon } from '@/consts/sectionIcons'
+import { TextCell } from '@/components/TextCell'
+import JsonEditorInput from '@/components/JsonEditorInput'
+import { JsonCell } from '@/components/JsonCell'
+import { nombreIcon, descripcionIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -19,20 +20,12 @@ export default function ProyectosPage() {
   const [items, setItems] = useState<Proyecto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [search, setSearch] = useState('')
-  const [showColForm, setShowColForm] = useState(false)
-  const [colName, setColName] = useState('')
-  const [colType, setColType] = useState<ColumnType>('text')
-  const [colListOptions, setColListOptions] = useState<ListOption[]>([])
-  const [colColor, setColColor] = useState('')
+  const [searchParams] = useSearchParams()
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
   const [newDesc, setNewDesc] = useState('')
-
-  const [addRowMeta, setAddRowMeta] = useState<Record<string, string>>({})
-  const [editingColKey, setEditingColKey] = useState<string | null>(null)
-
-  const { allMetaCols, addColumn, deleteColumn, updateColumn, getMeta, canModifyCol } = useMetaColumns(items, 'proyectos')
+  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
@@ -51,16 +44,13 @@ export default function ProyectosPage() {
   const resetFields = () => {
     setNewNombre('')
     setNewDesc('')
-    setAddRowMeta({})
+    setNewMeta({})
   }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
-      const created = await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined })
-      if (Object.values(addRowMeta).some(Boolean)) {
-        await updateProyecto(created.id, { meta: addRowMeta })
-      }
+      await createProyecto({ nombre: newNombre, descripcion: newDesc || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -73,46 +63,14 @@ export default function ProyectosPage() {
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
 
-  const handleEditMetaCell = (row: Proyecto, key: string, value: string) => {
-    const nm = { ...row.meta, [key]: value }
-    updateProyecto(row.id, { meta: nm })
-    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, meta: nm } : i)))
-  }
-
   const handleDeleteRows = async (keys: string[]) => {
     await Promise.all(keys.map((id) => deleteProyecto(id)))
     await load(true)
   }
 
-  const handleEditColumn = (def: MetaColumnDef) => {
-    setEditingColKey(def.key)
-    setColName(def.label ?? def.key)
-    setColType(def.type)
-    setColListOptions(def.options ?? [])
-    setColColor(def.color ?? '')
-    setShowColForm(true)
-  }
-
-  const handleAddColumn = (e: React.FormEvent) => {
-    e.preventDefault()
-    const validOptions = colListOptions.filter((o) => o.label.trim())
-    const color = colType !== 'list' ? colColor || undefined : undefined
-    if (editingColKey) {
-      updateColumn(editingColKey, colType, validOptions.length ? validOptions : undefined, colName, color)
-      setEditingColKey(null)
-    } else {
-      addColumn(colName, colType, validOptions.length ? validOptions : undefined, color)
-    }
-    setColName('')
-    setColType('text')
-    setColListOptions([])
-    setColColor('')
-    setShowColForm(false)
-  }
-
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.nombre, i.descripcion, ...Object.values(i.meta)].some(
+    return !q || [i.nombre, i.descripcion].some(
       (v) => String(v ?? '').toLowerCase().includes(q),
     )
   })
@@ -126,7 +84,7 @@ export default function ProyectosPage() {
     {
       header: 'Nombre',
       icon: nombreIcon(),
-      render: (r) => <span className="font-medium text-ink">{r.nombre}</span>,
+      render: (r) => <TextCell value={r.nombre} />,
       className: 'w-64',
       getValue: (r) => r.nombre,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
@@ -134,9 +92,17 @@ export default function ProyectosPage() {
     {
       header: 'Descripción',
       icon: descripcionIcon(),
-      render: (r) => <span className="text-ink/70">{r.descripcion ?? '—'}</span>,
+      render: (r) => <TextCell value={r.descripcion} />,
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+    },
+    {
+      header: 'Metadata',
+      icon: jsonIcon(),
+      render: (r) => <JsonCell value={r.meta} />,
+      getValue: (r) => JSON.stringify(r.meta ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProyecto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
   ]
 
@@ -149,7 +115,7 @@ export default function ProyectosPage() {
           value={newNombre}
           onChange={(e) => setNewNombre(e.target.value)}
           onKeyDown={kd}
-          placeholder="Nombre…"
+          placeholder="Nombre..."
           className={inputCls}
         />
       </td>
@@ -158,68 +124,43 @@ export default function ProyectosPage() {
           value={newDesc}
           onChange={(e) => setNewDesc(e.target.value)}
           onKeyDown={kd}
-          placeholder="Descripción…"
+          placeholder="Descripcion..."
           className={inputCls}
         />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>
     </>
   )
 
   const addRowActions = (
-    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">✕</button>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>
   )
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
   if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>
 
-  const closeColForm = () => { setShowColForm(false); setEditingColKey(null); setColName(''); setColType('text'); setColListOptions([]); setColColor('') }
-
   return (
-    <>
-      <div className="flex-1 min-h-0 overflow-auto p-8">
-        <CatalogGrid
-          eyebrow="Catálogo"
-          title="Proyectos"
-          addLabel="Nuevo proyecto"
-          entityLabel="proyectos"
-          rows={filtered}
-          columns={columns}
-          getKey={(r) => r.id}
-          onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
-          canWrite={canWrite}
-          onAdd={canWrite ? () => setAddingRow(true) : undefined}
-          addRowCells={canWrite && addingRow ? addRowCells : undefined}
-          addRowActions={canWrite && addingRow ? addRowActions : undefined}
-          onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
-          metaColumnDefs={allMetaCols}
-          getMeta={getMeta}
-          onAddColumn={canWrite ? () => setShowColForm(true) : undefined}
-          onDeleteColumn={canWrite ? deleteColumn : undefined}
-          onEditColumn={canWrite ? handleEditColumn : undefined}
-          canModifyColumn={canWrite ? canModifyCol : undefined}
-          onEditMetaCell={canWrite ? handleEditMetaCell : undefined}
-          addRowMetaValues={addRowMeta}
-          onAddRowMetaChange={canWrite ? (k, v) => setAddRowMeta((prev) => ({ ...prev, [k]: v })) : undefined}
-          onDeleteRows={canWrite ? handleDeleteRows : undefined}
-          search={search}
-          onSearch={setSearch}
-        />
-      </div>
-
-      <ColFormModal
-        open={showColForm}
-        editingKey={editingColKey}
-        name={colName}
-        type={colType}
-        listOptions={colListOptions}
-        color={colColor}
-        onClose={closeColForm}
-        onNameChange={setColName}
-        onTypeChange={setColType}
-        onListOptionsChange={setColListOptions}
-        onColorChange={setColColor}
-        onSubmit={handleAddColumn}
+    <div className="flex-1 min-h-0 overflow-auto p-8">
+      <CatalogGrid
+        eyebrow="Catalogo"
+        title="Proyectos"
+        addLabel="Nuevo proyecto"
+        entityLabel="proyectos"
+        rows={filtered}
+        columns={columns}
+        getKey={(r) => r.id}
+        onRowClick={(r) => navigate(`/proyectos/${r.id}`)}
+        canWrite={canWrite}
+        onAdd={canWrite ? () => setAddingRow(true) : undefined}
+        addRowCells={canWrite && addingRow ? addRowCells : undefined}
+        addRowActions={canWrite && addingRow ? addRowActions : undefined}
+        onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined}
+        onDeleteRows={canWrite ? handleDeleteRows : undefined}
+        search={search}
+        onSearch={setSearch}
       />
-    </>
+    </div>
   )
 }

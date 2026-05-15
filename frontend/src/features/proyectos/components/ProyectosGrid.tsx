@@ -2,8 +2,21 @@ import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
-import type { MetaColumnDef, ListOption } from '@/hooks/useMetaColumns'
 import type { Proyecto } from '@/types'
+
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+
+interface ListOption {
+  label: string
+  color?: string
+}
+
+interface MetaColumnDef {
+  key: string
+  label?: string
+  type: ColumnType
+  options?: ListOption[]
+}
 import SingleSelectPanel from '@/components/SingleSelectPanel'
 import SelectInput from '@/components/SelectInput'
 
@@ -526,7 +539,7 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
 
   if (def.type === 'date') {
     const fmt = (() => {
-      try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
+      try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) }
       catch { return value }
     })()
     return <span className={`text-[12px] text-ink/55 ${editCls}`}>{fmt}</span>

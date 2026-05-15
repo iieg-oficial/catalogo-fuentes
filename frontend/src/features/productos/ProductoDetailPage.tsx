@@ -71,12 +71,12 @@ export default function ProductoDetailPage() {
     <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       <nav className="flex items-center gap-1.5 text-[12px]" aria-label="Breadcrumb">
-        <span className="text-ink/35 font-medium">Catálogo</span>
-        <span className="text-ink/25">›</span>
+        <span className="text-ink/35 font-medium">Catalogo</span>
+        <span className="text-ink/25">{'>'}</span>
         <button onClick={() => navigate(-1)} className="text-ink/50 hover:text-brand-600 transition-colors duration-150 font-medium">
           Productos
         </button>
-        <span className="text-ink/25">›</span>
+        <span className="text-ink/25">{'>'}</span>
         <span className="text-ink/70 font-medium">{item.nombre}</span>
       </nav>
 
@@ -99,13 +99,13 @@ export default function ProductoDetailPage() {
       <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 280px' }}>
         <div className="space-y-10 min-w-0">
           <section>
-            <SectionHeading>Descripción</SectionHeading>
+            <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
               <p className="text-[#374151]" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '16px', lineHeight: 1.65 }}>
                 {item.descripcion}
               </p>
             ) : (
-              <p className="text-[13px] text-ink/[35%] italic">Sin descripción</p>
+              <p className="text-[13px] text-ink/[35%] italic">Sin descripcion</p>
             )}
           </section>
 
@@ -128,26 +128,26 @@ export default function ProductoDetailPage() {
           <section>
             <div className="flex items-baseline justify-between mb-3">
               <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Tablas vinculadas</p>
-              {item.tablas.length > 0 && (
-                <button onClick={() => copy('tablas', item.tablas.map((t) => t.nombre).join('\n'))}
+              {item.producto_tablas.length > 0 && (
+                <button onClick={() => copy('tablas', item.producto_tablas.map((pt) => pt.informacion_tablas_id).join('\n'))}
                   className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
                   {copiedKey === 'tablas' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
                   {copiedKey === 'tablas' ? 'Copiado' : 'Copiar todos'}
                 </button>
               )}
             </div>
-            {item.tablas.length === 0 ? (
+            {item.producto_tablas.length === 0 ? (
               <p className="text-[13px] text-ink/[35%] italic">Sin tablas vinculadas</p>
             ) : (
               <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {item.tablas.map((t) => (
+                {item.producto_tablas.map((pt) => (
                   <button
-                    key={t.id}
-                    onClick={() => navigate(`/tablas/${t.id}`)}
+                    key={pt.id}
+                    onClick={() => navigate(`/informacion-tablas/${pt.informacion_tablas_id}`)}
                     className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group"
                   >
                     <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Tabla</span>
-                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{t.nombre}</span>
+                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{pt.informacion_tablas_id}</span>
                     <ArrowIcon />
                   </button>
                 ))}
@@ -166,9 +166,9 @@ export default function ProductoDetailPage() {
                 <div key={key} className="py-2">
                   <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>{key}</dt>
                   <dd className="text-[13px] text-ink/80 break-words">
-                    {val == null || val === '' ? <span className="text-ink/30 italic">—</span>
+                    {val == null || val === '' ? <span className="text-ink/30 italic">--</span>
                       : Array.isArray(val) ? val.join(', ')
-                      : typeof val === 'boolean' ? (val ? 'Sí' : 'No')
+                      : typeof val === 'boolean' ? (val ? 'Si' : 'No')
                       : String(val)}
                   </dd>
                 </div>
@@ -181,20 +181,12 @@ export default function ProductoDetailPage() {
               Agregar campo
             </button>
           )}
-          {(item.updated_at || item.updated_by_email) && (
+          {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
-              {item.updated_at && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Última edición</p>
-                  <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
-                </div>
-              )}
-              {item.updated_by_email && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Último editor</p>
-                  <p className="text-[12px] text-ink/70">{item.updated_by_email}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ultima edicion</p>
+                <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
+              </div>
             </div>
           )}
         </aside>

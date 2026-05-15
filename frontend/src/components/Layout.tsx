@@ -1,9 +1,9 @@
 import Sidebar from './Sidebar'
 import { SidebarProvider, useSidebar } from '@/context/SidebarContext'
-import type { User } from '@/types'
+import type { Usuario } from '@/types'
 
 interface Props {
-  user: User | null
+  user: Usuario | null
   onLogout: () => void
   children: React.ReactNode
 }

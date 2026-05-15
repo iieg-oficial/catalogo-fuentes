@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db import get_db
 from exceptions.http import not_found
-from models.user import User
 from routes.dependencies import get_current_user, require_write
 from schemas.base_de_datos import BaseDeDatosCreate, BaseDeDatosRead, BaseDeDatosUpdate
 from schemas.detail import BaseDeDatosDetail
@@ -20,20 +19,11 @@ router = APIRouter(prefix="/bases-de-datos", tags=["bases_de_datos"])
 async def list_bases_de_datos(
     skip: int = 0,
     limit: int = 10_000,
-    tabla_id: uuid.UUID | None = None,
-    producto_id: uuid.UUID | None = None,
-    proyecto_id: uuid.UUID | None = None,
+    dataset_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return await svc.list_bases_de_datos(
-        db,
-        skip=skip,
-        limit=limit,
-        tabla_id=tabla_id,
-        producto_id=producto_id,
-        proyecto_id=proyecto_id,
-    )
+    return await svc.list_bases_de_datos(db, skip=skip, limit=limit, dataset_id=dataset_id)
 
 
 @router.get("/{bd_id}", response_model=BaseDeDatosDetail)
@@ -62,9 +52,9 @@ async def update_base_de_datos(
     bd_id: uuid.UUID,
     data: BaseDeDatosUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_write),
+    _=Depends(require_write),
 ):
-    obj = await svc.update_base_de_datos(db, bd_id, data, current_user.id)
+    obj = await svc.update_base_de_datos(db, bd_id, data)
     if not obj:
         raise not_found("BaseDeDatos")
     return obj

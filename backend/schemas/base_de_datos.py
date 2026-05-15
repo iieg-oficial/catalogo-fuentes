@@ -3,13 +3,14 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from schemas.refs import DatasetRef
+
 
 class BaseDeDatosBase(BaseModel):
-    nombre: str
-    descripcion: str | None = None
-    tema: str | None = None
-    frecuencia_actualizacion: str | None = None
+    db_nombre: str
+    descripcion_esquema: dict = {}
     meta: dict = {}
+    dataset_id: uuid.UUID | None = None
 
 
 class BaseDeDatosCreate(BaseDeDatosBase):
@@ -17,16 +18,16 @@ class BaseDeDatosCreate(BaseDeDatosBase):
 
 
 class BaseDeDatosUpdate(BaseModel):
-    nombre: str | None = None
-    descripcion: str | None = None
-    tema: str | None = None
-    frecuencia_actualizacion: str | None = None
+    db_nombre: str | None = None
+    descripcion_esquema: dict | None = None
     meta: dict | None = None
+    dataset_id: uuid.UUID | None = None
 
 
 class BaseDeDatosRead(BaseDeDatosBase):
     id: uuid.UUID
+    dataset: DatasetRef | None = None
+    created_at: datetime
     updated_at: datetime | None = None
-    updated_by_email: str | None = None
 
     model_config = {"from_attributes": True}

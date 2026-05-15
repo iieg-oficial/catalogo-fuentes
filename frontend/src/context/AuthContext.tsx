@@ -1,9 +1,9 @@
 import { createContext, useContext, type ReactNode } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import type { User } from '@/types'
+import type { Usuario } from '@/types'
 
 interface AuthContextValue {
-  user: User | null
+  user: Usuario | null
   loading: boolean
   canWrite: boolean
   canManageUsers: boolean
@@ -16,9 +16,10 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, loading, login, logout } = useAuth()
-  const canWrite = user?.role === 'admin' || user?.role === 'maintainer' || user?.role === 'superadmin'
-  const canManageUsers = user?.role === 'admin' || user?.role === 'superadmin'
-  const isSuperAdmin = user?.role === 'superadmin'
+  const permisos = user?.permisos ?? []
+  const canWrite = permisos.includes('catalog:write')
+  const canManageUsers = permisos.includes('users:manage')
+  const isSuperAdmin = permisos.includes('admin:full')
   return (
     <AuthContext.Provider value={{ user, loading, canWrite, canManageUsers, isSuperAdmin, login, logout }}>
       {children}

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
-import type { BaseDeDatosDetail, Producto, Proyecto } from '@/types'
+import type { BaseDeDatosDetail } from '@/types'
 import { getBaseDeDatos, updateBaseDeDatos } from './services/basesDeDatosService'
 
 function SectionHeading({ children }: { children: string }) {
@@ -57,25 +57,6 @@ export default function BaseDeDatosDetailPage() {
     setItem((prev) => prev ? { ...prev, meta: newMeta } : null)
   }
 
-  const productos = useMemo<Producto[]>(() => {
-    if (!item) return []
-    const seen = new Set<string>()
-    return item.tablas.flatMap((t) => t.productos).filter((p) => {
-      if (seen.has(p.id)) return false
-      seen.add(p.id)
-      return true
-    })
-  }, [item])
-
-  const proyectos = useMemo<Proyecto[]>(() => {
-    const seen = new Set<string>()
-    return productos.map((p) => p.proyecto).filter((pr): pr is Proyecto => {
-      if (!pr || seen.has(pr.id)) return false
-      seen.add(pr.id)
-      return true
-    })
-  }, [productos])
-
   if (loading) return <LoadingSpinner />
   if (error || !item) return <ErrorState onRetry={load} />
 
@@ -90,13 +71,13 @@ export default function BaseDeDatosDetailPage() {
     <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       <nav className="flex items-center gap-1.5 text-[12px]" aria-label="Breadcrumb">
-        <span className="text-ink/35 font-medium">Catálogo</span>
-        <span className="text-ink/25">›</span>
+        <span className="text-ink/35 font-medium">Catalogo</span>
+        <span className="text-ink/25">{'>'}</span>
         <button onClick={() => navigate(-1)} className="text-ink/50 hover:text-brand-600 transition-colors duration-150 font-medium">
           Bases de datos
         </button>
-        <span className="text-ink/25">›</span>
-        <span className="text-ink/70 font-medium">{item.nombre}</span>
+        <span className="text-ink/25">{'>'}</span>
+        <span className="text-ink/70 font-medium">{item.db_nombre}</span>
       </nav>
 
       <div className="flex items-start gap-6">
@@ -105,15 +86,15 @@ export default function BaseDeDatosDetailPage() {
             Base de datos
           </p>
           <h1 className="text-ink leading-tight break-words mb-3" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '44px', fontWeight: 500 }}>
-            {item.nombre}
+            {item.db_nombre}
           </h1>
-          <div className="flex flex-wrap items-center gap-2">
-            {item.tema && (
+          {item.dataset && (
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium border border-ink/[10%] text-ink/60">
-                {item.tema}
+                Dataset: {item.dataset.nombre}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
         <div className="shrink-0 pt-1">
           <button onClick={() => navigate(-1)} className="h-8 px-4 rounded-md text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors duration-150">
@@ -124,41 +105,37 @@ export default function BaseDeDatosDetailPage() {
 
       <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 280px' }}>
         <div className="space-y-10 min-w-0">
-          <section>
-            <SectionHeading>Descripción</SectionHeading>
-            {item.descripcion ? (
-              <p className="text-[#374151]" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '16px', lineHeight: 1.65 }}>
-                {item.descripcion}
-              </p>
-            ) : (
-              <p className="text-[13px] text-ink/[35%] italic">Sin descripción</p>
-            )}
-          </section>
-
-          {item.frecuencia_actualizacion && (
+          {item.dataset && (
             <section>
-              <SectionHeading>Frecuencia de actualización</SectionHeading>
-              <p className="text-[14px] text-ink/80">{item.frecuencia_actualizacion}</p>
+              <SectionHeading>Dataset vinculado</SectionHeading>
+              <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
+                <button onClick={() => navigate(`/datasets/${item.dataset!.id}`)}
+                  className="w-full text-left p-3 px-4 flex items-center gap-3 hover:bg-brand-500/[2%] transition-colors duration-100 group">
+                  <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Dataset</span>
+                  <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{item.dataset.nombre}</span>
+                  <ArrowIcon />
+                </button>
+              </div>
             </section>
           )}
 
           <section>
             <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Tablas vinculadas</p>
-              {item.tablas.length > 0 && (
-                <button onClick={() => copy('tablas', item.tablas.map((t) => t.nombre).join('\n'))}
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Tablas de informacion</p>
+              {item.informacion_tablas.length > 0 && (
+                <button onClick={() => copy('tablas', item.informacion_tablas.map((t) => t.nombre).join('\n'))}
                   className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
                   {copiedKey === 'tablas' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
                   {copiedKey === 'tablas' ? 'Copiado' : 'Copiar todos'}
                 </button>
               )}
             </div>
-            {item.tablas.length === 0 ? (
+            {item.informacion_tablas.length === 0 ? (
               <p className="text-[13px] text-ink/[35%] italic">Sin tablas vinculadas</p>
             ) : (
               <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {item.tablas.map((t) => (
-                  <button key={t.id} onClick={() => navigate(`/tablas/${t.id}`)}
+                {item.informacion_tablas.map((t) => (
+                  <button key={t.id} onClick={() => navigate(`/informacion-tablas/${t.id}`)}
                     className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group">
                     <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Tabla</span>
                     <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{t.nombre}</span>
@@ -168,75 +145,6 @@ export default function BaseDeDatosDetailPage() {
               </div>
             )}
           </section>
-
-          {item.instrumentos.length > 0 && (
-            <section>
-              <div className="flex items-baseline justify-between mb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Instrumentos vinculados</p>
-                <button onClick={() => copy('instrumentos', item.instrumentos.map((i) => i.nombre).join('\n'))}
-                  className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
-                  {copiedKey === 'instrumentos' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
-                  {copiedKey === 'instrumentos' ? 'Copiado' : 'Copiar todos'}
-                </button>
-              </div>
-              <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {item.instrumentos.map((ins) => (
-                  <button key={ins.id} onClick={() => navigate(`/instrumentos/${ins.id}`)}
-                    className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group">
-                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Instrumento</span>
-                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{ins.nombre}</span>
-                    <ArrowIcon />
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {productos.length > 0 && (
-            <section>
-              <div className="flex items-baseline justify-between mb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Productos vinculados</p>
-                <button onClick={() => copy('productos', productos.map((p) => p.nombre).join('\n'))}
-                  className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
-                  {copiedKey === 'productos' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
-                  {copiedKey === 'productos' ? 'Copiado' : 'Copiar todos'}
-                </button>
-              </div>
-              <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {productos.map((p) => (
-                  <button key={p.id} onClick={() => navigate(`/productos/${p.id}`)}
-                    className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group">
-                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Producto</span>
-                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{p.nombre}</span>
-                    <ArrowIcon />
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {proyectos.length > 0 && (
-            <section>
-              <div className="flex items-baseline justify-between mb-3">
-                <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Proyectos vinculados</p>
-                <button onClick={() => copy('proyectos', proyectos.map((p) => p.nombre).join('\n'))}
-                  className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
-                  {copiedKey === 'proyectos' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
-                  {copiedKey === 'proyectos' ? 'Copiado' : 'Copiar todos'}
-                </button>
-              </div>
-              <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {proyectos.map((pr) => (
-                  <button key={pr.id} onClick={() => navigate(`/proyectos/${pr.id}`)}
-                    className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group">
-                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Proyecto</span>
-                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{pr.nombre}</span>
-                    <ArrowIcon />
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
         </div>
 
         <aside className="space-y-1" style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
@@ -249,9 +157,9 @@ export default function BaseDeDatosDetailPage() {
                 <div key={key} className="py-2">
                   <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>{key}</dt>
                   <dd className="text-[13px] text-ink/80 break-words">
-                    {val == null || val === '' ? <span className="text-ink/30 italic">—</span>
+                    {val == null || val === '' ? <span className="text-ink/30 italic">--</span>
                       : Array.isArray(val) ? val.join(', ')
-                      : typeof val === 'boolean' ? (val ? 'Sí' : 'No')
+                      : typeof val === 'boolean' ? (val ? 'Si' : 'No')
                       : String(val)}
                   </dd>
                 </div>
@@ -264,20 +172,12 @@ export default function BaseDeDatosDetailPage() {
               Agregar campo
             </button>
           )}
-          {(item.updated_at || item.updated_by_email) && (
+          {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
-              {item.updated_at && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Última edición</p>
-                  <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
-                </div>
-              )}
-              {item.updated_by_email && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Último editor</p>
-                  <p className="text-[12px] text-ink/70">{item.updated_by_email}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ultima edicion</p>
+                <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
+              </div>
             </div>
           )}
         </aside>

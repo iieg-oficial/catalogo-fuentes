@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import settings
 from db import get_db
 from exceptions.http import forbidden, unauthorized
-from models.user import User
-from services.auth import get_user_by_email
+from models.usuario import Usuario
+from services.auth import get_usuario_by_correo
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -15,31 +15,32 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
-) -> User:
+) -> Usuario:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        email: str | None = payload.get("sub")
-        if email is None:
+        correo: str | None = payload.get("sub")
+        if correo is None:
             raise unauthorized()
     except JWTError:
         raise unauthorized()
 
-    user = await get_user_by_email(db, email)
-    if user is None or not user.is_active:
+    usuario = await get_usuario_by_correo(db, correo)
+    if usuario is None or not usuario.activo:
         raise unauthorized()
-    return user
+    return usuario
 
 
-def require_roles(*roles: str):
-    async def dependency(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role.value not in roles:
+def require_permisos(*permisos: str):
+    async def dependency(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+        user_permisos = set(current_user.permisos)
+        if not user_permisos.intersection(permisos):
             raise forbidden()
         return current_user
 
     return dependency
 
 
-require_superadmin = require_roles("superadmin")
-require_admin = require_roles("admin", "superadmin")
-require_write = require_roles("admin", "maintainer", "superadmin")
-require_any = require_roles("admin", "maintainer", "viewer", "visualizer", "superadmin")
+require_catalog_read = require_permisos("catalog:read")
+require_write = require_permisos("catalog:write")
+require_admin = require_permisos("users:manage")
+require_superadmin = require_permisos("admin:full")

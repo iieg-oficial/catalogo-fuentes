@@ -6,10 +6,6 @@ import { useAuthContext } from '@/context/AuthContext'
 import type { ProyectoDetail } from '@/types'
 import { getProyecto, updateProyecto } from './services/proyectosService'
 
-// ---------------------------------------------------------------------------
-// Estado chip config
-// ---------------------------------------------------------------------------
-
 const ESTADO_TONE: Record<string, { bg: string; fg: string; dot: string }> = {
   Activo: { bg: '#EEFBF5', fg: '#067647', dot: '#10b981' },
   Pendiente: { bg: '#FFF6EE', fg: '#B8580E', dot: '#FF8300' },
@@ -32,10 +28,6 @@ function EstadoChip({ label }: { label: string }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// SectionHeading
-// ---------------------------------------------------------------------------
-
 function SectionHeading({ children }: { children: string }) {
   return (
     <p
@@ -46,10 +38,6 @@ function SectionHeading({ children }: { children: string }) {
     </p>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Main page
-// ---------------------------------------------------------------------------
 
 export default function ProyectoDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -81,7 +69,6 @@ export default function ProyectoDetailPage() {
     await updateProyecto(id!, { meta: newMeta })
     setItem((prev) => prev ? { ...prev, meta: newMeta } : null)
   }
-  // handleMetaSave is available for future use via an edit modal or inline editor
 
   if (loading) return <LoadingSpinner />
   if (error || !item) return <ErrorState onRetry={load} />
@@ -106,25 +93,19 @@ export default function ProyectoDetailPage() {
   return (
     <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
-      {/* ------------------------------------------------------------------ */}
-      {/* Breadcrumb                                                           */}
-      {/* ------------------------------------------------------------------ */}
       <nav className="flex items-center gap-1.5 text-[12px]" aria-label="Breadcrumb">
-        <span className="text-ink/35 font-medium">Catálogo</span>
-        <span className="text-ink/25">›</span>
+        <span className="text-ink/35 font-medium">Catalogo</span>
+        <span className="text-ink/25">{'>'}</span>
         <button
           onClick={() => navigate(-1)}
           className="text-ink/50 hover:text-brand-600 transition-colors duration-150 font-medium"
         >
           Proyectos
         </button>
-        <span className="text-ink/25">›</span>
+        <span className="text-ink/25">{'>'}</span>
         <span className="text-ink/70 font-medium">{item.nombre}</span>
       </nav>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Header                                                               */}
-      {/* ------------------------------------------------------------------ */}
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
           <p
@@ -158,7 +139,6 @@ export default function ProyectoDetailPage() {
           </div>
         </div>
 
-        {/* Action buttons */}
         <div className="flex items-center gap-2 shrink-0 pt-1">
           <button
             onClick={() => navigate(-1)}
@@ -169,15 +149,10 @@ export default function ProyectoDetailPage() {
         </div>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* Two-column body                                                      */}
-      {/* ------------------------------------------------------------------ */}
       <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 280px' }}>
-        {/* ---- Main column ---- */}
         <div className="space-y-10 min-w-0">
-          {/* Descripción */}
           <section>
-            <SectionHeading>Descripción</SectionHeading>
+            <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
               <p
                 className="text-[#374151]"
@@ -190,11 +165,10 @@ export default function ProyectoDetailPage() {
                 {item.descripcion}
               </p>
             ) : (
-              <p className="text-[13px] text-ink/[35%] italic">Sin descripción</p>
+              <p className="text-[13px] text-ink/[35%] italic">Sin descripcion</p>
             )}
           </section>
 
-          {/* Productos vinculados */}
           <section>
             <div className="flex items-baseline justify-between mb-3">
               <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>
@@ -243,14 +217,7 @@ export default function ProyectoDetailPage() {
                     </span>
                     <svg
                       className="ml-auto shrink-0 text-ink/20 group-hover:text-brand-500 transition-colors duration-100"
-                      width="13"
-                      height="13"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"
                     >
                       <path d="M3 7h8M7 3l4 4-4 4" />
                     </svg>
@@ -261,7 +228,6 @@ export default function ProyectoDetailPage() {
           </section>
         </div>
 
-        {/* ---- Aside ---- */}
         <aside className="space-y-1" style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
           <SectionHeading>Metadata</SectionHeading>
 
@@ -279,11 +245,11 @@ export default function ProyectoDetailPage() {
                   </dt>
                   <dd className="text-[13px] text-ink/80 break-words">
                     {val == null || val === ''
-                      ? <span className="text-ink/30 italic">—</span>
+                      ? <span className="text-ink/30 italic">--</span>
                       : Array.isArray(val)
                         ? val.join(', ')
                         : typeof val === 'boolean'
-                          ? val ? 'Sí' : 'No'
+                          ? val ? 'Si' : 'No'
                           : String(val)}
                   </dd>
                 </div>
@@ -303,24 +269,14 @@ export default function ProyectoDetailPage() {
             </button>
           )}
 
-          {(item.updated_at || item.updated_by_email) && (
+          {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
-              {item.updated_at && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
-                    Última edición
-                  </p>
-                  <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
-                </div>
-              )}
-              {item.updated_by_email && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
-                    Último editor
-                  </p>
-                  <p className="text-[12px] text-ink/70">{item.updated_by_email}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
+                  Ultima edicion
+                </p>
+                <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
+              </div>
             </div>
           )}
         </aside>

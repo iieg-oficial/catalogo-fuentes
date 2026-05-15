@@ -1,32 +1,39 @@
-import uuid
-
-from pydantic import BaseModel
-
-from schemas.base_de_datos import BaseDeDatosRead
-from schemas.instrumento import InstrumentoRead
-from schemas.producto import ProductoRead, ProductoWithProyecto
-from schemas.proyecto import ProyectoRead
-from schemas.tabla import TablaRead, TablaDetail as TablaWithProductos
-from schemas.url import UrlRead
 from schemas.archivo import ArchivoRead
+from schemas.base_de_datos import BaseDeDatosRead
+from schemas.dataset import DatasetRead
+from schemas.distribucion import DistribucionRead
+from schemas.edicion_dataset import EdicionDatasetRead
+from schemas.fuente import FuenteRead
+from schemas.informacion_tablas import InformacionTablasRead
+from schemas.producto import ProductoRead
+from schemas.producto_tabla import ProductoTablaRead
+from schemas.proyecto import ProyectoRead
 
 
 class ProyectoDetail(ProyectoRead):
     productos: list[ProductoRead] = []
 
 
-class ProductoDetail(ProductoWithProyecto):
-    tablas: list[TablaRead] = []
+class ProductoDetail(ProductoRead):
+    producto_tablas: list[ProductoTablaRead] = []
+
+
+class FuenteDetail(FuenteRead):
+    datasets: list[DatasetRead] = []
+
+
+class DatasetDetail(DatasetRead):
+    ediciones: list[EdicionDatasetRead] = []
+    bases_de_datos: list[BaseDeDatosRead] = []
+
+
+class EdicionDatasetDetail(EdicionDatasetRead):
+    distribuciones: list[DistribucionRead] = []
+
+
+class DistribucionDetail(DistribucionRead):
+    archivos: list[ArchivoRead] = []
 
 
 class BaseDeDatosDetail(BaseDeDatosRead):
-    tablas: list[TablaWithProductos] = []
-    instrumentos: list[InstrumentoRead] = []
-
-
-class InstrumentoDetailFull(InstrumentoRead):
-    urls: list[UrlRead] = []
-
-
-class UrlDetailFull(UrlRead):
-    archivos: list[ArchivoRead] = []
+    informacion_tablas: list[InformacionTablasRead] = []
