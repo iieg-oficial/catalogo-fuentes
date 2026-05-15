@@ -543,7 +543,7 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
       try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) }
       catch { return value }
     })()
-    return <span className={`text-[12px] text-ink/55 ${editCls}`}>{fmt}</span>
+    return <span className={`text-[12px] text-ink/70 ${editCls}`}>{fmt}</span>
   }
 
   if (def.type === 'boolean') {

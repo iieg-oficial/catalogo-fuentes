@@ -98,7 +98,7 @@ export function JsonCell({ value }: JsonCellProps) {
           <span key={k}>
             {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
             <span className="font-medium text-brand-700">{k}: </span>
-            <span className="text-ink/55">{isNested(v) ? '{...}' : fmtVal(v)}</span>
+            <span className="text-ink/70">{isNested(v) ? '{...}' : fmtVal(v)}</span>
           </span>
         ))}
       </span>
@@ -121,7 +121,7 @@ export function JsonCell({ value }: JsonCellProps) {
             </div>
           )}
           <div className={`px-5 ${cellCtx ? 'pt-3' : 'pt-5'} pb-4 max-h-80 overflow-y-auto`}>
-            <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/70 whitespace-pre-wrap break-all">
               {colorizeJson(value)}
             </pre>
           </div>

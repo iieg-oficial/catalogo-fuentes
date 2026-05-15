@@ -99,7 +99,7 @@ export function TagsCell({ value }: TagsCellProps) {
           onMouseLeave={scheduleHide}
         >
           <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
-            <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">{colorizeArray(tags)}</pre>
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/70 whitespace-pre-wrap break-all">{colorizeArray(tags)}</pre>
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
