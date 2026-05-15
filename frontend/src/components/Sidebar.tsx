@@ -103,42 +103,44 @@ export default function Sidebar({ user, onLogout }: Props) {
           </NavLink>
         ))}
 
-        <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
-          Administracion
-        </p>
-
-        <NavLink
-          to="/entidades"
-          onClick={closeSidebar}
-          className={({ isActive }) => navItemClass(isActive)}
-        >
-          {({ isActive }) => (
-            <>
-              {isActive && (
-                <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-              )}
-              <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
-              <span className="flex-1 truncate">Entidades</span>
-            </>
-          )}
-        </NavLink>
-
         {user?.permisos?.includes('users:manage') && (
-          <NavLink
-            to="/usuarios"
-            onClick={closeSidebar}
-            className={({ isActive }) => navItemClass(isActive)}
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && (
-                  <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                )}
-                <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
-                <span className="flex-1 truncate">Usuarios</span>
-              </>
-            )}
-          </NavLink>
+          <>
+            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+              Administracion
+            </p>
+
+            <NavLink
+              to="/entidades"
+              onClick={closeSidebar}
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
+                  )}
+                  <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
+                  <span className="flex-1 truncate">Entidades</span>
+                </>
+              )}
+            </NavLink>
+
+            <NavLink
+              to="/usuarios"
+              onClick={closeSidebar}
+              className={({ isActive }) => navItemClass(isActive)}
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
+                  )}
+                  <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
+                  <span className="flex-1 truncate">Usuarios</span>
+                </>
+              )}
+            </NavLink>
+          </>
         )}
       </nav>
 
