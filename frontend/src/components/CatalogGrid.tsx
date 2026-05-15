@@ -1086,7 +1086,7 @@ export default function CatalogGrid<T extends { id: string }>({
                             overflow: isEditingThis && isMultiSelect ? 'visible' : 'hidden',
                             position: 'relative',
                           }}
-                          onClick={col.onEdit ? (e) => {
+                          onClick={col.onEdit && canWrite ? (e) => {
                             e.stopPropagation()
                             if (!isEditingThis) {
                               const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
@@ -1156,7 +1156,7 @@ export default function CatalogGrid<T extends { id: string }>({
                               className={INLINE_INPUT_CLS}
                               onClick={(e) => e.stopPropagation()} />
                           ) : (
-                            <span className={col.onEdit ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
+                            <span className={col.onEdit && canWrite ? 'cursor-pointer hover:bg-brand-500/[6%] rounded px-0.5 transition-colors block truncate' : 'block truncate'}>
                               {col.render(row, rowIndex, col.header)}
                             </span>
                           )}
@@ -1174,7 +1174,7 @@ export default function CatalogGrid<T extends { id: string }>({
                           key={def.key}
                           className="border-r border-ink/[5%] px-2.5"
                           style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
-                          onClick={onEditMetaCell ? (e) => {
+                          onClick={onEditMetaCell && canWrite ? (e) => {
                             e.stopPropagation()
                             const rect = (e.currentTarget as HTMLTableCellElement).getBoundingClientRect()
                             setEditingCellPos({ top: rect.bottom + 4, left: Math.min(rect.left, window.innerWidth - 268) })
@@ -1233,7 +1233,7 @@ export default function CatalogGrid<T extends { id: string }>({
                                 className={INLINE_INPUT_CLS} onClick={(e) => e.stopPropagation()} />
                             )
                           ) : (
-                            <MetaCellView value={currentVal} def={def} editable={!!onEditMetaCell} />
+                            <MetaCellView value={currentVal} def={def} editable={!!onEditMetaCell && !!canWrite} />
                           )}
                         </td>
                       )
@@ -1314,7 +1314,7 @@ export default function CatalogGrid<T extends { id: string }>({
                 </tr>
               )}
 
-              {!addRowCells && onAdd && (
+              {!addRowCells && canWrite && onAdd && (
                 <tr className="hover:bg-brand-500/[2%] transition-colors" style={{ background: '#fff' }}>
                   <td colSpan={totalCols} className="px-3 py-2.5">
                     <button
