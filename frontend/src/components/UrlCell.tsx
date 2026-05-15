@@ -33,8 +33,8 @@ function UrlCell({ url, maxWidth = 180, wrap = false }: UrlCellProps) {
       </a>
       <button
         onClick={handleCopy}
-        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-100 text-ink/30 hover:text-brand-600"
-        title="Copiar URL"
+        aria-label="Copiar URL"
+        className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-100 text-ink/60 hover:text-brand-600"
       >
         {copied ? (
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

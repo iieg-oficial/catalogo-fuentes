@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, PRIORITY_LEVELS } from '@/consts/statusColors'
 
 export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
@@ -121,13 +121,6 @@ const TYPE_ICON: Record<string, ReactNode> = {
   ),
 }
 
-const PRIORITY_LEVELS = [
-  { label: 'Urgente',       color: '#dc2626' },
-  { label: 'Alta',          color: '#f97316' },
-  { label: 'Media',         color: '#f59e0b' },
-  { label: 'Baja',          color: '#22c55e' },
-  { label: 'Sin prioridad', color: '#94a3b8' },
-]
 
 const SORT_UP_ICON = (
   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

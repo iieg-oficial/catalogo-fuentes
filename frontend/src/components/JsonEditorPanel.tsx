@@ -169,7 +169,7 @@ export default function JsonEditorPanel({ value, onChange, onClose, top, left, l
           {/* Key-value list */}
           <div className="max-h-60 overflow-y-auto">
             {entries.length === 0 && !newKey && (
-              <p className="px-3 py-3 text-[12px] text-ink/[35%] italic">Sin campos</p>
+              <p className="px-3 py-3 text-[12px] text-ink/70 italic">Sin campos</p>
             )}
             {entries.map(([k, v], idx) => (
               <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-ink/[4%] last:border-b-0">
@@ -188,7 +188,8 @@ export default function JsonEditorPanel({ value, onChange, onClose, top, left, l
                 <button
                   type="button"
                   onClick={() => handleRemove(idx)}
-                  className="shrink-0 w-6 h-6 flex items-center justify-center text-ink/25 hover:text-red-500 transition-colors rounded hover:bg-red-50"
+                  aria-label="Eliminar campo"
+                  className="shrink-0 w-6 h-6 flex items-center justify-center text-ink/60 hover:text-red-500 transition-colors rounded hover:bg-red-50"
                 >
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 2l6 6M8 2l-6 6" /></svg>
                 </button>
@@ -217,6 +218,7 @@ export default function JsonEditorPanel({ value, onChange, onClose, top, left, l
             <button
               type="button"
               onClick={handleAdd}
+              aria-label="Agregar campo"
               className="shrink-0 w-6 h-6 flex items-center justify-center text-brand-600 hover:bg-brand-500/[8%] transition-colors rounded"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M5.5 1v9M1 5.5h9" /></svg>

@@ -84,7 +84,7 @@ function JsonCell({ value }: JsonCellProps) {
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
   }, [value, entries.length])
 
-  if (!entries.length) return <span className="text-ink/30 text-[13px]">--</span>
+  if (!entries.length) return <span className="text-ink/60 text-[13px]">--</span>
 
   return (
     <>
@@ -96,7 +96,7 @@ function JsonCell({ value }: JsonCellProps) {
       >
         {entries.map(([k, v], i) => (
           <span key={k}>
-            {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
+            {i > 0 && <span className="text-ink/20 mx-0.5" aria-hidden="true">·</span>}
             <span className="font-medium text-brand-700">{k}: </span>
             <span className="text-ink/70">{isNested(v) ? '{...}' : fmtVal(v)}</span>
           </span>
@@ -117,7 +117,7 @@ function JsonCell({ value }: JsonCellProps) {
           {cellCtx && (
             <div className="flex items-center justify-between px-5 pt-3 pb-0">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{cellCtx.columnName}</span>
-              <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
+              <span className="text-[10px] font-medium text-ink/30" aria-hidden="true">#{cellCtx.rowIndex + 1}</span>
             </div>
           )}
           <div className={`px-5 ${cellCtx ? 'pt-3' : 'pt-5'} pb-4 max-h-80 overflow-y-auto`}>

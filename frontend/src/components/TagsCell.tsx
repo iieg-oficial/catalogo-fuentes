@@ -69,7 +69,7 @@ function TagsCell({ value }: TagsCellProps) {
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
   }, [tags])
 
-  if (!tags.length) return <span className="text-ink/30 text-[13px]">--</span>
+  if (!tags.length) return <span className="text-ink/60 text-[13px]">--</span>
 
   return (
     <>
@@ -81,7 +81,7 @@ function TagsCell({ value }: TagsCellProps) {
       >
         {tags.map((tag, i) => (
           <span key={tag}>
-            {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
+            {i > 0 && <span className="text-ink/20 mx-0.5" aria-hidden="true">·</span>}
             <span className="text-brand-700">{tag}</span>
           </span>
         ))}

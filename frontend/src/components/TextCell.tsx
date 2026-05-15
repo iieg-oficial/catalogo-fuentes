@@ -70,7 +70,7 @@ function TextCell({ value, mono = false, link = false }: TextCellProps) {
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
   }, [value])
 
-  if (!value) return <span className="text-ink/30 text-[13px]">--</span>
+  if (!value) return <span className="text-ink/60 text-[13px]">--</span>
 
   const textCls = mono
     ? 'font-mono text-[12px] text-ink/70 block truncate'
@@ -102,7 +102,7 @@ function TextCell({ value, mono = false, link = false }: TextCellProps) {
           {cellCtx && (
             <div className="flex items-center justify-between px-5 pt-3 pb-0">
               <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{cellCtx.columnName}</span>
-              <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
+              <span className="text-[10px] font-medium text-ink/30" aria-hidden="true">#{cellCtx.rowIndex + 1}</span>
             </div>
           )}
           <div className={`px-7 ${cellCtx ? 'pt-3' : 'pt-6'} pb-5`}>

@@ -5,3 +5,11 @@ export const ESTADO_TONE: Record<string, { bg: string; fg: string; dot: string }
 }
 
 export const SECTION_LABEL_COLOR = '#6E6279'
+
+export const PRIORITY_LEVELS = [
+  { label: 'Urgente',       color: '#dc2626' },
+  { label: 'Alta',          color: '#f97316' },
+  { label: 'Media',         color: '#f59e0b' },
+  { label: 'Baja',          color: '#22c55e' },
+  { label: 'Sin prioridad', color: '#94a3b8' },
+]

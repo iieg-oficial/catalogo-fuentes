@@ -137,9 +137,8 @@ function ColMenu({
     <div className={`relative inline-block ${open ? 'z-[9999]' : ''}`} ref={menuRef}>
       <button
         onClick={(e) => { e.stopPropagation(); open ? onClose() : onOpen() }}
-        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 ml-1 text-ink/30 hover:text-ink/60
+        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 ml-1 text-ink/60 hover:text-ink/80
                    transition-opacity duration-150 leading-none align-middle"
-        title="Opciones de columna"
         aria-label="Opciones de columna"
       >
         ···
@@ -320,7 +319,7 @@ function MultiTagCell<T>({ row, col }: { row: T; col: Column<T> }) {
           }
           setOpen((v) => !v)
         }}
-        className={`w-6 h-6 rounded-full bg-ink/[6%] hover:bg-brand-500/10 text-ink/40 hover:text-brand-600 flex items-center justify-center transition-all shrink-0 ${isEmpty ? 'opacity-0 group-hover/multitag:opacity-100' : ''}`}
+        className={`w-8 h-8 rounded-full bg-ink/[6%] hover:bg-brand-500/10 text-ink/60 hover:text-brand-600 flex items-center justify-center transition-all shrink-0 ${isEmpty ? 'opacity-0 group-hover/multitag:opacity-100' : ''}`}
         aria-label="Agregar"
       >
         <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -402,10 +401,9 @@ export default function DataTable<T>({
               <th className="px-3 py-[10px] w-10 text-center">
                 <button
                   onClick={onAddColumn}
-                  className="group/addcol w-[26px] h-[26px] rounded-md flex items-center justify-center
-                             text-ink/40 hover:text-brand-600 hover:bg-brand-500/10
+                  className="group/addcol w-8 h-8 rounded-md flex items-center justify-center
+                             text-ink/60 hover:text-brand-600 hover:bg-brand-500/10
                              transition-all duration-150"
-                  title="Agregar campo"
                   aria-label="Agregar campo"
                 >
                   <svg
@@ -429,7 +427,7 @@ export default function DataTable<T>({
                   <path d="M8 2h7.5L22 8.5V24a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z"/>
                   <path d="M15.5 2v7H22M10 14h8M10 18h6"/>
                 </svg>
-                <p className="text-sm text-ink/40">Sin registros</p>
+                <p className="text-sm text-ink/70">Sin registros</p>
               </td>
             </tr>
           )}
@@ -441,7 +439,7 @@ export default function DataTable<T>({
                   <path d="M8 2h7.5L22 8.5V24a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z"/>
                   <path d="M15.5 2v7H22M10 14h8M10 18h6"/>
                 </svg>
-                <p className="text-sm text-ink/40">Sin registros</p>
+                <p className="text-sm text-ink/70">Sin registros</p>
                 <p className="text-xs text-ink/[28%] mt-1">Usa "+ Agregar" para crear el primero</p>
               </td>
             </tr>

@@ -636,7 +636,7 @@ export default function UsuariosPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M7.5 2L4 6l3.5 4" />
@@ -645,7 +645,7 @@ export default function UsuariosPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4.5 2L8 6l-3.5 4" />
