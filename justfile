@@ -96,6 +96,7 @@ db-migrate: _db-up
 
 # Limpia la BD, detiene los servicios y arranca todo de cero con seed
 [group('database')]
+[confirm("¿Seguro que quieres resetear la BD de desarrollo? Se perderán todos los datos. [Y/N]:")]
 db-reset: _check-python
     @just db-clean
     @just dev-stop
@@ -103,6 +104,7 @@ db-reset: _check-python
 
 # Elimina todos los objetos del schema público y vuelve a aplicar las migraciones
 [group('database')]
+[confirm("¿Seguro que quieres limpiar la BD de desarrollo? Se perderán todos los datos. [Y/N]:")]
 db-clean: _db-up
     @PGPASSWORD="$POSTGRES_PASSWORD" psql \
         -h {{dev_db_host}} -p {{dev_db_port}} \
@@ -131,6 +133,7 @@ db-dump file="": _db-up
 
 # Restaura un dump en la BD  (uso: just db-insert <archivo>)
 [group('database')]
+[confirm("¿Seguro que quieres restaurar el dump en la BD de desarrollo? Los datos actuales se perderán. [Y/N]:")]
 db-insert file: _db-up
     @PGPASSWORD="$POSTGRES_PASSWORD" pg_restore \
         -h {{dev_db_host}} -p {{dev_db_port}} \
@@ -145,6 +148,7 @@ db-insert file: _db-up
 # Levanta todos los servicios en producción con BD propia y solo superadmin
 # Requiere deploy/.env.prod con las credenciales de producción
 [group('production')]
+[confirm("¿Seguro que quieres hacer un deploy completo a producción? Las migraciones nuevas pueden destruir datos. [Y/N]:")]
 prod:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -170,6 +174,7 @@ db-dump-prod file="":
 
 # Restaura un dump en la BD de producción  (uso: just db-insert-prod <archivo>)
 [group('production')]
+[confirm("¿Seguro que quieres restaurar el dump en la BD de producción? Los datos actuales se perderán. [Y/N]:")]
 db-insert-prod file:
     #!/usr/bin/env bash
     set -euo pipefail
