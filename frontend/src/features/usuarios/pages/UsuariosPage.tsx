@@ -270,18 +270,16 @@ export default function UsuariosPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
-  const [filterRole, setFilterRole] = useState(searchParams.get('q') ? '' : '')
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
+  const [filterRole, setFilterRole] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formCorreo, setFormCorreo] = useState('')
-  const [formNombre, setFormNombre] = useState('')
   const [formRolId, setFormRolId] = useState('')
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-
-  const initialSearch = searchParams.get('q') ?? ''
 
   const load = async () => {
     setLoading(true)
@@ -294,7 +292,7 @@ export default function UsuariosPage() {
   }
   useEffect(() => { load() }, [])
 
-  useEffect(() => { setPage(1) }, [filterRole, filterStatus, pageSize])
+  useEffect(() => { setPage(1) }, [search, filterRole, filterStatus, pageSize])
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
@@ -303,13 +301,11 @@ export default function UsuariosPage() {
     try {
       const u = await createUsuario({
         correo: formCorreo,
-        nombre: formNombre || undefined,
         rol_id: formRolId || undefined,
       })
       setUsers((prev) => [...prev, u])
       setShowForm(false)
       setFormCorreo('')
-      setFormNombre('')
       setFormRolId('')
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el correo no esté registrado.')
@@ -345,13 +341,52 @@ export default function UsuariosPage() {
     return []
   }
 
+  const scoreMatch = (query: string, text: string): number => {
+    if (!query.trim() || !text) return 0
+    const q = query.toLowerCase().trim()
+    const t = text.toLowerCase()
+
+    if (t === q) return 100
+    if (t.startsWith(q)) return 95
+    if (t.includes(q)) return 85
+
+    const qWords = q.split(/\s+/).filter((w) => w.length >= 2)
+    if (qWords.length > 0) {
+      const matched = qWords.filter((w) => t.includes(w)).length
+      if (matched === qWords.length) return 75
+      if (matched > 0) return 40 + Math.round((matched / qWords.length) * 30)
+    }
+
+    let qi = 0
+    for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+      if (t[ti] === q[qi]) qi++
+    }
+    if (qi === q.length) return 15 + Math.round((q.length / t.length) * 20)
+
+    if (q.length >= 3 && t.length >= 3) {
+      const trigrams = (s: string) => {
+        const set = new Set<string>()
+        for (let i = 0; i <= s.length - 3; i++) set.add(s.slice(i, i + 3))
+        return set
+      }
+      const qg = trigrams(q)
+      const tg = trigrams(t)
+      let common = 0
+      qg.forEach((g) => { if (tg.has(g)) common++ })
+      const sim = (2 * common) / (qg.size + tg.size)
+      if (sim > 0.2) return Math.round(sim * 35)
+    }
+
+    return 0
+  }
+
   const filtered = users.filter((u) => {
     if (filterRole && u.rol?.nombre !== filterRole) return false
     if (filterStatus === 'active' && !u.activo) return false
     if (filterStatus === 'inactive' && u.activo) return false
-    if (initialSearch) {
-      const q = initialSearch.toLowerCase()
-      return [u.nombre, u.correo, u.rol?.nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
+    if (search) {
+      const text = [u.nombre, u.correo, u.rol?.nombre].filter(Boolean).map(String).join(' ')
+      return scoreMatch(search, text) > 10
     }
     return true
   })
@@ -362,7 +397,7 @@ export default function UsuariosPage() {
   const paginated = filtered.slice(start, start + pageSize)
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-auto p-6 bg-neutral-50">
+    <div className="flex-1 overflow-auto p-6 bg-neutral-50">
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
@@ -374,60 +409,61 @@ export default function UsuariosPage() {
         </div>
         {canManageUsers && (
           <button
-            onClick={() => setShowForm((v) => !v)}
+            onClick={() => setShowForm(true)}
             className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
           >
             <span className="text-base leading-none">+</span>
-            {showForm ? 'Cancelar' : 'Crear usuario'}
+            Crear usuario
           </button>
         )}
       </div>
 
-      {/* Create form */}
-      {showForm && (
-        <div className="bg-white border border-ink/[10%] rounded-xl p-5 mb-5 max-w-sm shadow-sm">
-          <h3 className="text-sm font-semibold text-ink mb-4">Nuevo usuario</h3>
-          <form onSubmit={handleCreate} className="space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-ink/50 mb-1">Nombre</label>
-              <input
-                type="text"
-                value={formNombre}
-                onChange={(e) => setFormNombre(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="Nombre del usuario"
-              />
+      {/* Create modal */}
+      {showForm && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-sm font-semibold text-ink">Nuevo usuario</h3>
+              <button onClick={() => setShowForm(false)} className="text-ink/30 hover:text-ink/60 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M3 3l8 8M11 3L3 11" />
+                </svg>
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-ink/50 mb-1">Correo</label>
-              <input
-                type="email"
-                required
-                autoFocus
-                value={formCorreo}
-                onChange={(e) => setFormCorreo(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="usuario@iieg.gob.mx"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-ink/50 mb-1">Rol</label>
-              <FormDropdown
-                value={formRolId}
-                options={roles.map((r) => ({ value: r.id, label: r.nombre }))}
-                onChange={setFormRolId}
-              />
-            </div>
-            {formError && <p className="text-xs text-red-600">{formError}</p>}
-            <button
-              type="submit"
-              disabled={formLoading}
-              className="w-full py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
-            >
-              {formLoading ? 'Creando…' : 'Crear'}
-            </button>
-          </form>
-        </div>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Correo</label>
+                <input
+                  type="email"
+                  required
+                  autoFocus
+                  value={formCorreo}
+                  onChange={(e) => setFormCorreo(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="usuario@iieg.gob.mx"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Rol</label>
+                <FormDropdown
+                  value={formRolId}
+                  options={roles.map((r) => ({ value: r.id, label: r.nombre }))}
+                  onChange={setFormRolId}
+                />
+              </div>
+              {formError && <p className="text-xs text-red-600">{formError}</p>}
+              <button
+                type="submit"
+                disabled={formLoading}
+                className="w-full py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+              >
+                {formLoading ? 'Creando…' : 'Crear'}
+              </button>
+            </form>
+          </div>
+        </div>,
+        document.body,
       )}
 
       {/* Filter row */}
@@ -452,6 +488,18 @@ export default function UsuariosPage() {
               { value: 'inactive', label: 'Inactivo' },
             ]}
           />
+          <div className="relative">
+            <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/30" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="7" cy="7" r="5" /><path d="M11 11l3.5 3.5" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar usuario…"
+              className="pl-8 pr-3 py-1.5 w-48 bg-white border border-ink/[10%] rounded-lg text-[13px] text-ink/70 shadow-sm placeholder:text-ink/30 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors"
+            />
+          </div>
         </div>
         <span className="text-xs text-ink/40">
           {filtered.length} {filtered.length === 1 ? 'usuario' : 'usuarios'}
@@ -464,7 +512,7 @@ export default function UsuariosPage() {
       ) : error ? (
         <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>
       ) : (
-        <div className="bg-white border border-ink/[10%] rounded-xl overflow-hidden shadow-sm flex flex-col">
+        <div className="bg-white border border-ink/[10%] rounded-xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-ink/[6%]">
