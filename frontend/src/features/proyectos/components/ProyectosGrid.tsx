@@ -730,13 +730,13 @@ export default function ProyectosGrid({
       {/* ------------------------------------------------------------------ */}
       {/* Editorial header                                                     */}
       {/* ------------------------------------------------------------------ */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: SECTION_LABEL_COLOR }}>
+      <div className="cursor-default">
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 cursor-default" style={{ color: SECTION_LABEL_COLOR }}>
           Catálogo · Proyectos
         </p>
-        <h1 className="font-newsreader text-ink leading-none" style={{ fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="font-newsreader text-ink leading-none cursor-default" style={{ fontSize: '32px', fontWeight: 500 }}>
           Proyectos
-          <span style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -1130,7 +1130,7 @@ export default function ProyectosGrid({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%]" style={{ backgroundColor: '#FBFAFC' }}>
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: '#FBFAFC' }}>
           <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>

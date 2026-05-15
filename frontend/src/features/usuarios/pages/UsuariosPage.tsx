@@ -628,7 +628,7 @@ export default function UsuariosPage() {
               </select>
             </div>
             {totalPages > 1 && (
-              <div className="flex items-center gap-3 text-xs text-ink/70">
+              <div className="flex items-center gap-3 text-xs text-ink/70 cursor-default">
                 <span>
                   {filtered.length === 0 ? '0' : `${start + 1}–${Math.min(start + pageSize, filtered.length)}`}
                   {' '}de {filtered.length}

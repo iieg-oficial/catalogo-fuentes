@@ -368,7 +368,7 @@ export default function DataTable<T>({
       <table className="min-w-full text-[15px]">
         {caption && <caption className="sr-only">{caption}</caption>}
 
-        <thead>
+        <thead className="cursor-default">
           <tr className="bg-white border-b border-ink/[8%] text-left">
             {hasLeftActionsCol && (
               <th className={`${thBase} pl-4 pr-2 w-14`}>

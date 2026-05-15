@@ -51,7 +51,7 @@ export default function Sidebar({ user, onLogout }: Props) {
       className={`
         fixed md:static inset-y-0 left-0 z-40 md:z-auto
         w-60 min-h-screen bg-brand-900 text-white flex flex-col
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-300 ease-in-out cursor-default
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}
     >
@@ -151,9 +151,9 @@ export default function Sidebar({ user, onLogout }: Props) {
         >
           {user?.correo ? userInitials(user.correo) : '?'}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
-          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
+        <div className="flex-1 min-w-0 cursor-default">
+          <p className="text-[12px] text-white/[85%] truncate leading-tight cursor-default">{user?.nombre ?? user?.correo}</p>
+          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5 cursor-default">{user?.rol?.nombre}</p>
         </div>
         <button
           onClick={() => { onLogout(); navigate('/login') }}

@@ -836,13 +836,13 @@ export default function CatalogGrid<T extends { id: string }>({
   return (
     <div className="flex flex-col gap-5">
       {/* Editorial header */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: SECTION_LABEL_COLOR }}>
+      <div className="cursor-default">
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 cursor-default" style={{ color: SECTION_LABEL_COLOR }}>
           {eyebrow}
         </p>
-        <h1 className="font-newsreader text-ink leading-none" style={{ fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="font-newsreader text-ink leading-none cursor-default" style={{ fontSize: '32px', fontWeight: 500 }}>
           {title}
-          <span style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -1279,7 +1279,7 @@ export default function CatalogGrid<T extends { id: string }>({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%]" style={{ backgroundColor: '#FBFAFC' }}>
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: '#FBFAFC' }}>
           <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>
