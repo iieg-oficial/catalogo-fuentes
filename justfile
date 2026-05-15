@@ -151,7 +151,7 @@ prod:
     set -a && source deploy/.env.prod && set +a
     cd deploy
     docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml up -d --build db backend frontend
-    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml run --rm init
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml run --rm --build init
 
 # Genera un dump comprimido de la BD de producción  (uso: just db-dump-prod  o  just db-dump-prod mi_dump.pgdump)
 [group('production')]
