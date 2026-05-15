@@ -151,21 +151,21 @@ const RELATIONS: RelDef[] = [
   { id: 'r5',  from: 'distribucion',     fromCard: '1', fromSide: 'bottom', to: 'archivo',            toCard: 'N', toSide: 'top'    },
   { id: 'r6',  from: 'dataset',          fromCard: '1', fromSide: 'right',  to: 'base_de_datos',      toCard: 'N', toSide: 'left'   },
   { id: 'r7',  from: 'base_de_datos',    fromCard: '1', fromSide: 'bottom', to: 'informacion_tablas', toCard: 'N', toSide: 'top'    },
-  { id: 'r8',  from: 'producto',         fromCard: 'N', fromSide: 'right',  to: 'producto_tabla',     toCard: 'N', toSide: 'left'   },
-  { id: 'r9',  from: 'informacion_tablas', fromCard: 'N', fromSide: 'right', to: 'producto_tabla',    toCard: 'N', toSide: 'bottom' },
+  { id: 'r8',  from: 'producto',           fromCard: 'N', fromSide: 'bottom', to: 'producto_tabla',     toCard: 'N', toSide: 'top'    },
+  { id: 'r9',  from: 'informacion_tablas', fromCard: 'N', fromSide: 'left',  to: 'producto_tabla',    toCard: 'N', toSide: 'right'  },
 ]
 
 const INITIAL_POS: Record<string, Pos> = {
-  proyecto:            { x: 60,   y: 60   },
-  producto:            { x: 60,   y: 310  },
-  fuente:              { x: 400,  y: 60   },
-  dataset:             { x: 400,  y: 280  },
-  edicion_dataset:     { x: 400,  y: 510  },
-  distribucion:        { x: 400,  y: 710  },
-  base_de_datos:       { x: 740,  y: 280  },
-  informacion_tablas:  { x: 740,  y: 510  },
-  producto_tabla:      { x: 280,  y: 510  },
-  archivo:             { x: 400,  y: 910  },
+  proyecto:            { x: 200,  y: 40   },
+  producto:            { x: 200,  y: 260  },
+  producto_tabla:      { x: 200,  y: 480  },
+  fuente:              { x: 500,  y: 40   },
+  dataset:             { x: 500,  y: 260  },
+  edicion_dataset:     { x: 500,  y: 500  },
+  distribucion:        { x: 500,  y: 700  },
+  archivo:             { x: 500,  y: 900  },
+  base_de_datos:       { x: 800,  y: 260  },
+  informacion_tablas:  { x: 800,  y: 500  },
 }
 
 const ENTITY_MAP = Object.fromEntries(ENTITIES.map(e => [e.id, e]))
@@ -302,7 +302,7 @@ export default function EntidadesPage() {
         }
       />
 
-      <div className="flex-1 overflow-auto bg-neutral-50 relative">
+      <div className="flex-1 min-h-0 overflow-auto bg-neutral-50 relative">
         {/* Hint */}
         <p className="absolute top-3 right-4 text-xs text-gray-400 pointer-events-none select-none">
           Arrastra · Clic para abrir
