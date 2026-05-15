@@ -53,7 +53,7 @@ dev-roles:
     @echo "  superadmin@iieg.gob.mx     Super1234!      superadmin"
     @echo "  admin@iieg.gob.mx          Admin1234!      admin"
     @echo "  editor@iieg.gob.mx         Editor1234!     maintainer"
-    @echo "  consulta@iieg.gob.mx       Viewer1234!     visualizer"
+    @echo "  consulta@iieg.gob.mx       Viewer1234!     viewer"
     @echo "  ──────────────────────────────────────────────────────"
     @echo "  Roles: superadmin > admin > maintainer > visualizer"
     @echo "  ──────────────────────────────────────────────────────"
@@ -180,6 +180,33 @@ db-insert-prod file:
     echo ""
     echo "  ✓ Dump restaurado en producción desde: {{file}}"
     echo ""
+
+# Reconstruye y reinicia servicios en producción sin correr migraciones (cambios de código sin schema)
+[group('production')]
+prod-deploy:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml up -d --build backend frontend
+
+# Aplica solo migraciones pendientes en producción sin reconstruir toda la app
+[group('production')]
+prod-migrate:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml run --rm --build init
+
+# Abre una shell de psql contra la BD de producción
+[group('production')]
+db-shell-prod:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    set -a && source deploy/.env.prod && set +a
+    cd deploy
+    docker compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml -f docker-compose.prod.yml exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 
 # Detiene y elimina los contenedores de producción
 [group('production')]
