@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { createPortal } from 'react-dom'
 
 interface SelectInputProps {
@@ -9,7 +9,7 @@ interface SelectInputProps {
   label?: string
 }
 
-export default function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label }: SelectInputProps) {
+function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label }: SelectInputProps) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -48,7 +48,7 @@ export default function SelectInput({ value, onChange, options, placeholder = 'S
         ref={btnRef}
         type="button"
         onClick={handleOpen}
-        className="w-full h-full flex items-center gap-1 text-[13px] px-1"
+        className="w-full h-full flex items-center gap-1 text-[13px] px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded"
         style={{ color: value ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.35)' }}
       >
         <span className="flex-1 truncate text-left">{selectedLabel ?? placeholder}</span>
@@ -114,3 +114,5 @@ export default function SelectInput({ value, onChange, options, placeholder = 'S
     </>
   )
 }
+
+export default memo(SelectInput)

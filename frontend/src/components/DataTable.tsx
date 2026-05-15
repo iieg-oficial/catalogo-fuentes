@@ -377,7 +377,7 @@ export default function DataTable<T>({
               </th>
             )}
             {columns.map((col, i) => (
-              <th key={i} className={`${thBase} ${col.className ?? ''}`}>
+              <th key={`col-${i}-${col.header}`} className={`${thBase} ${col.className ?? ''}`}>
                 {col.header}
               </th>
             ))}
@@ -499,7 +499,7 @@ export default function DataTable<T>({
                     editingCell?.colKey === `__col_${ci}`
                   return (
                     <td
-                      key={ci}
+                      key={`${rowKey}-col-${ci}`}
                       className={`${tdBase} ${col.className ?? ''}`}
                       onClick={isEditing && col.onEdit && !col.multiple ? (e) => {
                         e.stopPropagation()

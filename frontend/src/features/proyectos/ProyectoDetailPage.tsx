@@ -5,12 +5,7 @@ import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import type { ProyectoDetail } from '@/types'
 import { getProyecto, updateProyecto } from './services/proyectosService'
-
-const ESTADO_TONE: Record<string, { bg: string; fg: string; dot: string }> = {
-  Activo: { bg: '#EEFBF5', fg: '#067647', dot: '#10b981' },
-  Pendiente: { bg: '#FFF6EE', fg: '#B8580E', dot: '#FF8300' },
-  Archivado: { bg: '#F4F4F5', fg: '#52525B', dot: '#a1a1aa' },
-}
+import { ESTADO_TONE, SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 function EstadoChip({ label }: { label: string }) {
   const tone = ESTADO_TONE[label] ?? { bg: '#F4F4F5', fg: '#52525B', dot: '#a1a1aa' }
@@ -32,7 +27,7 @@ function SectionHeading({ children }: { children: string }) {
   return (
     <p
       className="text-[11px] font-semibold uppercase tracking-widest mb-3"
-      style={{ color: '#9F8FA8' }}
+      style={{ color: SECTION_LABEL_COLOR }}
     >
       {children}
     </p>
@@ -110,7 +105,7 @@ export default function ProyectoDetailPage() {
         <div className="flex-1 min-w-0">
           <p
             className="text-[11px] font-semibold uppercase tracking-widest mb-1.5"
-            style={{ color: '#9F8FA8' }}
+            style={{ color: SECTION_LABEL_COLOR }}
           >
             Proyecto
           </p>
@@ -171,7 +166,7 @@ export default function ProyectoDetailPage() {
 
           <section>
             <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: SECTION_LABEL_COLOR }}>
                 Productos vinculados
               </p>
               {item.productos.length > 0 && (
@@ -239,7 +234,7 @@ export default function ProyectoDetailPage() {
                 <div key={key} className="py-2">
                   <dt
                     className="text-[11px] uppercase tracking-wide font-medium mb-0.5"
-                    style={{ color: '#9F8FA8' }}
+                    style={{ color: SECTION_LABEL_COLOR }}
                   >
                     {key}
                   </dt>
@@ -272,7 +267,7 @@ export default function ProyectoDetailPage() {
           {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>
                   Ultima edicion
                 </p>
                 <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>

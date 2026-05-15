@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
@@ -546,7 +547,7 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
   }
 
   if (def.type === 'boolean') {
-    if (value === 'true') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium" style={{ backgroundColor: '#EEFBF5', color: '#067647' }}><span className="w-[5px] h-[5px] rounded-full bg-[#10b981]" />Sí</span></span>
+    if (value === 'true') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-600"><span className="w-[5px] h-[5px] rounded-full bg-brand-500" />Sí</span></span>
     if (value === 'false') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium bg-ink/[6%] text-ink/50"><span className="w-[5px] h-[5px] rounded-full bg-ink/30" />No</span></span>
     return <span className={editCls}>{EMPTY_DASH}</span>
   }
@@ -767,7 +768,7 @@ export default function ProyectosGrid({
       {/* Editorial header                                                     */}
       {/* ------------------------------------------------------------------ */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#9F8FA8' }}>
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: SECTION_LABEL_COLOR }}>
           Catálogo · Proyectos
         </p>
         <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>

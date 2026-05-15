@@ -158,7 +158,8 @@ export default function Sidebar({ user, onLogout }: Props) {
         <button
           onClick={() => { onLogout(); navigate('/login') }}
           title="Cerrar sesion"
-          className="w-6 h-6 rounded flex items-center justify-center
+          aria-label="Cerrar sesión"
+          className="w-8 h-8 rounded flex items-center justify-center
                      text-white/50 hover:text-white transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
         >
