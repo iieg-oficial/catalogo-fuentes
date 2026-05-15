@@ -150,7 +150,7 @@ export default function Sidebar({ user, onLogout }: Props) {
           {user?.correo ? userInitials(user.correo) : '?'}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.correo}</p>
+          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
           <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
         </div>
         <button
