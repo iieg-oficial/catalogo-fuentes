@@ -158,7 +158,7 @@ export default function BaseDeDatosDetailPage() {
                 <div key={key} className="py-2">
                   <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>{key}</dt>
                   <dd className="text-[13px] text-ink/80 break-words">
-                    {val == null || val === '' ? <span className="text-ink/30 italic">--</span>
+                    {val == null || val === '' ? <span className="text-ink/60 italic">--</span>
                       : Array.isArray(val) ? val.join(', ')
                       : typeof val === 'boolean' ? (val ? 'Si' : 'No')
                       : String(val)}

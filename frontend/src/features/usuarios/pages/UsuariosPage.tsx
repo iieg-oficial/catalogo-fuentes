@@ -588,14 +588,14 @@ export default function UsuariosPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-ink/20">—</span>
+                        <span className="text-xs text-ink/60">—</span>
                       )}
                     </td>
 
                     <td className="px-5 py-3 text-xs text-ink/40">—</td>
 
                     <td className="px-5 py-3 text-right">
-                      <button className="p-1 rounded text-ink/20 hover:text-ink/50 hover:bg-ink/[5%] transition-colors" title="Más acciones">
+                      <button className="p-1 rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-colors" aria-label="Más acciones">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                           <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
                         </svg>

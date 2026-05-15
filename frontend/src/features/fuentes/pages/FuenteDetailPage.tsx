@@ -5,7 +5,7 @@ import ErrorState from '@/components/ErrorState'
 import { UrlCell } from '@/components/UrlCell'
 import type { FuenteDetail } from '@/types'
 import { getFuente } from '../services/fuentesService'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, DESCRIPTION_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
   return <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: SECTION_LABEL_COLOR }}>{children}</p>
@@ -79,7 +79,7 @@ export default function FuenteDetailPage() {
           <section>
             <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
-              <p className="font-newsreader text-[#374151]" style={{ fontSize: '16px', lineHeight: 1.65 }}>{item.descripcion}</p>
+              <p className="font-newsreader" style={{ fontSize: '16px', lineHeight: 1.65, color: DESCRIPTION_COLOR }}>{item.descripcion}</p>
             ) : (
               <p className="text-[13px] text-ink/70 italic">Sin descripcion</p>
             )}

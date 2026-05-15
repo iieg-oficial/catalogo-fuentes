@@ -106,7 +106,7 @@ export default function BasesDeDatosPage() {
       },
       render: (r) => r.dataset
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span>
-        : <span className="text-ink/30 text-[13px]">--</span>,
+        : <span className="text-ink/60 text-[13px]">--</span>,
       getValue: (r) => r.dataset_id ?? '',
     },
     {
@@ -151,7 +151,7 @@ export default function BasesDeDatosPage() {
   )
 
   const addRowActions = (
-    <button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>
+    <button onClick={() => { setAddingRow(false); resetFields() }} className="w-7 h-7 flex items-center justify-center rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%]" aria-label="Cancelar"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 1l8 8M9 1L1 9"/></svg></button>
   )
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>

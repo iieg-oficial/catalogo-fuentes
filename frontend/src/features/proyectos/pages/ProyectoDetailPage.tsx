@@ -5,7 +5,7 @@ import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import type { ProyectoDetail } from '@/types'
 import { getProyecto, updateProyecto } from '../services/proyectosService'
-import { ESTADO_TONE, SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { ESTADO_TONE, SECTION_LABEL_COLOR, DESCRIPTION_COLOR } from '@/consts/statusColors'
 
 function EstadoChip({ label }: { label: string }) {
   const tone = ESTADO_TONE[label] ?? { bg: '#F4F4F5', fg: '#52525B', dot: '#a1a1aa' }
@@ -149,10 +149,11 @@ export default function ProyectoDetailPage() {
             <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
               <p
-                className="font-newsreader text-[#374151]"
+                className="font-newsreader"
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.65,
+                  color: DESCRIPTION_COLOR,
                 }}
               >
                 {item.descripcion}
@@ -239,7 +240,7 @@ export default function ProyectoDetailPage() {
                   </dt>
                   <dd className="text-[13px] text-ink/80 break-words">
                     {val == null || val === ''
-                      ? <span className="text-ink/30 italic">--</span>
+                      ? <span className="text-ink/60 italic">--</span>
                       : Array.isArray(val)
                         ? val.join(', ')
                         : typeof val === 'boolean'

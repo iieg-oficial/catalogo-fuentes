@@ -92,7 +92,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
             <button
               onClick={(e) => { e.stopPropagation(); handleCopy() }}
               className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors duration-150 text-ink/60 hover:text-ink/70 hover:bg-ink/[5%]"
-              title="Copiar lista"
+              aria-label="Copiar lista"
             >
               {copied ? (
                 <>

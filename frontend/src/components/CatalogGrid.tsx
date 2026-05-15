@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 
 export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
@@ -458,11 +458,11 @@ function GridColHeader({
             width: 20, height: 20, borderRadius: 4,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             background: hasFilter ? 'rgba(110,37,139,.12)' : 'transparent',
-            color: hasFilter ? '#5C2472' : 'rgba(26,22,37,.55)',
+            color: hasFilter ? ACTIVE_FILTER_COLOR : 'rgba(26,22,37,.55)',
             border: 'none', cursor: 'pointer',
             transition: 'opacity 120ms, background 120ms', flexShrink: 0,
           }}
-          title="Filtrar"
+          aria-label="Filtrar"
         >
           {FILTER_ICON}
         </button>
@@ -480,7 +480,7 @@ function GridColHeader({
                 transition: 'opacity 120ms', flexShrink: 0,
                 fontSize: 14, lineHeight: 1, letterSpacing: 1,
               }}
-              title="Opciones"
+              aria-label="Opciones"
             >
               ···
             </button>
@@ -551,7 +551,7 @@ function URLCell({ url }: { url: string }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         maxWidth: '100%', fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-        fontSize: 12, color: '#5C2472', textDecoration: 'none', overflow: 'hidden',
+        fontSize: 12, color: ACTIVE_FILTER_COLOR, textDecoration: 'none', overflow: 'hidden',
       }}
     >
       <span style={{ display: 'flex', opacity: 0.55, flexShrink: 0 }}>
@@ -885,7 +885,7 @@ export default function CatalogGrid<T extends { id: string }>({
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={exportToCsv}
-            title="Exportar a CSV"
+            aria-label="Exportar a CSV"
             className="h-8 px-3 rounded-md text-[13px] font-medium bg-ink/[8%] text-ink/70 hover:bg-accent hover:text-white transition-all duration-300 inline-flex items-center gap-1.5"
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -983,8 +983,8 @@ export default function CatalogGrid<T extends { id: string }>({
                   }}>
                     <button
                       onClick={onAddColumn}
-                      className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
-                      title="Agregar campo"
+                      className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
+                      aria-label="Agregar campo"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M7 1v12M1 7h12" />
@@ -1200,8 +1200,8 @@ export default function CatalogGrid<T extends { id: string }>({
                       {isHovered && onRowClick && (
                         <button
                           onClick={() => onRowClick(row)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-ink/60 hover:bg-ink/[5%] transition-all mx-auto"
-                          title="Abrir"
+                          className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-all mx-auto"
+                          aria-label="Abrir"
                         >
                           {EYE_ICON}
                         </button>
@@ -1279,7 +1279,7 @@ export default function CatalogGrid<T extends { id: string }>({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: '#FBFAFC' }}>
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: TABLE_FOOTER_BG }}>
           <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>

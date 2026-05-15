@@ -4,7 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import type { Archivo } from '@/types'
 import { getArchivo } from '../services/archivosService'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, DESCRIPTION_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
   return (
@@ -114,7 +114,7 @@ export default function ArchivoDetailPage() {
           {item.observaciones_archivo && (
             <section>
               <SectionHeading>Observaciones</SectionHeading>
-              <p className="font-newsreader text-[#374151]" style={{ fontSize: '16px', lineHeight: 1.65 }}>
+              <p className="font-newsreader" style={{ fontSize: '16px', lineHeight: 1.65, color: DESCRIPTION_COLOR }}>
                 {item.observaciones_archivo}
               </p>
             </section>

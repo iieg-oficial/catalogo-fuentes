@@ -142,7 +142,7 @@ export default function DatasetsPage() {
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_dataset} />, getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
     { header: 'Etiquetas', icon: jsonIcon(), render: (r) => <JsonCell value={r.etiquetas} />, getValue: (r) => JSON.stringify(r.etiquetas ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateDataset(r.id, { etiquetas: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: parsed } : i))) } catch {} }, inputType: 'json' },
     { header: 'URL normativa', icon: urlIcon(), render: (r) => <TextCell value={r.url_normativa_o_marco_legal} mono link />, getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
-    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => { updateDataset(r.id, { fuente_id: v }); const f = fuentes.find((x) => x.id === v) ?? null; setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, fuente_id: v || null, fuente: f } : i))) }, getValue: (r) => r.fuente_id ?? '' },
+    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => { updateDataset(r.id, { fuente_id: v }); const f = fuentes.find((x) => x.id === v) ?? null; setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, fuente_id: v || null, fuente: f } : i))) }, getValue: (r) => r.fuente_id ?? '' },
   ]
 
   const addRowCells = (
@@ -230,7 +230,7 @@ export default function DatasetsPage() {
     </>
   )
 
-  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>)
+  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="w-7 h-7 flex items-center justify-center rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%]" aria-label="Cancelar"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 1l8 8M9 1L1 9"/></svg></button>)
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
   if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>

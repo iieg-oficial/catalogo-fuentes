@@ -5,7 +5,7 @@ import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import type { ProductoDetail } from '@/types'
 import { getProducto, updateProducto } from '../services/productosService'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, DESCRIPTION_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
   return (
@@ -102,7 +102,7 @@ export default function ProductoDetailPage() {
           <section>
             <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
-              <p className="font-newsreader text-[#374151]" style={{ fontSize: '16px', lineHeight: 1.65 }}>
+              <p className="font-newsreader" style={{ fontSize: '16px', lineHeight: 1.65, color: DESCRIPTION_COLOR }}>
                 {item.descripcion}
               </p>
             ) : (
@@ -168,7 +168,7 @@ export default function ProductoDetailPage() {
                 <div key={key} className="py-2">
                   <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>{key}</dt>
                   <dd className="text-[13px] text-ink/80 break-words">
-                    {val == null || val === '' ? <span className="text-ink/30 italic">--</span>
+                    {val == null || val === '' ? <span className="text-ink/60 italic">--</span>
                       : Array.isArray(val) ? val.join(', ')
                       : typeof val === 'boolean' ? (val ? 'Si' : 'No')
                       : String(val)}

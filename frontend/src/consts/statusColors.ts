@@ -5,3 +5,6 @@ export const ESTADO_TONE: Record<string, { bg: string; fg: string; dot: string }
 }
 
 export const SECTION_LABEL_COLOR = '#6E6279'
+export const DESCRIPTION_COLOR = '#374151'
+export const ACTIVE_FILTER_COLOR = '#5C2472'
+export const TABLE_FOOTER_BG = '#FBFAFC'

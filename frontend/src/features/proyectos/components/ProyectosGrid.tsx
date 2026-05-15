@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
-import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
@@ -384,13 +384,13 @@ function GridColHeader({
             alignItems: 'center',
             justifyContent: 'center',
             background: hasFilter ? 'rgba(110,37,139,.12)' : 'transparent',
-            color: hasFilter ? '#5C2472' : 'rgba(26,22,37,.55)',
+            color: hasFilter ? ACTIVE_FILTER_COLOR : 'rgba(26,22,37,.55)',
             border: 'none',
             cursor: 'pointer',
             transition: 'opacity 120ms, background 120ms',
             flexShrink: 0,
           }}
-          title="Filtrar"
+          aria-label="Filtrar"
         >
           {FILTER_ICON}
         </button>
@@ -418,7 +418,7 @@ function GridColHeader({
                 lineHeight: 1,
                 letterSpacing: 1,
               }}
-              title="Opciones"
+              aria-label="Opciones"
             >
               ···
             </button>
@@ -493,7 +493,7 @@ function URLCell({ url }: { url: string }) {
         maxWidth: '100%',
         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
         fontSize: 12,
-        color: '#5C2472',
+        color: ACTIVE_FILTER_COLOR,
         textDecoration: 'none',
         overflow: 'hidden',
       }}
@@ -882,15 +882,15 @@ export default function ProyectosGrid({
                   <th
                     style={{
                       position: 'sticky', top: 0, zIndex: 2,
-                      backgroundColor: '#FBFAFC',
+                      backgroundColor: TABLE_FOOTER_BG,
                       borderBottom: '1px solid rgba(26,22,37,.10)',
                       width: 44, height: 36, verticalAlign: 'middle', textAlign: 'center', padding: 0,
                     }}
                   >
                     <button
                       onClick={onAddColumn}
-                      className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
-                      title="Agregar campo"
+                      className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
+                      aria-label="Agregar campo"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M7 1v12M1 7h12" />
@@ -900,7 +900,7 @@ export default function ProyectosGrid({
                 )}
 
                 {/* Expand spacer */}
-                <th style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#FBFAFC', borderBottom: '1px solid rgba(26,22,37,.10)', width: 44, minWidth: 44 }} />
+                <th style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: TABLE_FOOTER_BG, borderBottom: '1px solid rgba(26,22,37,.10)', width: 44, minWidth: 44 }} />
               </tr>
             </thead>
 
@@ -1059,8 +1059,8 @@ export default function ProyectosGrid({
                       {isHovered && onRowClick && (
                         <button
                           onClick={() => onRowClick(row)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-ink/60 hover:bg-ink/[5%] transition-all mx-auto"
-                          title="Abrir"
+                          className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-all mx-auto"
+                          aria-label="Abrir"
                         >
                           {EYE_ICON}
                         </button>
@@ -1130,7 +1130,7 @@ export default function ProyectosGrid({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: '#FBFAFC' }}>
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: TABLE_FOOTER_BG }}>
           <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>
