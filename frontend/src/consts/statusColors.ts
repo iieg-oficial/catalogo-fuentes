@@ -4,4 +4,4 @@ export const ESTADO_TONE: Record<string, { bg: string; fg: string; dot: string }
   Archivado:{ bg: '#F4F4F5', fg: '#52525B', dot: '#a1a1aa' },
 }
 
-export const SECTION_LABEL_COLOR = '#9F8FA8'
+export const SECTION_LABEL_COLOR = '#6E6279'

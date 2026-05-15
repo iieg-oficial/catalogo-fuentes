@@ -78,7 +78,7 @@ export default function Sidebar({ user, onLogout }: Props) {
       </div>
 
       <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegacion principal">
-        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
           Catalogo
         </p>
 
@@ -105,7 +105,7 @@ export default function Sidebar({ user, onLogout }: Props) {
 
         {user?.permisos?.includes('users:manage') && (
           <>
-            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
               Administracion
             </p>
 
@@ -153,7 +153,7 @@ export default function Sidebar({ user, onLogout }: Props) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
-          <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
+          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
         </div>
         <button
           onClick={() => { onLogout(); navigate('/login') }}

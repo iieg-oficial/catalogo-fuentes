@@ -104,7 +104,7 @@ export function TagsCell({ value }: TagsCellProps) {
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 text-[13px] text-ink/35 transition-colors hover:text-brand-600"
+              className="flex items-center gap-1.5 text-[13px] text-ink/60 transition-colors hover:text-brand-600"
             >
               <span>{copied ? 'Copiado' : 'Copiar JSON'}</span>
               {copied ? (

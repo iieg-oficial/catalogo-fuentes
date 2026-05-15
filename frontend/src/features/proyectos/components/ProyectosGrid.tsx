@@ -203,7 +203,7 @@ function FilterPanel({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/70">
           Filtrar · {label}
         </p>
       </div>
@@ -773,7 +773,7 @@ export default function ProyectosGrid({
         </p>
         <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
           Proyectos
-          <span style={{ color: '#9F8FA8', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -980,10 +980,11 @@ export default function ProyectosGrid({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectRow(rowKey)}
+                          aria-label={`Seleccionar fila ${rowIndex + 1}`}
                           className="w-3.5 h-3.5 rounded accent-brand-600 cursor-pointer"
                         />
                       ) : (
-                        <span className="font-mono text-[10px] text-ink/30 select-none">{rowIndex + 1}</span>
+                        <span aria-hidden="true" className="font-mono text-[10px] text-ink/30 select-none">{rowIndex + 1}</span>
                       )}
                     </td>
 
@@ -1171,7 +1172,7 @@ export default function ProyectosGrid({
                   <td colSpan={totalCols} className="px-3 py-2.5">
                     <button
                       onClick={onAdd}
-                      className="flex items-center gap-1.5 text-[12px] text-ink/40 hover:text-brand-600 transition-colors"
+                      className="flex items-center gap-1.5 text-[12px] text-ink/60 hover:text-brand-600 transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                         <path d="M6 1v10M1 6h10" />
@@ -1187,13 +1188,13 @@ export default function ProyectosGrid({
 
         {/* Footer */}
         <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%]" style={{ backgroundColor: '#FBFAFC' }}>
-          <span className="font-mono text-[11px] text-ink/55">
+          <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>
           {totalRegistros > 0 && (
             <>
               <span className="font-mono text-[11px] text-ink/25">·</span>
-              <span className="font-mono text-[11px] text-ink/55">
+              <span className="font-mono text-[11px] text-ink/70">
                 Total registros: <strong className="font-semibold text-ink">{totalRegistros.toLocaleString('es-MX')}</strong>
               </span>
             </>
