@@ -20,7 +20,8 @@ function Spinner() {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [correo, setCorreo] = useState('')
+  const [nombre, setNombre] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -42,15 +43,19 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await apiClient.post('/auth/signup', {
-        email,
+        correo,
+        nombre,
         password,
         confirm_password: confirmPassword,
       })
       navigate('/login', { replace: true, state: { success: 'Cuenta creada con éxito. Ya puedes iniciar sesión.' } })
     } catch (err: unknown) {
-      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      if (detail) {
+      const data = (err as { response?: { data?: { detail?: unknown } } })?.response?.data
+      const detail = data?.detail
+      if (typeof detail === 'string') {
         setError(detail)
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: { msg?: string }) => d.msg ?? '').filter(Boolean).join('. ') || 'Datos inválidos.')
       } else {
         setError('Ocurrió un error. Intenta de nuevo.')
       }
@@ -72,18 +77,34 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-neutral-900 mb-1">
+              <label htmlFor="correo" className="block text-xs font-medium text-neutral-900 mb-1">
                 Correo electrónico
               </label>
               <input
-                id="email"
+                id="correo"
                 type="email"
                 required
                 autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 placeholder="usuario@iieg.gob.mx"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="nombre" className="block text-xs font-medium text-neutral-900 mb-1">
+                Nombre
+              </label>
+              <input
+                id="nombre"
+                type="text"
+                required
+                autoComplete="name"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                placeholder="Nombre"
               />
             </div>
 
