@@ -6,38 +6,38 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { Producto, Proyecto } from '@/types'
+import type { BaseDeDatos, Dataset } from '@/types'
+import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from '../services/basesDeDatosService'
+import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { TextCell } from '@/components/TextCell'
 import JsonEditorInput from '@/components/JsonEditorInput'
 import { JsonCell } from '@/components/JsonCell'
-import { getProductos, createProducto, updateProducto, deleteProducto } from './services/productosService'
-import { getProyectos } from '@/features/proyectos/services/proyectosService'
-import { nombreIcon, descripcionIcon, proyectosIcon, jsonIcon } from '@/consts/sectionIcons'
+import { nombreIcon, datasetsIcon, jsonIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
-export default function ProductosPage() {
+export default function BasesDeDatosPage() {
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
-  const [items, setItems] = useState<Producto[]>([])
-  const [proyectos, setProyectos] = useState<Proyecto[]>([])
+  const [items, setItems] = useState<BaseDeDatos[]>([])
+  const [datasets, setDatasets] = useState<Dataset[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
-  const [newProyectoId, setNewProyectoId] = useState('')
-  const [newDesc, setNewDesc] = useState('')
+  const [newDatasetId, setNewDatasetId] = useState('')
+  const [newDescripcionEsquema, setNewDescripcionEsquema] = useState<Record<string, unknown>>({})
   const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      const [prods, projs] = await Promise.all([getProductos(), getProyectos()])
-      setItems(prods)
-      setProyectos(projs)
+      const [bds, ds] = await Promise.all([getBasesDeDatos(), getDatasets()])
+      setItems(bds)
+      setDatasets(ds)
     } catch {
       setError(true)
     } finally {
@@ -47,12 +47,17 @@ export default function ProductosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta({}) }
+  const resetFields = () => { setNewNombre(''); setNewDatasetId(''); setNewDescripcionEsquema({}); setNewMeta({}) }
 
   const handleSaveRow = async () => {
-    if (!newNombre.trim() || !newProyectoId) return
+    if (!newNombre.trim()) return
     try {
-      await createProducto({ nombre: newNombre, proyecto_id: newProyectoId, descripcion: newDesc || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined })
+      await createBaseDeDatos({
+        db_nombre: newNombre,
+        dataset_id: newDatasetId || undefined,
+        descripcion_esquema: Object.keys(newDescripcionEsquema).length ? newDescripcionEsquema : undefined,
+        meta: Object.keys(newMeta).length ? newMeta : undefined,
+      })
       setAddingRow(false)
       resetFields()
       await load(true)
@@ -60,25 +65,19 @@ export default function ProductosPage() {
     }
   }
 
-  const handleEditPrimaryCell = (row: Producto, field: 'nombre' | 'descripcion', value: string) => {
-    updateProducto(row.id, { [field]: value })
+  const handleEditPrimaryCell = (row: BaseDeDatos, field: 'db_nombre', value: string) => {
+    updateBaseDeDatos(row.id, { [field]: value })
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
 
-  const handleEditProyecto = (row: Producto, proyectoId: string) => {
-    const proyecto = proyectos.find((p) => p.id === proyectoId) ?? null
-    updateProducto(row.id, { proyecto_id: proyectoId })
-    setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, proyecto_id: proyectoId, proyecto } : i)))
-  }
-
   const handleDeleteRows = async (keys: string[]) => {
-    await Promise.all(keys.map((id) => deleteProducto(id)))
+    await Promise.all(keys.map((id) => deleteBaseDeDatos(id)))
     await load(true)
   }
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.nombre, i.descripcion, i.proyecto?.nombre].some(
+    return !q || [i.db_nombre, i.dataset?.nombre].some(
       (v) => String(v ?? '').toLowerCase().includes(q),
     )
   })
@@ -88,38 +87,42 @@ export default function ProductosPage() {
     if (e.key === 'Escape') { setAddingRow(false); resetFields() }
   }
 
-  const columns: Column<Producto>[] = [
+  const columns: Column<BaseDeDatos>[] = [
     {
-      header: 'Nombre',
+      header: 'Base de datos',
       icon: nombreIcon(),
-      render: (r) => <TextCell value={r.nombre} />,
-      className: 'w-56',
-      getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+      render: (r) => <TextCell value={r.db_nombre} />,
+      className: 'w-48',
+      getValue: (r) => r.db_nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
     },
     {
-      header: 'Proyecto',
-      icon: proyectosIcon(),
-      render: (r) => r.proyecto
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.proyecto.nombre}</span>
+      header: 'Dataset',
+      icon: datasetsIcon(),
+      selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })),
+      onEdit: (r, v) => {
+        updateBaseDeDatos(r.id, { dataset_id: v })
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i)))
+      },
+      render: (r) => r.dataset
+        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span>
         : <span className="text-ink/30 text-[13px]">--</span>,
-      getValue: (r) => r.proyecto?.id ?? '',
-      onEdit: handleEditProyecto,
-      selectOptions: proyectos.map((p) => ({ value: p.id, label: p.nombre })),
+      getValue: (r) => r.dataset_id ?? '',
     },
     {
-      header: 'Descripción',
+      header: 'Descripción esquema',
       icon: descripcionIcon(),
-      render: (r) => <TextCell value={r.descripcion} />,
-      getValue: (r) => r.descripcion ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+      render: (r) => <JsonCell value={r.descripcion_esquema} />,
+      getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
     {
       header: 'Metadata',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.meta} />,
       getValue: (r) => JSON.stringify(r.meta ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProducto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
       inputType: 'json',
     },
   ]
@@ -127,19 +130,19 @@ export default function ProductosPage() {
   const addRowCells = (
     <>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre..." className={inputCls} />
+        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput
-          value={newProyectoId}
-          onChange={setNewProyectoId}
-          options={proyectos.map((p) => ({ value: p.id, label: p.nombre }))}
-          placeholder="Proyecto..."
-          label="Proyecto"
+          value={newDatasetId}
+          onChange={setNewDatasetId}
+          options={datasets.map((d) => ({ value: d.id, label: d.nombre }))}
+          placeholder="Dataset..."
+          label="Dataset"
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
@@ -158,13 +161,13 @@ export default function ProductosPage() {
     <div className="flex-1 min-h-0 overflow-auto p-8">
       <CatalogGrid
         eyebrow="Catalogo"
-        title="Productos"
-        addLabel="Nuevo producto"
-        entityLabel="productos"
+        title="Bases de datos"
+        addLabel="Nueva base de datos"
+        entityLabel="bases de datos"
         rows={filtered}
         columns={columns}
         getKey={(r) => r.id}
-        onRowClick={(r) => navigate(`/productos/${r.id}`)}
+        onRowClick={(r) => navigate(`/bases-de-datos/${r.id}`)}
         canWrite={canWrite}
         onAdd={canWrite ? () => setAddingRow(true) : undefined}
         addRowCells={canWrite && addingRow ? addRowCells : undefined}

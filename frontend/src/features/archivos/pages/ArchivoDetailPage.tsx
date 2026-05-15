@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import type { Archivo } from '@/types'
-import { getArchivo } from './services/archivosService'
+import { getArchivo } from '../services/archivosService'
 import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {

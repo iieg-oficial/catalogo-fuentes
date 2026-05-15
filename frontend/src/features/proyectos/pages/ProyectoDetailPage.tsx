@@ -4,7 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import type { ProyectoDetail } from '@/types'
-import { getProyecto, updateProyecto } from './services/proyectosService'
+import { getProyecto, updateProyecto } from '../services/proyectosService'
 import { ESTADO_TONE, SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 function EstadoChip({ label }: { label: string }) {

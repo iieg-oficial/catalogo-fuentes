@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
-import type { BaseDeDatosDetail } from '@/types'
-import { getBaseDeDatos, updateBaseDeDatos } from './services/basesDeDatosService'
+import type { ProductoDetail } from '@/types'
+import { getProducto, updateProducto } from '../services/productosService'
 import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
@@ -21,11 +21,11 @@ const ArrowIcon = () => (
   </svg>
 )
 
-export default function BaseDeDatosDetailPage() {
+export default function ProductoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { canWrite } = useAuthContext()
-  const [item, setItem] = useState<BaseDeDatosDetail | null>(null)
+  const [item, setItem] = useState<ProductoDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
@@ -43,7 +43,7 @@ export default function BaseDeDatosDetailPage() {
     setLoading(true)
     setError(false)
     try {
-      setItem(await getBaseDeDatos(id))
+      setItem(await getProducto(id))
     } catch {
       setError(true)
     } finally {
@@ -54,7 +54,7 @@ export default function BaseDeDatosDetailPage() {
   useEffect(() => { load() }, [id])
 
   const handleMetaSave = async (newMeta: Record<string, unknown>) => {
-    await updateBaseDeDatos(id!, { meta: newMeta })
+    await updateProducto(id!, { meta: newMeta })
     setItem((prev) => prev ? { ...prev, meta: newMeta } : null)
   }
 
@@ -75,27 +75,20 @@ export default function BaseDeDatosDetailPage() {
         <span aria-hidden="true" className="text-ink/60 font-medium">Catalogo</span>
         <span aria-hidden="true" className="text-ink/25">{'>'}</span>
         <button onClick={() => navigate(-1)} className="text-ink/80 hover:text-brand-600 transition-colors duration-150 font-medium">
-          Bases de datos
+          Productos
         </button>
         <span aria-hidden="true" className="text-ink/25">{'>'}</span>
-        <span className="text-ink/70 font-medium">{item.db_nombre}</span>
+        <span className="text-ink/70 font-medium">{item.nombre}</span>
       </nav>
 
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: SECTION_LABEL_COLOR }}>
-            Base de datos
+            Producto
           </p>
           <h1 className="font-newsreader text-ink leading-tight break-words mb-3" style={{ fontSize: '44px', fontWeight: 500 }}>
-            {item.db_nombre}
+            {item.nombre}
           </h1>
-          {item.dataset && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium border border-ink/[10%] text-ink/60">
-                Dataset: {item.dataset.nombre}
-              </span>
-            </div>
-          )}
         </div>
         <div className="shrink-0 pt-1">
           <button onClick={() => navigate(-1)} className="h-8 px-4 rounded-md text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors duration-150">
@@ -106,14 +99,27 @@ export default function BaseDeDatosDetailPage() {
 
       <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 280px' }}>
         <div className="space-y-10 min-w-0">
-          {item.dataset && (
+          <section>
+            <SectionHeading>Descripcion</SectionHeading>
+            {item.descripcion ? (
+              <p className="font-newsreader text-[#374151]" style={{ fontSize: '16px', lineHeight: 1.65 }}>
+                {item.descripcion}
+              </p>
+            ) : (
+              <p className="text-[13px] text-ink/70 italic">Sin descripcion</p>
+            )}
+          </section>
+
+          {item.proyecto && (
             <section>
-              <SectionHeading>Dataset vinculado</SectionHeading>
+              <SectionHeading>Proyecto vinculado</SectionHeading>
               <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                <button onClick={() => navigate(`/datasets/${item.dataset!.id}`)}
-                  className="w-full text-left p-3 px-4 flex items-center gap-3 hover:bg-brand-500/[2%] transition-colors duration-100 group">
-                  <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/70 shrink-0">Dataset</span>
-                  <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{item.dataset.nombre}</span>
+                <button
+                  onClick={() => navigate(`/proyectos/${item.proyecto!.id}`)}
+                  className="w-full text-left p-3 px-4 flex items-center gap-3 hover:bg-brand-500/[2%] transition-colors duration-100 group"
+                >
+                  <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/70 shrink-0">Proyecto</span>
+                  <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{item.proyecto.nombre}</span>
                   <ArrowIcon />
                 </button>
               </div>
@@ -122,24 +128,28 @@ export default function BaseDeDatosDetailPage() {
 
           <section>
             <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: SECTION_LABEL_COLOR }}>Tablas de informacion</p>
-              {item.informacion_tablas.length > 0 && (
-                <button aria-label="Copiar tablas de información" onClick={() => copy('tablas', item.informacion_tablas.map((t) => t.nombre).join('\n'))}
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: SECTION_LABEL_COLOR }}>Tablas vinculadas</p>
+              {item.producto_tablas.length > 0 && (
+                <button onClick={() => copy('tablas', item.producto_tablas.map((pt) => pt.informacion_tablas_id).join('\n'))}
+                  aria-label="Copiar tablas vinculadas"
                   className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
                   {copiedKey === 'tablas' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
                   {copiedKey === 'tablas' ? 'Copiado' : 'Copiar todos'}
                 </button>
               )}
             </div>
-            {item.informacion_tablas.length === 0 ? (
+            {item.producto_tablas.length === 0 ? (
               <p className="text-[13px] text-ink/70 italic">Sin tablas vinculadas</p>
             ) : (
               <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
-                {item.informacion_tablas.map((t) => (
-                  <button key={t.id} onClick={() => navigate(`/informacion-tablas/${t.id}`)}
-                    className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group">
+                {item.producto_tablas.map((pt) => (
+                  <button
+                    key={pt.id}
+                    onClick={() => navigate(`/informacion-tablas/${pt.informacion_tablas_id}`)}
+                    className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group"
+                  >
                     <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/70 shrink-0">Tabla</span>
-                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{t.nombre}</span>
+                    <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{pt.informacion_tablas_id}</span>
                     <ArrowIcon />
                   </button>
                 ))}
