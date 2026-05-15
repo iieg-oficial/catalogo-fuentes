@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
-import { SECTION_LABEL_COLOR, PRIORITY_LEVELS } from '@/consts/statusColors'
+import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
@@ -10,7 +10,7 @@ import JsonEditorPanel from '@/components/JsonEditorPanel'
 import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
 
-type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag'
 
 interface ListOption {
   label: string
@@ -114,13 +114,7 @@ const TYPE_ICON: Record<string, ReactNode> = {
       <path d="M2 2v4l5 5 4-4-5-5H2z" /><circle cx="4" cy="4" r=".7" />
     </svg>
   ),
-  priority: (
-    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 9h2V5H2zM5 9h2V3H5zM8 9h2V1H8z" />
-    </svg>
-  ),
 }
-
 
 const SORT_UP_ICON = (
   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -618,20 +612,6 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
     )
   }
 
-  if (def.type === 'priority') {
-    const level = PRIORITY_LEVELS.find((l) => l.label === value)
-    const color = level?.color ?? '#94a3b8'
-    return (
-      <span className={editCls}>
-        <span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium whitespace-nowrap"
-          style={{ backgroundColor: `${color}1a`, color }}>
-          <span className="w-[5px] h-[5px] rounded-full shrink-0" style={{ backgroundColor: color }} />
-          {value}
-        </span>
-      </span>
-    )
-  }
-
   if (def.type === 'number') {
     const num = parseFloat(value)
     const formatted = isNaN(num) ? value : num.toLocaleString('es-MX')
@@ -727,8 +707,6 @@ export default function CatalogGrid<T extends { id: string }>({
     metaColumnDefs?.forEach((def) => {
       if (def.type === 'list' && def.options?.length) {
         result[def.key] = def.options.map((o) => o.label)
-      } else if (def.type === 'priority') {
-        result[def.key] = PRIORITY_LEVELS.map((l) => l.label)
       } else {
         const vals = [...new Set(rows.map((r) => String(getMeta?.(r)?.[def.key] ?? '')).filter(Boolean))]
         result[def.key] = vals.slice(0, 30)
@@ -776,7 +754,6 @@ export default function CatalogGrid<T extends { id: string }>({
     })
 
     if (sortField) {
-      const isPriority = metaColumnDefs?.find((d) => d.key === sortField)?.type === 'priority'
       r.sort((a, b) => {
         let av: string, bv: string
         if (sortField.startsWith('__col_')) {
@@ -787,14 +764,7 @@ export default function CatalogGrid<T extends { id: string }>({
           av = String(getMeta?.(a)?.[sortField] ?? '')
           bv = String(getMeta?.(b)?.[sortField] ?? '')
         }
-        let cmp: number
-        if (isPriority) {
-          const ai = PRIORITY_LEVELS.findIndex((l) => l.label === av)
-          const bi = PRIORITY_LEVELS.findIndex((l) => l.label === bv)
-          cmp = (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
-        } else {
-          cmp = av.localeCompare(bv, 'es', { numeric: true })
-        }
+        const cmp = av.localeCompare(bv, 'es', { numeric: true })
         return sortDir === 'asc' ? cmp : -cmp
       })
     }
@@ -1203,19 +1173,6 @@ export default function CatalogGrid<T extends { id: string }>({
                                   label={def.label ?? def.key}
                                 />
                               </>
-                            ) : def.type === 'priority' ? (
-                              <>
-                                <MetaCellView value={currentVal} def={def} editable={false} />
-                                <SingleSelectPanel
-                                  options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
-                                  value={editingCell!.value}
-                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
-                                  onClose={() => setEditingCell(null)}
-                                  top={editingCellPos.top}
-                                  left={editingCellPos.left}
-                                  label={def.label ?? def.key}
-                                />
-                              </>
                             ) : (
                               <input autoFocus type={def.type === 'date' ? 'date' : 'text'}
                                 value={editingCell!.value}
@@ -1285,13 +1242,6 @@ export default function CatalogGrid<T extends { id: string }>({
                             value={addRowMetaValues?.[def.key] ?? ''}
                             onChange={(v) => onAddRowMetaChange(def.key, v)}
                             options={def.options.map((o) => ({ value: o.label, label: o.label }))}
-                            label={def.label ?? def.key}
-                          />
-                        ) : def.type === 'priority' ? (
-                          <SelectInput
-                            value={addRowMetaValues?.[def.key] ?? ''}
-                            onChange={(v) => onAddRowMetaChange(def.key, v)}
-                            options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
                             label={def.label ?? def.key}
                           />
                         ) : (
