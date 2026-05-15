@@ -877,7 +877,7 @@ export default function CatalogGrid<T extends { id: string }>({
         <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: SECTION_LABEL_COLOR }}>
           {eyebrow}
         </p>
-        <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="font-newsreader text-ink leading-none" style={{ fontSize: '32px', fontWeight: 500 }}>
           {title}
           <span style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
@@ -1370,13 +1370,13 @@ export default function CatalogGrid<T extends { id: string }>({
 
           {totalPages > 1 && (
             <div className="ml-auto flex items-center gap-2">
-              <span className="font-mono text-[11px] text-ink/40">
+              <span className="font-mono text-[11px] text-ink/60">
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, displayedRows.length)} de {displayedRows.length}
               </span>
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 aria-label="Página anterior"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -1389,7 +1389,7 @@ export default function CatalogGrid<T extends { id: string }>({
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 aria-label="Página siguiente"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

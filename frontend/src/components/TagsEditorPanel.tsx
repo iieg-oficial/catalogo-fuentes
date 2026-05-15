@@ -66,12 +66,12 @@ export default function TagsEditorPanel({ value, onChange, onClose, top, left, l
       onClick={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label ?? 'Etiquetas'}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{label ?? 'Etiquetas'}</p>
       </div>
 
       <div className="px-2.5 py-2.5 min-h-[48px] max-h-48 overflow-y-auto">
         {tags.length === 0 && !draft && (
-          <p className="text-[12px] text-ink/[35%] italic mb-1.5">Sin etiquetas</p>
+          <p className="text-[12px] text-ink/70 italic mb-1.5">Sin etiquetas</p>
         )}
         <div className="flex flex-wrap gap-1.5">
           {tags.map((tag, idx) => (

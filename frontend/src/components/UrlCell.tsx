@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, memo } from 'react'
 
 interface UrlCellProps {
   url: string
@@ -6,7 +6,7 @@ interface UrlCellProps {
   wrap?: boolean
 }
 
-export function UrlCell({ url, maxWidth = 180, wrap = false }: UrlCellProps) {
+function UrlCell({ url, maxWidth = 180, wrap = false }: UrlCellProps) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -50,3 +50,6 @@ export function UrlCell({ url, maxWidth = 180, wrap = false }: UrlCellProps) {
     </div>
   )
 }
+
+export default memo(UrlCell)
+export { UrlCell }

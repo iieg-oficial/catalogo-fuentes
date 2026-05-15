@@ -57,7 +57,7 @@ export default function EdicionDatasetDetailPage() {
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: SECTION_LABEL_COLOR }}>Edicion de dataset</p>
-          <h1 className="text-ink leading-tight break-words mb-3" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '44px', fontWeight: 500 }}>{item.nombre}</h1>
+          <h1 className="font-newsreader text-ink leading-tight break-words mb-3" style={{ fontSize: '44px', fontWeight: 500 }}>{item.nombre}</h1>
           <div className="flex flex-wrap items-center gap-2">
             {item.es_version_corregida && <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-500/10 text-green-700">Version corregida</span>}
           </div>

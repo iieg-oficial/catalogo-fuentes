@@ -771,7 +771,7 @@ export default function ProyectosGrid({
         <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: SECTION_LABEL_COLOR }}>
           Catálogo · Proyectos
         </p>
-        <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="font-newsreader text-ink leading-none" style={{ fontSize: '32px', fontWeight: 500 }}>
           Proyectos
           <span style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados

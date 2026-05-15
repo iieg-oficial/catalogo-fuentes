@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 
 interface TagsCellProps {
@@ -19,7 +19,7 @@ function colorizeArray(tags: string[]): React.ReactNode[] {
   return parts
 }
 
-export function TagsCell({ value }: TagsCellProps) {
+function TagsCell({ value }: TagsCellProps) {
   const tags = (value ?? []).map(String)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -125,3 +125,6 @@ export function TagsCell({ value }: TagsCellProps) {
     </>
   )
 }
+
+export default memo(TagsCell)
+export { TagsCell }

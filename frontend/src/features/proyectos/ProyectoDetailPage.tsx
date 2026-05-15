@@ -89,15 +89,15 @@ export default function ProyectoDetailPage() {
     <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       <nav className="flex items-center gap-1.5 text-[12px]" aria-label="Breadcrumb">
-        <span className="text-ink/35 font-medium">Catalogo</span>
-        <span className="text-ink/25">{'>'}</span>
+        <span aria-hidden="true" className="text-ink/60 font-medium">Catalogo</span>
+        <span aria-hidden="true" className="text-ink/25">{'>'}</span>
         <button
           onClick={() => navigate(-1)}
-          className="text-ink/50 hover:text-brand-600 transition-colors duration-150 font-medium"
+          className="text-ink/80 hover:text-brand-600 transition-colors duration-150 font-medium"
         >
           Proyectos
         </button>
-        <span className="text-ink/25">{'>'}</span>
+        <span aria-hidden="true" className="text-ink/25">{'>'}</span>
         <span className="text-ink/70 font-medium">{item.nombre}</span>
       </nav>
 
@@ -111,9 +111,8 @@ export default function ProyectoDetailPage() {
           </p>
 
           <h1
-            className="text-ink leading-tight break-words mb-3"
+            className="font-newsreader text-ink leading-tight break-words mb-3"
             style={{
-              fontFamily: '"Newsreader", "EB Garamond", Georgia, serif',
               fontSize: '44px',
               fontWeight: 500,
             }}
@@ -150,9 +149,8 @@ export default function ProyectoDetailPage() {
             <SectionHeading>Descripcion</SectionHeading>
             {item.descripcion ? (
               <p
-                className="text-[#374151]"
+                className="font-newsreader text-[#374151]"
                 style={{
-                  fontFamily: '"Newsreader", "EB Garamond", Georgia, serif',
                   fontSize: '16px',
                   lineHeight: 1.65,
                 }}
@@ -160,7 +158,7 @@ export default function ProyectoDetailPage() {
                 {item.descripcion}
               </p>
             ) : (
-              <p className="text-[13px] text-ink/[35%] italic">Sin descripcion</p>
+              <p className="text-[13px] text-ink/70 italic">Sin descripcion</p>
             )}
           </section>
 
@@ -178,6 +176,7 @@ export default function ProyectoDetailPage() {
                     copyTimer.current = setTimeout(() => setCopied(false), 500)
                   }}
                   className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1"
+                  aria-label="Copiar productos vinculados"
                   title="Copiar todos los nombres"
                 >
                   {copied ? (
@@ -195,7 +194,7 @@ export default function ProyectoDetailPage() {
               )}
             </div>
             {item.productos.length === 0 ? (
-              <p className="text-[13px] text-ink/[35%] italic">Sin productos vinculados</p>
+              <p className="text-[13px] text-ink/70 italic">Sin productos vinculados</p>
             ) : (
               <div className="border border-ink/[8%] rounded-lg bg-white overflow-hidden">
                 {item.productos.map((producto) => (
@@ -204,7 +203,7 @@ export default function ProyectoDetailPage() {
                     onClick={() => navigate(`/productos/${producto.id}`)}
                     className="w-full text-left p-3 px-4 flex items-center gap-3 border-b last:border-b-0 border-ink/[5%] hover:bg-brand-500/[2%] transition-colors duration-100 group"
                   >
-                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">
+                    <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/70 shrink-0">
                       Producto
                     </span>
                     <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 transition-colors duration-100 truncate">
@@ -227,7 +226,7 @@ export default function ProyectoDetailPage() {
           <SectionHeading>Metadata</SectionHeading>
 
           {metaEntries.length === 0 ? (
-            <p className="text-[12px] text-ink/[35%] italic">Sin metadatos</p>
+            <p className="text-[12px] text-ink/70 italic">Sin metadatos</p>
           ) : (
             <dl className="divide-y divide-ink/[5%]">
               {metaEntries.map(([key, val]) => (

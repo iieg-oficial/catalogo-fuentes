@@ -145,19 +145,19 @@ export default function JsonEditorPanel({ value, onChange, onClose, top, left, l
     >
       {/* Header with mode toggle */}
       <div className="px-3 py-2 border-b border-ink/[6%] flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label ?? 'JSON'}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{label ?? 'JSON'}</p>
         <div className="flex items-center gap-0.5 bg-ink/[4%] rounded-md p-0.5">
           <button
             type="button"
             onClick={mode === 'json' ? switchToEditor : undefined}
-            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${mode === 'editor' ? 'bg-white text-ink/70 shadow-sm' : 'text-ink/35 hover:text-ink/50'}`}
+            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${mode === 'editor' ? 'bg-white text-ink/70 shadow-sm' : 'text-ink/60 hover:text-ink/80'}`}
           >
             Editor
           </button>
           <button
             type="button"
             onClick={mode === 'editor' ? switchToJson : undefined}
-            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${mode === 'json' ? 'bg-white text-ink/70 shadow-sm' : 'text-ink/35 hover:text-ink/50'}`}
+            className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${mode === 'json' ? 'bg-white text-ink/70 shadow-sm' : 'text-ink/60 hover:text-ink/80'}`}
           >
             JSON
           </button>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useContext } from 'react'
+import { useState, useRef, useEffect, useCallback, useContext, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { CellContext } from '@/components/CatalogGrid'
 
@@ -33,7 +33,7 @@ function colorizeJson(obj: unknown): React.ReactNode[] {
   return parts
 }
 
-export function JsonCell({ value }: JsonCellProps) {
+function JsonCell({ value }: JsonCellProps) {
   const cellCtx = useContext(CellContext)
   const entries = Object.entries(value ?? {})
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
@@ -116,7 +116,7 @@ export function JsonCell({ value }: JsonCellProps) {
         >
           {cellCtx && (
             <div className="flex items-center justify-between px-5 pt-3 pb-0">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{cellCtx.columnName}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{cellCtx.columnName}</span>
               <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
             </div>
           )}
@@ -128,7 +128,8 @@ export function JsonCell({ value }: JsonCellProps) {
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 text-[13px] text-ink/35 transition-colors hover:text-brand-600"
+              aria-label="Copiar valor"
+              className="flex items-center gap-1.5 text-[13px] text-ink/60 transition-colors hover:text-brand-600"
             >
               <span>{copied ? 'Copiado' : 'Copiar JSON'}</span>
               {copied ? (
@@ -149,3 +150,6 @@ export function JsonCell({ value }: JsonCellProps) {
     </>
   )
 }
+
+export default memo(JsonCell)
+export { JsonCell }

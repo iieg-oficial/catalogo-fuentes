@@ -49,7 +49,7 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
         type="button"
         onClick={handleOpen}
         className="w-full h-full flex items-center gap-1 text-[13px] px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded"
-        style={{ color: value ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.35)' }}
+        style={{ color: value ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.60)' }}
       >
         <span className="flex-1 truncate text-left">{selectedLabel ?? placeholder}</span>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, flexShrink: 0 }}>
@@ -66,7 +66,7 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
         >
           {label && (
             <div className="px-3 py-2.5 border-b border-ink/[6%]">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{label}</p>
             </div>
           )}
           <div className="py-1.5 max-h-52 overflow-y-auto">
@@ -74,7 +74,7 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
               type="button"
               onClick={() => { onChange(''); setOpen(false) }}
               className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
-                !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/50 hover:bg-ink/[3%]'
+                !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
               }`}
             >
               <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center ${
@@ -82,7 +82,7 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
               }`}>
                 {!value && <span className="w-2 h-2 rounded-full bg-white" />}
               </span>
-              <span className="italic text-ink/40">—</span>
+              <span className="italic text-ink/60">—</span>
             </button>
             {options.map((opt) => {
               const isSelected = value === opt.value
@@ -105,7 +105,7 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
               )
             })}
             {options.length === 0 && (
-              <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>
+              <p className="px-3 py-2.5 text-[12px] text-ink/60">Sin opciones disponibles</p>
             )}
           </div>
         </div>,
