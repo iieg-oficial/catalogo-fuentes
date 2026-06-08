@@ -4,9 +4,10 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import type { EdicionDatasetDetail } from '@/types'
 import { getEdicionDataset } from '../services/edicionesDatasetService'
+import { SECTION_LABEL_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
-  return <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: '#9F8FA8' }}>{children}</p>
+  return <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: SECTION_LABEL_COLOR }}>{children}</p>
 }
 
 const ArrowIcon = () => (
@@ -55,8 +56,8 @@ export default function EdicionDatasetDetailPage() {
 
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: '#9F8FA8' }}>Edicion de dataset</p>
-          <h1 className="text-ink leading-tight break-words mb-3" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '44px', fontWeight: 500 }}>{item.nombre}</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: SECTION_LABEL_COLOR }}>Edicion de dataset</p>
+          <h1 className="font-newsreader text-ink leading-tight break-words mb-3" style={{ fontSize: '44px', fontWeight: 500 }}>{item.nombre}</h1>
           <div className="flex flex-wrap items-center gap-2">
             {item.es_version_corregida && <span className="inline-block px-2.5 py-0.5 rounded-sm text-xs font-medium bg-green-500/10 text-green-700">Version corregida</span>}
           </div>
@@ -83,7 +84,7 @@ export default function EdicionDatasetDetailPage() {
 
           <section>
             <div className="flex items-baseline justify-between mb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: '#9F8FA8' }}>Distribuciones</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: SECTION_LABEL_COLOR }}>Distribuciones</p>
               {item.distribuciones.length > 0 && (
                 <button onClick={() => copy('dist', item.distribuciones.map((d) => d.descriptor ?? d.id).join('\n'))} className="text-[11px] text-ink/40 hover:text-brand-600 transition-colors duration-150 flex items-center gap-1">
                   {copiedKey === 'dist' ? <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7l4 4 6-6" /></svg> : <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="8" height="8" rx="1.5" /><path d="M2 10V2h8" /></svg>}
@@ -108,14 +109,14 @@ export default function EdicionDatasetDetailPage() {
         <aside className="space-y-1" style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
           <SectionHeading>Detalles</SectionHeading>
           <dl className="divide-y divide-ink/[5%]">
-            {item.fecha_publicacion && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Publicacion</dt><dd className="text-[13px] text-ink/80">{formatDate(item.fecha_publicacion)}</dd></div>}
-            {item.periodo_referencia_inicio && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Periodo inicio</dt><dd className="text-[13px] text-ink/80">{formatDate(item.periodo_referencia_inicio)}</dd></div>}
-            {item.periodo_referencia_fin && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Periodo fin</dt><dd className="text-[13px] text-ink/80">{formatDate(item.periodo_referencia_fin)}</dd></div>}
-            {item.tipo_periodo_referencia && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Tipo periodo</dt><dd className="text-[13px] text-ink/80">{item.tipo_periodo_referencia}</dd></div>}
+            {item.fecha_publicacion && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Publicacion</dt><dd className="text-[13px] text-ink/80">{formatDate(item.fecha_publicacion)}</dd></div>}
+            {item.periodo_referencia_inicio && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Periodo inicio</dt><dd className="text-[13px] text-ink/80">{formatDate(item.periodo_referencia_inicio)}</dd></div>}
+            {item.periodo_referencia_fin && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Periodo fin</dt><dd className="text-[13px] text-ink/80">{formatDate(item.periodo_referencia_fin)}</dd></div>}
+            {item.tipo_periodo_referencia && <div className="py-2"><dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Tipo periodo</dt><dd className="text-[13px] text-ink/80">{item.tipo_periodo_referencia}</dd></div>}
           </dl>
           {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%]">
-              <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ultima edicion</p>
+              <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Ultima edicion</p>
               <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
             </div>
           )}

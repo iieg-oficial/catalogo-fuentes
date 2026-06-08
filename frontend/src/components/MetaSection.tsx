@@ -67,6 +67,7 @@ export default function MetaSection({ meta, onSave, canWrite }: MetaSectionProps
                     <button
                       onClick={() => handleDelete(k)}
                       disabled={saving}
+                      aria-label={`Eliminar ${k}`}
                       className="text-gray-300 hover:text-red-500 text-base leading-none disabled:opacity-30"
                       title="Eliminar"
                     >

@@ -341,27 +341,73 @@ async def seed(db: AsyncSession) -> None:
     logger.info("Seeding completed successfully.")
 
 
+def _psql(args: list[str], env: dict[str, str]) -> None:
+    """Run a psql command with the given args."""
+    subprocess.run(
+        [
+            "psql",
+            "-h", settings.POSTGRES_HOST,
+            "-p", str(settings.POSTGRES_PORT),
+            "-U", settings.POSTGRES_USER,
+            "-d", settings.POSTGRES_DB,
+            *args,
+        ],
+        env=env,
+        check=True,
+    )
+
+
+def _ensure_migrations_table(env: dict[str, str]) -> None:
+    """Create schema_migrations tracking table if it doesn't exist."""
+    _psql(
+        ["-c", "CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now());"],
+        env,
+    )
+
+
+def _applied_migrations(env: dict[str, str]) -> set[str]:
+    """Return the set of already-applied migration filenames."""
+    result = subprocess.run(
+        [
+            "psql",
+            "-h", settings.POSTGRES_HOST,
+            "-p", str(settings.POSTGRES_PORT),
+            "-U", settings.POSTGRES_USER,
+            "-d", settings.POSTGRES_DB,
+            "-t", "-A", "-c", "SELECT filename FROM schema_migrations;",
+        ],
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return {line.strip() for line in result.stdout.splitlines() if line.strip()}
+
+
+def _record_migration(filename: str, env: dict[str, str]) -> None:
+    """Mark a migration as applied in schema_migrations."""
+    _psql(
+        ["-c", f"INSERT INTO schema_migrations (filename) VALUES ('{filename}');"],
+        env,
+    )
+
+
 def run_migrations() -> None:
-    """Execute all SQL migration files in order using psql."""
+    """Execute pending SQL migration files in order, skipping already-applied ones."""
     migrations_dir = Path(__file__).parent / "migrations"
     env = {
         "PGPASSWORD": settings.POSTGRES_PASSWORD,
         "PATH": "/usr/bin:/bin:/usr/local/bin",
     }
+    _ensure_migrations_table(env)
+    applied = _applied_migrations(env)
     for migration_file in sorted(migrations_dir.glob("0*.sql")):
+        if migration_file.name in applied:
+            logger.info("Skipping migration %s (already applied).", migration_file.name)
+            continue
         logger.info("Running migration %s...", migration_file.name)
-        subprocess.run(
-            [
-                "psql",
-                "-h", settings.POSTGRES_HOST,
-                "-p", str(settings.POSTGRES_PORT),
-                "-U", settings.POSTGRES_USER,
-                "-d", settings.POSTGRES_DB,
-                "-f", str(migration_file),
-            ],
-            env=env,
-            check=True,
-        )
+        _psql(["-f", str(migration_file)], env)
+        _record_migration(migration_file.name, env)
     logger.info("Migrations completed.")
 
 

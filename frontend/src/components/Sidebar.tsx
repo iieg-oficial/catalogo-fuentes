@@ -51,7 +51,7 @@ export default function Sidebar({ user, onLogout }: Props) {
       className={`
         fixed md:static inset-y-0 left-0 z-40 md:z-auto
         w-60 min-h-screen bg-brand-900 text-white flex flex-col
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-300 ease-in-out cursor-default
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}
     >
@@ -78,7 +78,7 @@ export default function Sidebar({ user, onLogout }: Props) {
       </div>
 
       <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegacion principal">
-        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
           Catalogo
         </p>
 
@@ -105,7 +105,7 @@ export default function Sidebar({ user, onLogout }: Props) {
 
         {user?.permisos?.includes('users:manage') && (
           <>
-            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
               Administracion
             </p>
 
@@ -151,14 +151,15 @@ export default function Sidebar({ user, onLogout }: Props) {
         >
           {user?.correo ? userInitials(user.correo) : '?'}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
-          <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
+        <div className="flex-1 min-w-0 cursor-default">
+          <p className="text-[12px] text-white/[85%] truncate leading-tight cursor-default">{user?.nombre ?? user?.correo}</p>
+          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5 cursor-default">{user?.rol?.nombre}</p>
         </div>
         <button
           onClick={() => { onLogout(); navigate('/login') }}
           title="Cerrar sesion"
-          className="w-6 h-6 rounded flex items-center justify-center
+          aria-label="Cerrar sesión"
+          className="w-8 h-8 rounded flex items-center justify-center
                      text-white/50 hover:text-white transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
         >

@@ -102,7 +102,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowRecovery((v) => !v)}
-                  className="text-xs text-brand-600 hover:text-brand-700 hover:underline focus:outline-none"
+                  className="text-xs text-brand-600 hover:text-brand-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded-sm"
                 >
                   ¿Olvidaste tu contraseña?
                 </button>

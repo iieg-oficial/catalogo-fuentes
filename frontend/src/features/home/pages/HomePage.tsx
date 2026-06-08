@@ -160,7 +160,7 @@ export default function HomePage() {
           >
             Módulos del catálogo
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mx-auto" style={{ width: '90%' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
             {CATALOG_LEVELS.map((level) => {
               const count = counts[level.key as keyof typeof counts]
               const bg = CARD_BG[level.key] ?? 'bg-gray-600'
@@ -178,9 +178,9 @@ export default function HomePage() {
                     {MODULE_ICONS[level.key]}
                   </div>
 
-                  <h3 className="text-xs font-bold uppercase tracking-wide text-white/80">
+                  <span className="text-xs font-bold uppercase tracking-wide text-white/80">
                     {level.label}
-                  </h3>
+                  </span>
 
                   <span className="tabular-nums text-3xl font-bold text-white leading-none">
                     {ready ? (count ?? 0) : '…'}

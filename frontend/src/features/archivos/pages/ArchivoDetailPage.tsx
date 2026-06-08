@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import type { Archivo } from '@/types'
-import { getArchivo } from './services/archivosService'
+import { getArchivo } from '../services/archivosService'
+import { SECTION_LABEL_COLOR, DESCRIPTION_COLOR } from '@/consts/statusColors'
 
 function SectionHeading({ children }: { children: string }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: '#9F8FA8' }}>
+    <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: SECTION_LABEL_COLOR }}>
       {children}
     </p>
   )
@@ -55,21 +56,21 @@ export default function ArchivoDetailPage() {
     <div className="flex-1 overflow-y-auto">
     <div className="p-8 md:p-10 max-w-5xl mx-auto space-y-8">
       <nav className="flex items-center gap-1.5 text-[12px]" aria-label="Breadcrumb">
-        <span className="text-ink/35 font-medium">Catalogo</span>
-        <span className="text-ink/25">{'>'}</span>
-        <button onClick={() => navigate(-1)} className="text-ink/50 hover:text-brand-600 transition-colors duration-150 font-medium">
+        <span aria-hidden="true" className="text-ink/60 font-medium">Catalogo</span>
+        <span aria-hidden="true" className="text-ink/25">{'>'}</span>
+        <button onClick={() => navigate(-1)} className="text-ink/80 hover:text-brand-600 transition-colors duration-150 font-medium">
           Archivos
         </button>
-        <span className="text-ink/25">{'>'}</span>
+        <span aria-hidden="true" className="text-ink/25">{'>'}</span>
         <span className="text-ink/70 font-medium">{title}</span>
       </nav>
 
       <div className="flex items-start gap-6">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: '#9F8FA8' }}>
+          <p className="text-[11px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: SECTION_LABEL_COLOR }}>
             Archivo
           </p>
-          <h1 className="text-ink leading-tight break-words mb-3" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '44px', fontWeight: 500 }}>
+          <h1 className="font-newsreader text-ink leading-tight break-words mb-3" style={{ fontSize: '44px', fontWeight: 500 }}>
             {title}
           </h1>
           <div className="flex flex-wrap items-center gap-2">
@@ -102,7 +103,7 @@ export default function ArchivoDetailPage() {
                   onClick={() => navigate(`/distribuciones/${item.distribucion!.id}`)}
                   className="w-full text-left p-3 px-4 flex items-center gap-3 hover:bg-brand-500/[2%] transition-colors duration-100 group"
                 >
-                  <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/50 shrink-0">Distribucion</span>
+                  <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-ink/[5%] text-ink/70 shrink-0">Distribucion</span>
                   <span className="text-[14px] font-medium text-ink group-hover:text-brand-600 truncate">{item.distribucion.descriptor ?? item.distribucion.id.slice(0, 8)}</span>
                   <ArrowIcon />
                 </button>
@@ -113,7 +114,7 @@ export default function ArchivoDetailPage() {
           {item.observaciones_archivo && (
             <section>
               <SectionHeading>Observaciones</SectionHeading>
-              <p className="text-[#374151]" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '16px', lineHeight: 1.65 }}>
+              <p className="font-newsreader" style={{ fontSize: '16px', lineHeight: 1.65, color: DESCRIPTION_COLOR }}>
                 {item.observaciones_archivo}
               </p>
             </section>
@@ -125,25 +126,25 @@ export default function ArchivoDetailPage() {
           <dl className="divide-y divide-ink/[5%]">
             {item.ruta_relativa_en_distribucion && (
               <div className="py-2">
-                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ruta relativa</dt>
+                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Ruta relativa</dt>
                 <dd className="text-[13px] text-ink/80 break-words font-mono">{item.ruta_relativa_en_distribucion}</dd>
               </div>
             )}
             {item.ruta_almacenamiento && (
               <div className="py-2">
-                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ruta almacenamiento</dt>
+                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Ruta almacenamiento</dt>
                 <dd className="text-[13px] text-ink/80 break-words font-mono">{item.ruta_almacenamiento}</dd>
               </div>
             )}
             {item.hash_sha256 && (
               <div className="py-2">
-                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Hash SHA-256</dt>
+                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Hash SHA-256</dt>
                 <dd className="text-[13px] text-ink/80 break-all font-mono">{item.hash_sha256}</dd>
               </div>
             )}
             {item.fecha_ingesta_sistema && (
               <div className="py-2">
-                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ingesta</dt>
+                <dt className="text-[11px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Ingesta</dt>
                 <dd className="text-[13px] text-ink/80">{formatDate(item.fecha_ingesta_sistema)}</dd>
               </div>
             )}
@@ -151,7 +152,7 @@ export default function ArchivoDetailPage() {
           {item.updated_at && (
             <div className="mt-6 pt-4 border-t border-ink/[6%] space-y-2">
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: '#9F8FA8' }}>Ultima edicion</p>
+                <p className="text-[10px] uppercase tracking-wide font-medium mb-0.5" style={{ color: SECTION_LABEL_COLOR }}>Ultima edicion</p>
                 <p className="text-[12px] text-ink/70">{formatDate(item.updated_at)}</p>
               </div>
             </div>
