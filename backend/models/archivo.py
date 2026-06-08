@@ -26,7 +26,7 @@ class Archivo(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     distribucion_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("distribucion.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("distribucion.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     distribucion: Mapped["Distribucion | None"] = relationship("Distribucion", back_populates="archivos")

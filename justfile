@@ -89,7 +89,7 @@ dev-stop:
 [group('database')]
 db-migrate: _db-up
     @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
-        python -c "from seed import run_migrations; run_migrations()"
+        alembic upgrade head
     @echo ""
     @echo "  ✓ Migraciones aplicadas."
     @echo ""
@@ -111,7 +111,7 @@ db-clean: _db-up
         -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q \
         -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO \"$POSTGRES_USER\";"
     @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
-        python -c "from seed import run_migrations; run_migrations()"
+        alembic upgrade head
     @echo ""
     @echo "  ✓ BD limpiada y migraciones aplicadas."
     @echo ""

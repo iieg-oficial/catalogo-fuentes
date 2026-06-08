@@ -12,7 +12,7 @@ class Fuente(Base):
     __tablename__ = "fuente"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nombre: Mapped[str] = mapped_column(String, nullable=False)
+    nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     nombre_corto: Mapped[str | None] = mapped_column(String)
     sector: Mapped[str | None] = mapped_column(String)
     ambito: Mapped[str | None] = mapped_column(String)

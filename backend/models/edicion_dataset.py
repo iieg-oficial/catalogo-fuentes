@@ -13,7 +13,7 @@ class EdicionDataset(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre: Mapped[str] = mapped_column(String, nullable=False)
-    fecha_publicacion: Mapped[date | None] = mapped_column(Date)
+    fecha_publicacion: Mapped[date | None] = mapped_column(Date, index=True)
     periodo_referencia_inicio: Mapped[date | None] = mapped_column(Date)
     periodo_referencia_fin: Mapped[date | None] = mapped_column(Date)
     tipo_periodo_referencia: Mapped[str | None] = mapped_column(String)
@@ -29,7 +29,7 @@ class EdicionDataset(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     dataset_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("dataset.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("dataset.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     dataset: Mapped["Dataset | None"] = relationship("Dataset", back_populates="ediciones")
