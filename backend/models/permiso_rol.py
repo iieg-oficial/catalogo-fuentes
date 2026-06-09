@@ -16,8 +16,8 @@ class PermisoRol(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
 
     permiso_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("permiso.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("permiso.id", ondelete="CASCADE"), nullable=False, index=True
     )
     rol_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("rol.id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("rol.id", ondelete="CASCADE"), nullable=False, index=True
     )

@@ -12,6 +12,7 @@ until PGPASSWORD="$POSTGRES_PASSWORD" psql \
 done
 
 echo "Running production init (migrations + superadmin)..."
+alembic upgrade head
 python seed.py prod
 
 echo "Init completed."

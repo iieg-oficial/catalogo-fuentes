@@ -1,9 +1,10 @@
 import asyncio
 import logging
-import subprocess
 from datetime import date
 from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -341,78 +342,14 @@ async def seed(db: AsyncSession) -> None:
     logger.info("Seeding completed successfully.")
 
 
-def _psql(args: list[str], env: dict[str, str]) -> None:
-    """Run a psql command with the given args."""
-    subprocess.run(
-        [
-            "psql",
-            "-h", settings.POSTGRES_HOST,
-            "-p", str(settings.POSTGRES_PORT),
-            "-U", settings.POSTGRES_USER,
-            "-d", settings.POSTGRES_DB,
-            *args,
-        ],
-        env=env,
-        check=True,
-    )
-
-
-def _ensure_migrations_table(env: dict[str, str]) -> None:
-    """Create schema_migrations tracking table if it doesn't exist."""
-    _psql(
-        ["-c", "CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now());"],
-        env,
-    )
-
-
-def _applied_migrations(env: dict[str, str]) -> set[str]:
-    """Return the set of already-applied migration filenames."""
-    result = subprocess.run(
-        [
-            "psql",
-            "-h", settings.POSTGRES_HOST,
-            "-p", str(settings.POSTGRES_PORT),
-            "-U", settings.POSTGRES_USER,
-            "-d", settings.POSTGRES_DB,
-            "-t", "-A", "-c", "SELECT filename FROM schema_migrations;",
-        ],
-        env=env,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return {line.strip() for line in result.stdout.splitlines() if line.strip()}
-
-
-def _record_migration(filename: str, env: dict[str, str]) -> None:
-    """Mark a migration as applied in schema_migrations."""
-    _psql(
-        ["-c", f"INSERT INTO schema_migrations (filename) VALUES ('{filename}');"],
-        env,
-    )
-
-
 def run_migrations() -> None:
-    """Execute pending SQL migration files in order, skipping already-applied ones."""
-    migrations_dir = Path(__file__).parent / "migrations"
-    env = {
-        "PGPASSWORD": settings.POSTGRES_PASSWORD,
-        "PATH": "/usr/bin:/bin:/usr/local/bin",
-    }
-    _ensure_migrations_table(env)
-    applied = _applied_migrations(env)
-    for migration_file in sorted(migrations_dir.glob("0*.sql")):
-        if migration_file.name in applied:
-            logger.info("Skipping migration %s (already applied).", migration_file.name)
-            continue
-        logger.info("Running migration %s...", migration_file.name)
-        _psql(["-f", str(migration_file)], env)
-        _record_migration(migration_file.name, env)
+    """Apply pending Alembic migrations."""
+    alembic_cfg = Config(str(Path(__file__).parent / "alembic.ini"))
+    command.upgrade(alembic_cfg, "head")
     logger.info("Migrations completed.")
 
 
-async def main() -> None:
-    run_migrations()
+async def _seed_dev() -> None:
     engine = create_async_engine(settings.database_url, echo=False)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as db:
@@ -420,18 +357,7 @@ async def main() -> None:
     await engine.dispose()
 
 
-async def main_prod() -> None:
-    run_migrations()
-    engine = create_async_engine(settings.database_url, echo=False)
-    factory = async_sessionmaker(engine, expire_on_commit=False)
-    async with factory() as db:
-        await seed_superadmin(db)
-    await engine.dispose()
-
-
-async def main_dev_init() -> None:
-    """Migrations + superadmin only, for dev without full seed."""
-    run_migrations()
+async def _seed_superadmin() -> None:
     engine = create_async_engine(settings.database_url, echo=False)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as db:
@@ -442,9 +368,10 @@ async def main_dev_init() -> None:
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "dev"
+    run_migrations()
     if mode == "prod":
-        asyncio.run(main_prod())
+        asyncio.run(_seed_superadmin())
     elif mode == "dev-init":
-        asyncio.run(main_dev_init())
+        asyncio.run(_seed_superadmin())
     else:
-        asyncio.run(main())
+        asyncio.run(_seed_dev())

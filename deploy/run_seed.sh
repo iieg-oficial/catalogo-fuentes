@@ -12,6 +12,7 @@ until PGPASSWORD="$POSTGRES_PASSWORD" psql \
 done
 
 echo "Running seeder..."
+alembic upgrade head
 python seed.py
 
 echo "Seed completed."
