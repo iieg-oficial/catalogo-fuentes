@@ -276,6 +276,8 @@ export default function UsuariosPage() {
   const [filterStatus, setFilterStatus] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formCorreo, setFormCorreo] = useState('')
+  const [formNombre, setFormNombre] = useState('')
+  const [formPassword, setFormPassword] = useState('')
   const [formRolId, setFormRolId] = useState('')
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
@@ -298,15 +300,23 @@ export default function UsuariosPage() {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
     setFormError('')
+    if (formPassword.length < 8) {
+      setFormError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
     setFormLoading(true)
     try {
       const u = await createUsuario({
         correo: formCorreo,
+        nombre: formNombre,
+        password: formPassword,
         rol_id: formRolId || undefined,
       })
       setUsers((prev) => [...prev, u])
       setShowForm(false)
       setFormCorreo('')
+      setFormNombre('')
+      setFormPassword('')
       setFormRolId('')
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el correo no esté registrado.')
@@ -454,6 +464,29 @@ export default function UsuariosPage() {
                   onChange={(e) => setFormCorreo(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="usuario@iieg.gob.mx"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  required
+                  value={formNombre}
+                  onChange={(e) => setFormNombre(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="Nombre completo"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Contraseña temporal</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={formPassword}
+                  onChange={(e) => setFormPassword(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="Mínimo 8 caracteres"
                 />
               </div>
               <div>
