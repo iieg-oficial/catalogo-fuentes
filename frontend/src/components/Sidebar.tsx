@@ -128,16 +128,25 @@ export default function Sidebar({ user, onLogout }: Props) {
       </nav>
 
       <div className="px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5">
-        <div
+        <button
+          onClick={() => { navigate('/perfil'); closeSidebar() }}
           className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center shrink-0
-                     text-[11px] font-bold text-white/90 ring-1 ring-white/10"
+                     text-[11px] font-bold text-white/90 ring-1 ring-white/10
+                     hover:ring-white/30 transition-all duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+          title="Mi perfil"
+          aria-label="Ir a mi perfil"
         >
           {user?.correo ? userInitials(user.correo) : '?'}
-        </div>
-        <div className="flex-1 min-w-0 cursor-default">
-          <p className="text-[12px] text-white/[85%] truncate leading-tight cursor-default">{user?.nombre ?? user?.correo}</p>
-          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5 cursor-default">{user?.rol?.nombre}</p>
-        </div>
+        </button>
+        <button
+          onClick={() => { navigate('/perfil'); closeSidebar() }}
+          className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded"
+        >
+          <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
+          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
+        </button>
         <button
           onClick={() => { onLogout(); navigate('/login') }}
           title="Cerrar sesion"

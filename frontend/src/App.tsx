@@ -26,6 +26,7 @@ import ProductoTablasPage from '@/features/producto_tablas/pages/ProductoTablasP
 import UsuariosPage from '@/features/usuarios/pages/UsuariosPage'
 import EntidadesPage from '@/features/entidades/pages/EntidadesPage'
 import HomePage from '@/features/home/pages/HomePage'
+import ProfilePage from '@/features/profile/pages/ProfilePage'
 
 function CatalogRoutes() {
   const { user, canManageUsers, logout } = useAuthContext()
@@ -54,6 +55,7 @@ function CatalogRoutes() {
         <Route path="producto-tablas" element={<ProductoTablasPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
         {canManageUsers && <Route path="usuarios" element={<UsuariosPage />} />}
+        <Route path="perfil" element={<ProfilePage />} />
         <Route index element={<HomePage />} />
       </Routes>
     </Layout>

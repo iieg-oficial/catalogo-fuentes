@@ -41,5 +41,5 @@ export function useAuth() {
     setUser(null)
   }
 
-  return { user, loading, login, logout }
+  return { user, loading, login, logout, refreshUser: fetchMe }
 }
