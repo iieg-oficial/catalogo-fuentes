@@ -10,13 +10,6 @@ const ROLE_BADGE: Record<string, string> = {
   viewer:     'bg-neutral-100 text-neutral-600',
 }
 
-function userInitials(correo: string): string {
-  const [local] = correo.split('@')
-  const parts = local.split(/[._-]/)
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-  return local.slice(0, 2).toUpperCase()
-}
-
 export default function ProfilePage() {
   const { user, refreshUser } = useAuthContext()
 
@@ -85,23 +78,26 @@ export default function ProfilePage() {
       {toast && <Toast message={toast.message} variant={toast.variant} onClose={clearToast} />}
 
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-xl font-bold text-ink mb-1">Mi perfil</h1>
-        <p className="text-xs text-ink/70 mb-6">Administra tu información personal y seguridad.</p>
+        <h1 className="text-2xl font-bold text-ink mb-1">Mi perfil</h1>
+        <p className="text-sm text-ink/60 mb-8">Administra tu información personal y seguridad.</p>
 
         {/* Profile card */}
         <div className="bg-white border border-ink/[10%] rounded-xl shadow-sm px-8 py-10 mb-6">
           <div className="flex items-start gap-5 mb-10">
-            <div className="w-16 h-16 rounded-full bg-brand-600 flex items-center justify-center shrink-0 text-xl font-bold text-white">
-              {user?.correo ? userInitials(user.correo) : '?'}
+            <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center shrink-0">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2e4372" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
             </div>
             <div>
               <p className="text-xs text-ink/50">Cuenta institucional</p>
-              <p className="text-lg font-semibold text-ink mt-0.5">{user?.nombre ?? 'Usuario'}</p>
+              <p className="text-lg font-bold text-ink mt-0.5">{user?.nombre ?? 'Usuario'}</p>
               <div className="flex items-center gap-2 mt-2">
-                <span className={`px-2.5 py-0.5 rounded-lg text-xs font-medium ${ROLE_BADGE[rolNombre] ?? 'bg-neutral-100 text-neutral-600'}`}>
+                <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wide ${ROLE_BADGE[rolNombre] ?? 'bg-neutral-100 text-neutral-600'}`}>
                   {rolNombre}
                 </span>
-                <span className={`px-2.5 py-0.5 rounded-lg text-xs font-medium ${user?.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                <span className={`px-2.5 py-0.5 rounded-lg text-[11px] font-semibold uppercase tracking-wide ${user?.activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {user?.activo ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
