@@ -32,6 +32,23 @@ Comandos para trabajar localmente. Requieren conda env `dashboard` activo, Node.
 
 ---
 
+## Alembic
+
+Comandos para gestionar migraciones con Alembic. Documentación completa en [alembic.md](alembic.md).
+
+| Comando | Cuándo usarlo |
+|---|---|
+| `just alembic-current` | Ver en qué revisión está la BD. |
+| `just alembic-history` | Ver el historial de migraciones. |
+| `just alembic-check` | Verificar si hay cambios en los modelos sin migración. |
+| `just alembic-revision "mensaje"` | Generar una nueva migración a partir de los modelos. |
+| `just alembic-upgrade <rev>` | Migrar a una revisión específica. |
+| `just alembic-downgrade` | Revertir la última migración. |
+| `just alembic-downgrade-to <rev>` | Revertir a una revisión específica. |
+| `just alembic-stamp <rev>` | Marcar una revisión como aplicada sin ejecutar DDL. |
+
+---
+
 ## Producción
 
 Requieren `deploy/.env.prod` con todas las variables configuradas.
@@ -88,10 +105,13 @@ just dev-seed
 just dev
 ```
 
-### Aplicar una nueva migración en desarrollo
+### Agregar una migración en desarrollo
 
 ```bash
+# modificar el modelo en backend/models/
+just alembic-revision "add new column"
 just db-migrate
+just alembic-check         # verificar que no quedan diffs
 ```
 
 ### Deploy de un cambio de UI a producción
@@ -108,13 +128,14 @@ just prod-deploy
 ### Deploy de un nuevo schema a producción
 
 ```bash
-# local: agregar archivo backend/migrations/NNN_descripcion.sql
+# local: generar y commitear la migración
+just alembic-revision "add new column"
 git push origin main
 
 # servidor
 git pull origin main
 just db-dump-prod          # backup antes de migrar
-just prod-migrate          # aplica solo la migración nueva
+just prod-migrate          # aplica solo migraciones pendientes
 ```
 
 ### Reset total de producción (primer deploy o emergencia)

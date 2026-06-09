@@ -94,6 +94,58 @@ db-migrate: _db-up
     @echo "  ✓ Migraciones aplicadas."
     @echo ""
 
+# ─── ALEMBIC ─────────────────────────────────────────────────────────────────
+
+# Muestra la revisión actual de Alembic
+[group('alembic')]
+alembic-current: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic current
+
+# Muestra el historial de migraciones
+[group('alembic')]
+alembic-history: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic history
+
+# Genera una nueva migración a partir de los cambios en los modelos  (uso: just alembic-revision "add users table")
+[group('alembic')]
+alembic-revision msg: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic revision --autogenerate -m "{{msg}}"
+
+# Migra a una revisión específica  (uso: just alembic-upgrade <revision>)
+[group('alembic')]
+alembic-upgrade rev: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic upgrade {{rev}}
+
+# Revierte la última migración aplicada
+[group('alembic')]
+[confirm("¿Seguro que quieres revertir la última migración? [Y/N]:")]
+alembic-downgrade: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic downgrade -1
+
+# Revierte a una revisión específica  (uso: just alembic-downgrade-to <revision>)
+[group('alembic')]
+[confirm("¿Seguro que quieres revertir a esta revisión? [Y/N]:")]
+alembic-downgrade-to rev: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic downgrade {{rev}}
+
+# Marca una revisión como aplicada sin ejecutar DDL  (uso: just alembic-stamp <revision>)
+[group('alembic')]
+alembic-stamp rev: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic stamp {{rev}}
+
+# Verifica si hay cambios en los modelos sin migración
+[group('alembic')]
+alembic-check: _db-up
+    @cd backend && POSTGRES_HOST={{dev_db_host}} POSTGRES_PORT={{dev_db_port}} \
+        alembic check
+
 # Limpia la BD, detiene los servicios y arranca todo de cero con seed
 [group('database')]
 [confirm("¿Seguro que quieres resetear la BD de desarrollo? Se perderán todos los datos. [Y/N]:")]
