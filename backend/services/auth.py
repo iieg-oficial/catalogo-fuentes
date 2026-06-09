@@ -36,6 +36,15 @@ async def get_usuario_by_correo(db: AsyncSession, correo: str) -> Usuario | None
     return result.scalar_one_or_none()
 
 
+async def activate_usuario(db: AsyncSession, usuario: Usuario, nombre: str, password: str) -> Usuario:
+    usuario.nombre = nombre
+    usuario.hashed_password = hash_password(password)
+    usuario.activo = True
+    await db.commit()
+    await db.refresh(usuario)
+    return usuario
+
+
 async def authenticate_usuario(db: AsyncSession, correo: str, password: str) -> Usuario | None:
     usuario = await get_usuario_by_correo(db, correo)
     if not usuario or not usuario.activo or not usuario.hashed_password:
