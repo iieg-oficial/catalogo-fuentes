@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import Button from '@/components/Button'
 import ErrorState from '@/components/ErrorState'
 import type { Archivo } from '@/types'
 import { getArchivo } from '../services/archivosService'
@@ -87,9 +88,7 @@ export default function ArchivoDetailPage() {
           </div>
         </div>
         <div className="shrink-0 pt-1">
-          <button onClick={() => navigate(-1)} className="h-8 px-4 rounded-md text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors duration-150">
-            Volver
-          </button>
+          <Button size="sm" onClick={() => navigate(-1)}>Volver</Button>
         </div>
       </div>
 

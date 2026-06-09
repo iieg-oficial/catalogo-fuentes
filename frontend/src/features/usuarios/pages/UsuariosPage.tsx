@@ -1,6 +1,7 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
+import Button from '@/components/Button'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
@@ -422,13 +423,10 @@ export default function UsuariosPage() {
           </p>
         </div>
         {canManageUsers && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-          >
+          <Button onClick={() => setShowForm(true)}>
             <span className="text-base leading-none">+</span>
             Crear usuario
-          </button>
+          </Button>
         )}
       </div>
 
@@ -467,13 +465,9 @@ export default function UsuariosPage() {
                 />
               </div>
               {formError && <p className="text-xs text-red-600">{formError}</p>}
-              <button
-                type="submit"
-                disabled={formLoading}
-                className="w-full py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
-              >
+              <Button type="submit" fullWidth loading={formLoading}>
                 {formLoading ? 'Creando…' : 'Crear'}
-              </button>
+              </Button>
             </form>
           </div>
         </div>,

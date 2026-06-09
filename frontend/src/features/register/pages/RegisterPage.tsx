@@ -1,22 +1,8 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import apiClient from '@/services/apiClient'
+import Button from '@/components/Button'
 import logoIieg from '@/assets/logo_gris_iieg.png'
-
-function Spinner() {
-  return (
-    <svg
-      className="animate-spin h-4 w-4 text-white"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
-  )
-}
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -149,20 +135,9 @@ export default function RegisterPage() {
             )}
 
             <div className="pt-1">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 min-h-[44px] px-4 bg-brand-600 text-white text-sm font-medium rounded-md hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? (
-                  <>
-                    <Spinner />
-                    <span>Registrando…</span>
-                  </>
-                ) : (
-                  'Crear cuenta'
-                )}
-              </button>
+              <Button type="submit" size="lg" fullWidth loading={loading}>
+                {loading ? 'Registrando…' : 'Crear cuenta'}
+              </Button>
             </div>
           </form>
 

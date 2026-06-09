@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Button from './Button'
 import Modal from './Modal'
 
 interface MetaSectionProps {
@@ -116,12 +117,10 @@ export default function MetaSection({ meta, onSave, canWrite }: MetaSectionProps
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">
-              Cancelar
-            </button>
-            <button type="submit" disabled={saving} className="px-4 py-2 text-sm bg-brand-600 text-white rounded-md hover:bg-brand-700 disabled:opacity-50">
+            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button type="submit" loading={saving}>
               {saving ? 'Guardando…' : 'Agregar'}
-            </button>
+            </Button>
           </div>
         </form>
       </Modal>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import Button from '@/components/Button'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
 import type { ProyectoDetail } from '@/types'
@@ -134,12 +135,9 @@ export default function ProyectoDetailPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0 pt-1">
-          <button
-            onClick={() => navigate(-1)}
-            className="h-8 px-4 rounded-md text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors duration-150"
-          >
+          <Button size="sm" onClick={() => navigate(-1)}>
             Volver
-          </button>
+          </Button>
         </div>
       </div>
 

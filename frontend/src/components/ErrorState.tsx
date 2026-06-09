@@ -1,3 +1,5 @@
+import Button from './Button'
+
 interface Props {
   message?: string
   onRetry?: () => void
@@ -16,12 +18,9 @@ export default function ErrorState({ message = 'Ocurrió un error al cargar los 
       </svg>
       <p className="text-sm text-gray-600">{message}</p>
       {onRetry && (
-        <button
-          onClick={onRetry}
-          className="mt-3 text-sm text-brand-600 hover:text-brand-700 underline"
-        >
+        <Button variant="link" onClick={onRetry} className="mt-3 text-sm">
           Reintentar
-        </button>
+        </Button>
       )}
     </div>
   )
