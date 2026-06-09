@@ -11,13 +11,15 @@ async def list_producto_tablas(
     db: AsyncSession,
     producto_id: uuid.UUID | None = None,
     informacion_tablas_id: uuid.UUID | None = None,
+    skip: int = 0,
+    limit: int = 10_000,
 ) -> list[ProductoTabla]:
     q = select(ProductoTabla)
     if producto_id:
         q = q.where(ProductoTabla.producto_id == producto_id)
     elif informacion_tablas_id:
         q = q.where(ProductoTabla.informacion_tablas_id == informacion_tablas_id)
-    q = q.order_by(ProductoTabla.created_at.asc())
+    q = q.order_by(ProductoTabla.created_at.asc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return list(result.scalars().all())
 

@@ -16,11 +16,14 @@ router = APIRouter(prefix="/producto-tablas", tags=["producto-tablas"])
 async def list_producto_tablas(
     producto_id: uuid.UUID | None = None,
     informacion_tablas_id: uuid.UUID | None = None,
+    skip: int = 0,
+    limit: int = 10_000,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
     return await svc.list_producto_tablas(
-        db, producto_id=producto_id, informacion_tablas_id=informacion_tablas_id
+        db, producto_id=producto_id, informacion_tablas_id=informacion_tablas_id,
+        skip=skip, limit=limit,
     )
 
 
