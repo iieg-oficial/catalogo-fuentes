@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import Button from './Button'
 import { useSidebar } from '@/context/SidebarContext'
 import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 
@@ -895,15 +896,13 @@ export default function CatalogGrid<T extends { id: string }>({
             CSV
           </button>
           {canWrite && onAdd && (
-            <button
+            <Button
+              size="sm"
               onClick={onAdd}
-              className="h-8 px-4 rounded-md text-[13px] font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors inline-flex items-center gap-1.5"
+              icon={<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6 1v10M1 6h10" /></svg>}
             >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M6 1v10M1 6h10" />
-              </svg>
               {addLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>

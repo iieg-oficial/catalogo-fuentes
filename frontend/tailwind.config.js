@@ -4,20 +4,20 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['Garet', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         newsreader: ['"Newsreader"', '"EB Garamond"', 'Georgia', 'serif'],
       },
       colors: {
         brand: {
-          50:  '#FDF8FF',
-          100: '#F7F0FA',
-          200: '#F0D0FD',
-          300: '#C39AD3',
-          400: '#CCB0D6',
-          500: '#6E258B',
-          600: '#5C2472',
-          700: '#522067',
-          900: '#2D0E42',
+          50:  '#eef2f8',
+          100: '#d9e1ee',
+          200: '#b3c3dd',
+          300: '#7a96be',
+          400: '#4a6494',
+          500: '#2e4372',
+          600: '#2e4372',
+          700: '#25365b',
+          900: '#1a2a4a',
         },
         accent: {
           DEFAULT: '#FF8300',

@@ -38,8 +38,8 @@ const navItemClass = (isActive: boolean) =>
   `relative flex items-center gap-2.5 px-4 py-2 mx-2 rounded-md text-[13px] transition-colors duration-150
    focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 ${
     isActive
-      ? 'bg-white/10 text-white font-semibold'
-      : 'text-white/[78%] hover:bg-white/[5%] hover:text-white font-normal'
+      ? 'bg-brand-400 text-white font-semibold'
+      : 'text-white/[78%] hover:bg-brand-700 hover:text-white font-normal'
   }`
 
 export default function Sidebar({ user, onLogout }: Props) {
@@ -50,7 +50,7 @@ export default function Sidebar({ user, onLogout }: Props) {
     <aside
       className={`
         fixed md:static inset-y-0 left-0 z-40 md:z-auto
-        w-60 min-h-screen bg-brand-900 text-white flex flex-col
+        w-60 min-h-screen bg-brand-600 text-white flex flex-col shadow-[2px_0_8px_rgba(0,0,0,0.1)]
         transition-transform duration-300 ease-in-out cursor-default
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}
@@ -89,11 +89,8 @@ export default function Sidebar({ user, onLogout }: Props) {
             onClick={closeSidebar}
             className={({ isActive }) => navItemClass(isActive)}
           >
-            {({ isActive }) => (
+            {() => (
               <>
-                {isActive && (
-                  <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                )}
                 <span className="shrink-0 opacity-70">
                   {CATALOG_ICONS[level.key]?.()}
                 </span>
@@ -114,15 +111,8 @@ export default function Sidebar({ user, onLogout }: Props) {
               onClick={closeSidebar}
               className={({ isActive }) => navItemClass(isActive)}
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                  )}
-                  <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
-                  <span className="flex-1 truncate">Entidades</span>
-                </>
-              )}
+              <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
+              <span className="flex-1 truncate">Entidades</span>
             </NavLink>
 
             <NavLink
@@ -130,21 +120,14 @@ export default function Sidebar({ user, onLogout }: Props) {
               onClick={closeSidebar}
               className={({ isActive }) => navItemClass(isActive)}
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                  )}
-                  <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
-                  <span className="flex-1 truncate">Usuarios</span>
-                </>
-              )}
+              <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
+              <span className="flex-1 truncate">Usuarios</span>
             </NavLink>
           </>
         )}
       </nav>
 
-      <div className="px-4 py-3.5 border-t border-white/[8%] flex items-center gap-2.5">
+      <div className="px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5">
         <div
           className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center shrink-0
                      text-[11px] font-bold text-white/90 ring-1 ring-white/10"
