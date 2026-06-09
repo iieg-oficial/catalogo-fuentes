@@ -35,7 +35,7 @@ function userInitials(correo: string): string {
 }
 
 const navItemClass = (isActive: boolean) =>
-  `relative flex items-center gap-2.5 px-4 py-2 mx-2 rounded-md text-[13px] transition-colors duration-150
+  `relative flex items-center gap-2.5 px-4 py-2.5 mx-2 rounded-md text-[13px] transition-colors duration-150
    focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 ${
     isActive
       ? 'bg-brand-400 text-white font-semibold'
@@ -100,12 +100,21 @@ export default function Sidebar({ user, onLogout }: Props) {
           </NavLink>
         ))}
 
+        <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
+          Administracion
+        </p>
+
+        <NavLink
+          to="/perfil"
+          onClick={closeSidebar}
+          className={({ isActive }) => navItemClass(isActive)}
+        >
+          <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
+          <span className="flex-1 truncate">Perfil</span>
+        </NavLink>
+
         {user?.permisos?.includes('users:manage') && (
           <>
-            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
-              Administracion
-            </p>
-
             <NavLink
               to="/entidades"
               onClick={closeSidebar}
