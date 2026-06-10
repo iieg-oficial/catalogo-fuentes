@@ -75,7 +75,7 @@ export default function InformacionTablasPage() {
   const columns: Column<InformacionTablas>[] = [
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Descripción', icon: descripcionIcon(), render: (r) => <TextCell value={r.descripcion} />, getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
-    { header: 'Base de datos', icon: basesDeDatosIcon(), selectOptions: basesDeDatos.map((b) => ({ value: b.id, label: b.db_nombre })), onEdit: (r, v) => handleEditCell(r, 'base_de_datos_id', v), render: (r) => r.base_de_datos ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.db_nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.base_de_datos_id ?? '' },
+    { header: 'Base de datos', icon: basesDeDatosIcon(), selectOptions: basesDeDatos.map((b) => ({ value: b.id, label: b.db_nombre })), onEdit: (r, v) => handleEditCell(r, 'base_de_datos_id', v), render: (r) => r.base_de_datos ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.db_nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, getValue: (r) => r.base_de_datos_id ?? '' },
     { header: 'Metadata', icon: jsonIcon(), render: (r) => <JsonCell value={r.meta} />, getValue: (r) => JSON.stringify(r.meta ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateInformacionTabla(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} }, inputType: 'json' },
   ]
 
@@ -102,7 +102,7 @@ export default function InformacionTablasPage() {
     </>
   )
 
-  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>)
+  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="w-7 h-7 flex items-center justify-center rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%]" aria-label="Cancelar"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 1l8 8M9 1L1 9"/></svg></button>)
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
   if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>

@@ -106,7 +106,7 @@ export default function EdicionesDatasetPage() {
 
   const columns: Column<EdicionDataset>[] = [
     { header: 'Edición', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
-    { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })), onEdit: (r, v) => { updateEdicionDataset(r.id, { dataset_id: v }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i))) }, render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/30 text-[13px]">--</span>, getValue: (r) => r.dataset_id ?? '' },
+    { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })), onEdit: (r, v) => { updateEdicionDataset(r.id, { dataset_id: v }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i))) }, render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, getValue: (r) => r.dataset_id ?? '' },
     { header: 'Publicación', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_publicacion) ?? '--'}</span>, getValue: (r) => r.fecha_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_publicacion', v), inputType: 'date' },
     { header: 'Periodo referencia inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_inicio) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_inicio', v), inputType: 'date' },
     { header: 'Periodo referencia fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_fin) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_fin', v), inputType: 'date' },
@@ -177,7 +177,7 @@ export default function EdicionesDatasetPage() {
     </>
   )
 
-  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="text-ink/30 hover:text-ink/60" title="Cancelar">x</button>)
+  const addRowActions = (<button onClick={() => { setAddingRow(false); resetFields() }} className="w-7 h-7 flex items-center justify-center rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%]" aria-label="Cancelar"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M1 1l8 8M9 1L1 9"/></svg></button>)
 
   if (loading) return <div className="flex-1 flex items-center justify-center"><LoadingSpinner /></div>
   if (error) return <div className="flex-1 flex items-center justify-center"><ErrorState onRetry={load} /></div>

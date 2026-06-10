@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from models.rol import Rol
 from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate, UsuarioUpdate
-from services.auth import get_usuario_by_correo
+from services.auth import get_usuario_by_correo, hash_password
 
 
 async def list_usuarios(db: AsyncSession, skip: int = 0, limit: int = 10_000) -> list[Usuario]:
@@ -34,7 +34,13 @@ async def create_usuario(db: AsyncSession, data: UsuarioCreate) -> Usuario | Non
     existing = await get_usuario_by_correo(db, data.correo)
     if existing:
         return None
-    obj = Usuario(correo=data.correo, nombre=data.nombre, rol_id=data.rol_id, activo=False)
+    obj = Usuario(
+        correo=data.correo,
+        nombre=data.nombre,
+        rol_id=data.rol_id,
+        hashed_password=hash_password(data.password),
+        activo=True,
+    )
     db.add(obj)
     await db.commit()
     await db.refresh(obj)

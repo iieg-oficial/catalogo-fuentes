@@ -12,7 +12,7 @@ class Dataset(Base):
     __tablename__ = "dataset"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nombre: Mapped[str] = mapped_column(String, nullable=False)
+    nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     nombre_corto: Mapped[str | None] = mapped_column(String)
     descripcion: Mapped[str | None] = mapped_column(Text)
     identificador_persistente: Mapped[str | None] = mapped_column(String)
@@ -36,7 +36,7 @@ class Dataset(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     fuente_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("fuente.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("fuente.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     fuente: Mapped["Fuente | None"] = relationship("Fuente", back_populates="datasets")

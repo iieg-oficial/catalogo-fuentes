@@ -11,7 +11,7 @@ export async function getUsuario(id: string): Promise<Usuario> {
   return data
 }
 
-export async function createUsuario(payload: { correo: string; nombre?: string; rol_id?: string }): Promise<Usuario> {
+export async function createUsuario(payload: { correo: string; nombre: string; password: string; rol_id?: string }): Promise<Usuario> {
   const { data } = await apiClient.post<Usuario>('/usuarios/', payload)
   return data
 }

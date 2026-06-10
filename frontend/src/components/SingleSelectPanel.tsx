@@ -37,7 +37,7 @@ export default function SingleSelectPanel({ options, value, onChange, onClose, t
     >
       {label && (
         <div className="px-3 py-2.5 border-b border-ink/[6%]">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{label}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{label}</p>
         </div>
       )}
       <div className="py-1.5 max-h-52 overflow-y-auto">
@@ -45,7 +45,7 @@ export default function SingleSelectPanel({ options, value, onChange, onClose, t
           type="button"
           onClick={() => { onChange(''); onClose() }}
           className={`w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left transition-colors duration-100 ${
-            !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/50 hover:bg-ink/[3%]'
+            !value ? 'text-brand-700 bg-brand-500/[5%]' : 'text-ink/70 hover:bg-ink/[3%]'
           }`}
         >
           <span className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors duration-100 ${
@@ -53,7 +53,7 @@ export default function SingleSelectPanel({ options, value, onChange, onClose, t
           }`}>
             {!value && <span className="w-2 h-2 rounded-full bg-white" />}
           </span>
-          <span className="italic text-ink/40">—</span>
+          <span className="italic text-ink/60">—</span>
         </button>
         {options.map((opt) => {
           const isSelected = value === opt.value
@@ -75,7 +75,7 @@ export default function SingleSelectPanel({ options, value, onChange, onClose, t
             </button>
           )
         })}
-        {options.length === 0 && <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>}
+        {options.length === 0 && <p className="px-3 py-2.5 text-[12px] text-ink/60">Sin opciones disponibles</p>}
       </div>
     </div>,
     document.body,

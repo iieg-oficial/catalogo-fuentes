@@ -21,7 +21,7 @@ class Usuario(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     rol_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("rol.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("rol.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     rol: Mapped["Rol | None"] = relationship("Rol", back_populates="usuarios")

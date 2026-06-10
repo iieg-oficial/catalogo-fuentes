@@ -12,7 +12,7 @@ class BaseDeDatos(Base):
     __tablename__ = "base_de_datos"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    db_nombre: Mapped[str] = mapped_column(String, nullable=False)
+    db_nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     descripcion_esquema: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
 
@@ -20,7 +20,7 @@ class BaseDeDatos(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     dataset_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("dataset.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("dataset.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     dataset: Mapped["Dataset | None"] = relationship("Dataset", back_populates="bases_de_datos")

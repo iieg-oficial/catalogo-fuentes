@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useContext } from 'react'
+import { useState, useRef, useEffect, useCallback, useContext, memo } from 'react'
 import { createPortal } from 'react-dom'
 import { CellContext } from '@/components/CatalogGrid'
 
@@ -18,7 +18,7 @@ function measureText(text: string, font: string): number {
   return ctx.measureText(text).width
 }
 
-export function TextCell({ value, mono = false, link = false }: TextCellProps) {
+function TextCell({ value, mono = false, link = false }: TextCellProps) {
   const cellCtx = useContext(CellContext)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean; width: number } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -70,7 +70,7 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
   }, [value])
 
-  if (!value) return <span className="text-ink/30 text-[13px]">--</span>
+  if (!value) return <span className="text-ink/60 text-[13px]">--</span>
 
   const textCls = mono
     ? 'font-mono text-[12px] text-ink/70 block truncate'
@@ -101,8 +101,8 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
         >
           {cellCtx && (
             <div className="flex items-center justify-between px-5 pt-3 pb-0">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{cellCtx.columnName}</span>
-              <span className="text-[10px] font-medium text-ink/30">#{cellCtx.rowIndex + 1}</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">{cellCtx.columnName}</span>
+              <span className="text-[10px] font-medium text-ink/30" aria-hidden="true">#{cellCtx.rowIndex + 1}</span>
             </div>
           )}
           <div className={`px-7 ${cellCtx ? 'pt-3' : 'pt-6'} pb-5`}>
@@ -125,7 +125,8 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 text-[13px] text-ink/35 transition-colors hover:text-brand-600"
+              aria-label="Copiar valor"
+              className="flex items-center gap-1.5 text-[13px] text-ink/60 transition-colors hover:text-brand-600"
             >
               <span>{copied ? 'Copiado' : 'Copiar'}</span>
               {copied ? (
@@ -146,3 +147,6 @@ export function TextCell({ value, mono = false, link = false }: TextCellProps) {
     </>
   )
 }
+
+export default memo(TextCell)
+export { TextCell }

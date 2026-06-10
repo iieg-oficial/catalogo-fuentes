@@ -2,21 +2,22 @@ import { Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuthContext } from '@/context/AuthContext'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/routes/ProtectedRoute'
-import LoginPage from '@/features/login/LoginPage'
-import RegisterPage from '@/features/register/RegisterPage'
-import ProyectosPage from '@/features/proyectos/ProyectosPage'
-import ProductosPage from '@/features/productos/ProductosPage'
+import LoginPage from '@/features/login/pages/LoginPage'
+import RegisterPage from '@/features/register/pages/RegisterPage'
+import ProyectosPage from '@/features/proyectos/pages/ProyectosPage'
+import ProductosPage from '@/features/productos/pages/ProductosPage'
 import FuentesPage from '@/features/fuentes/pages/FuentesPage'
 import DatasetsPage from '@/features/datasets/pages/DatasetsPage'
 import EdicionesDatasetPage from '@/features/ediciones_dataset/pages/EdicionesDatasetPage'
 import DistribucionesPage from '@/features/distribuciones/pages/DistribucionesPage'
-import BasesDeDatosPage from '@/features/bases_de_datos/BasesDeDatosPage'
+import BasesDeDatosPage from '@/features/bases_de_datos/pages/BasesDeDatosPage'
 import InformacionTablasPage from '@/features/informacion_tablas/pages/InformacionTablasPage'
-import ArchivosPage from '@/features/archivos/ArchivosPage'
+import ArchivosPage from '@/features/archivos/pages/ArchivosPage'
 import ProductoTablasPage from '@/features/producto_tablas/pages/ProductoTablasPage'
 import UsuariosPage from '@/features/usuarios/pages/UsuariosPage'
-import EntidadesPage from '@/features/entidades/EntidadesPage'
-import HomePage from '@/features/home/HomePage'
+import EntidadesPage from '@/features/entidades/pages/EntidadesPage'
+import HomePage from '@/features/home/pages/HomePage'
+import ProfilePage from '@/features/profile/pages/ProfilePage'
 
 function CatalogRoutes() {
   const { user, canManageUsers, logout } = useAuthContext()
@@ -36,6 +37,7 @@ function CatalogRoutes() {
         <Route path="producto-tablas" element={<ProductoTablasPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
         {canManageUsers && <Route path="usuarios" element={<UsuariosPage />} />}
+        <Route path="perfil" element={<ProfilePage />} />
         <Route index element={<HomePage />} />
       </Routes>
     </Layout>

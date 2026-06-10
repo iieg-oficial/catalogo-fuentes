@@ -26,6 +26,7 @@ export default function Drawer({ open, title, onClose, children }: Props) {
           <h3 className="text-base font-semibold text-gray-900 truncate">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Cerrar"
             className="text-gray-400 hover:text-gray-600 transition-colors ml-4 flex-shrink-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

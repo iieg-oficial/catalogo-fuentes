@@ -35,11 +35,11 @@ function userInitials(correo: string): string {
 }
 
 const navItemClass = (isActive: boolean) =>
-  `relative flex items-center gap-2.5 px-4 py-2 mx-2 rounded-md text-[13px] transition-colors duration-150
+  `relative flex items-center gap-2.5 px-4 py-2.5 mx-2 rounded-md text-[13px] transition-colors duration-150
    focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 ${
     isActive
-      ? 'bg-white/10 text-white font-semibold'
-      : 'text-white/[78%] hover:bg-white/[5%] hover:text-white font-normal'
+      ? 'bg-brand-400 text-white font-semibold'
+      : 'text-white/[78%] hover:bg-brand-700 hover:text-white font-normal'
   }`
 
 export default function Sidebar({ user, onLogout }: Props) {
@@ -50,8 +50,8 @@ export default function Sidebar({ user, onLogout }: Props) {
     <aside
       className={`
         fixed md:static inset-y-0 left-0 z-40 md:z-auto
-        w-60 min-h-screen bg-brand-900 text-white flex flex-col
-        transition-transform duration-300 ease-in-out
+        w-60 min-h-screen bg-brand-600 text-white flex flex-col shadow-[2px_0_8px_rgba(0,0,0,0.1)]
+        transition-transform duration-300 ease-in-out cursor-default
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}
     >
@@ -78,7 +78,7 @@ export default function Sidebar({ user, onLogout }: Props) {
       </div>
 
       <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegacion principal">
-        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
+        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
           Catalogo
         </p>
 
@@ -89,11 +89,8 @@ export default function Sidebar({ user, onLogout }: Props) {
             onClick={closeSidebar}
             className={({ isActive }) => navItemClass(isActive)}
           >
-            {({ isActive }) => (
+            {() => (
               <>
-                {isActive && (
-                  <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                )}
                 <span className="shrink-0 opacity-70">
                   {CATALOG_ICONS[level.key]?.()}
                 </span>
@@ -103,26 +100,28 @@ export default function Sidebar({ user, onLogout }: Props) {
           </NavLink>
         ))}
 
+        <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
+          Administracion
+        </p>
+
+        <NavLink
+          to="/perfil"
+          onClick={closeSidebar}
+          className={({ isActive }) => navItemClass(isActive)}
+        >
+          <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
+          <span className="flex-1 truncate">Perfil</span>
+        </NavLink>
+
         {user?.permisos?.includes('users:manage') && (
           <>
-            <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase select-none">
-              Administracion
-            </p>
-
             <NavLink
               to="/entidades"
               onClick={closeSidebar}
               className={({ isActive }) => navItemClass(isActive)}
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                  )}
-                  <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
-                  <span className="flex-1 truncate">Entidades</span>
-                </>
-              )}
+              <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
+              <span className="flex-1 truncate">Entidades</span>
             </NavLink>
 
             <NavLink
@@ -130,35 +129,38 @@ export default function Sidebar({ user, onLogout }: Props) {
               onClick={closeSidebar}
               className={({ isActive }) => navItemClass(isActive)}
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute -left-2 top-2 bottom-2 w-0.5 bg-white rounded-r" />
-                  )}
-                  <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
-                  <span className="flex-1 truncate">Usuarios</span>
-                </>
-              )}
+              <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
+              <span className="flex-1 truncate">Usuarios</span>
             </NavLink>
           </>
         )}
       </nav>
 
-      <div className="px-4 py-3.5 border-t border-white/[8%] flex items-center gap-2.5">
-        <div
+      <div className="px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5">
+        <button
+          onClick={() => { navigate('/perfil'); closeSidebar() }}
           className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center shrink-0
-                     text-[11px] font-bold text-white/90 ring-1 ring-white/10"
+                     text-[11px] font-bold text-white/90 ring-1 ring-white/10
+                     hover:ring-white/30 transition-all duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+          title="Mi perfil"
+          aria-label="Ir a mi perfil"
         >
           {user?.correo ? userInitials(user.correo) : '?'}
-        </div>
-        <div className="flex-1 min-w-0">
+        </button>
+        <button
+          onClick={() => { navigate('/perfil'); closeSidebar() }}
+          className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded"
+        >
           <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
-          <p className="text-[10px] text-white/45 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
-        </div>
+          <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
+        </button>
         <button
           onClick={() => { onLogout(); navigate('/login') }}
           title="Cerrar sesion"
-          className="w-6 h-6 rounded flex items-center justify-center
+          aria-label="Cerrar sesión"
+          className="w-8 h-8 rounded flex items-center justify-center
                      text-white/50 hover:text-white transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
         >

@@ -24,7 +24,7 @@ class Distribucion(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     edicion_dataset_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("edicion_dataset.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("edicion_dataset.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     edicion_dataset: Mapped["EdicionDataset | None"] = relationship("EdicionDataset", back_populates="distribuciones")

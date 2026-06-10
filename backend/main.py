@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import models  # noqa: F401 — ensures all models are registered before use
+from config import settings
 from routes.auth import router as auth_router
 from routes.permisos import router as permisos_router
 from routes.roles import router as roles_router
@@ -26,7 +27,7 @@ app = FastAPI(title="Dashboard Tracking API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

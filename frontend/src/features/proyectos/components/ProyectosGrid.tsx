@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react'
+import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 import { createPortal } from 'react-dom'
 import { useSidebar } from '@/context/SidebarContext'
 import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 
-type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag'
 
 interface ListOption {
   label: string
@@ -102,20 +103,7 @@ const TYPE_ICON: Record<string, ReactNode> = {
       <path d="M2 2v4l5 5 4-4-5-5H2z" /><circle cx="4" cy="4" r=".7" />
     </svg>
   ),
-  priority: (
-    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 9h2V5H2zM5 9h2V3H5zM8 9h2V1H8z" />
-    </svg>
-  ),
 }
-
-const PRIORITY_LEVELS = [
-  { label: 'Urgente',      color: '#dc2626' },
-  { label: 'Alta',         color: '#f97316' },
-  { label: 'Media',        color: '#f59e0b' },
-  { label: 'Baja',         color: '#22c55e' },
-  { label: 'Sin prioridad', color: '#94a3b8' },
-]
 
 const SORT_UP_ICON = (
   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -195,7 +183,7 @@ function FilterPanel({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/70">
           Filtrar · {label}
         </p>
       </div>
@@ -389,13 +377,13 @@ function GridColHeader({
             alignItems: 'center',
             justifyContent: 'center',
             background: hasFilter ? 'rgba(110,37,139,.12)' : 'transparent',
-            color: hasFilter ? '#5C2472' : 'rgba(26,22,37,.55)',
+            color: hasFilter ? ACTIVE_FILTER_COLOR : 'rgba(26,22,37,.55)',
             border: 'none',
             cursor: 'pointer',
             transition: 'opacity 120ms, background 120ms',
             flexShrink: 0,
           }}
-          title="Filtrar"
+          aria-label="Filtrar"
         >
           {FILTER_ICON}
         </button>
@@ -423,7 +411,7 @@ function GridColHeader({
                 lineHeight: 1,
                 letterSpacing: 1,
               }}
-              title="Opciones"
+              aria-label="Opciones"
             >
               ···
             </button>
@@ -498,7 +486,7 @@ function URLCell({ url }: { url: string }) {
         maxWidth: '100%',
         fontFamily: 'JetBrains Mono, ui-monospace, monospace',
         fontSize: 12,
-        color: '#5C2472',
+        color: ACTIVE_FILTER_COLOR,
         textDecoration: 'none',
         overflow: 'hidden',
       }}
@@ -535,11 +523,11 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
       try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) }
       catch { return value }
     })()
-    return <span className={`text-[12px] text-ink/55 ${editCls}`}>{fmt}</span>
+    return <span className={`text-[12px] text-ink/70 ${editCls}`}>{fmt}</span>
   }
 
   if (def.type === 'boolean') {
-    if (value === 'true') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium" style={{ backgroundColor: '#EEFBF5', color: '#067647' }}><span className="w-[5px] h-[5px] rounded-full bg-[#10b981]" />Sí</span></span>
+    if (value === 'true') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-600"><span className="w-[5px] h-[5px] rounded-full bg-brand-500" />Sí</span></span>
     if (value === 'false') return <span className={editCls}><span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium bg-ink/[6%] text-ink/50"><span className="w-[5px] h-[5px] rounded-full bg-ink/30" />No</span></span>
     return <span className={editCls}>{EMPTY_DASH}</span>
   }
@@ -561,20 +549,6 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
       <span className={editCls}>
         <span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-600 whitespace-nowrap">
           <span className="w-[5px] h-[5px] rounded-full bg-brand-500 shrink-0" />
-          {value}
-        </span>
-      </span>
-    )
-  }
-
-  if (def.type === 'priority') {
-    const level = PRIORITY_LEVELS.find((l) => l.label === value)
-    const color = level?.color ?? '#94a3b8'
-    return (
-      <span className={editCls}>
-        <span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium whitespace-nowrap"
-          style={{ backgroundColor: `${color}1a`, color }}>
-          <span className="w-[5px] h-[5px] rounded-full shrink-0" style={{ backgroundColor: color }} />
           {value}
         </span>
       </span>
@@ -654,8 +628,6 @@ export default function ProyectosGrid({
     metaColumnDefs?.forEach((def) => {
       if (def.type === 'list' && def.options?.length) {
         result[def.key] = def.options.map((o) => o.label)
-      } else if (def.type === 'priority') {
-        result[def.key] = PRIORITY_LEVELS.map((l) => l.label)
       } else {
         const vals = [...new Set(rows.map((r) => String(getMeta?.(r)?.[def.key] ?? '')).filter(Boolean))]
         result[def.key] = vals.slice(0, 30)
@@ -703,7 +675,6 @@ export default function ProyectosGrid({
 
     // Apply sort
     if (sortField) {
-      const isPriority = metaColumnDefs?.find((d) => d.key === sortField)?.type === 'priority'
       r.sort((a, b) => {
         let av: string, bv: string
         if (sortField.startsWith('__col_')) {
@@ -714,14 +685,7 @@ export default function ProyectosGrid({
           av = String(getMeta?.(a)?.[sortField] ?? '')
           bv = String(getMeta?.(b)?.[sortField] ?? '')
         }
-        let cmp: number
-        if (isPriority) {
-          const ai = PRIORITY_LEVELS.findIndex((l) => l.label === av)
-          const bi = PRIORITY_LEVELS.findIndex((l) => l.label === bv)
-          cmp = (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
-        } else {
-          cmp = av.localeCompare(bv, 'es', { numeric: true })
-        }
+        const cmp = av.localeCompare(bv, 'es', { numeric: true })
         return sortDir === 'asc' ? cmp : -cmp
       })
     }
@@ -758,13 +722,13 @@ export default function ProyectosGrid({
       {/* ------------------------------------------------------------------ */}
       {/* Editorial header                                                     */}
       {/* ------------------------------------------------------------------ */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#9F8FA8' }}>
+      <div className="cursor-default">
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 cursor-default" style={{ color: SECTION_LABEL_COLOR }}>
           Catálogo · Proyectos
         </p>
-        <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="font-newsreader text-ink leading-none cursor-default" style={{ fontSize: '32px', fontWeight: 500 }}>
           Proyectos
-          <span style={{ color: '#9F8FA8', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -910,15 +874,15 @@ export default function ProyectosGrid({
                   <th
                     style={{
                       position: 'sticky', top: 0, zIndex: 2,
-                      backgroundColor: '#FBFAFC',
+                      backgroundColor: TABLE_FOOTER_BG,
                       borderBottom: '1px solid rgba(26,22,37,.10)',
                       width: 44, height: 36, verticalAlign: 'middle', textAlign: 'center', padding: 0,
                     }}
                   >
                     <button
                       onClick={onAddColumn}
-                      className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
-                      title="Agregar campo"
+                      className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
+                      aria-label="Agregar campo"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M7 1v12M1 7h12" />
@@ -969,10 +933,11 @@ export default function ProyectosGrid({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSelectRow(rowKey)}
+                          aria-label={`Seleccionar fila ${rowIndex + 1}`}
                           className="w-3.5 h-3.5 rounded accent-brand-600 cursor-pointer"
                         />
                       ) : (
-                        <span className="font-mono text-[10px] text-ink/30 select-none">{rowIndex + 1}</span>
+                        <span aria-hidden="true" className="font-mono text-[10px] text-ink/30 select-none">{rowIndex + 1}</span>
                       )}
                     </td>
 
@@ -1056,19 +1021,6 @@ export default function ProyectosGrid({
                                   label={def.label ?? def.key}
                                 />
                               </>
-                            ) : def.type === 'priority' ? (
-                              <>
-                                <MetaCellView value={currentVal} def={def} editable={false} />
-                                <SingleSelectPanel
-                                  options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
-                                  value={editingCell!.value}
-                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
-                                  onClose={() => setEditingCell(null)}
-                                  top={editingCellPos.top}
-                                  left={editingCellPos.left}
-                                  label={def.label ?? def.key}
-                                />
-                              </>
                             ) : (
                               <input autoFocus type={def.type === 'date' ? 'date' : 'text'}
                                 value={editingCell!.value}
@@ -1117,13 +1069,6 @@ export default function ProyectosGrid({
                             options={def.options.map((o) => ({ value: o.label, label: o.label }))}
                             label={def.label ?? def.key}
                           />
-                        ) : def.type === 'priority' ? (
-                          <SelectInput
-                            value={addRowMetaValues?.[def.key] ?? ''}
-                            onChange={(v) => onAddRowMetaChange(def.key, v)}
-                            options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
-                            label={def.label ?? def.key}
-                          />
                         ) : (
                           <input type={def.type === 'date' ? 'date' : 'text'}
                             value={addRowMetaValues?.[def.key] ?? ''}
@@ -1145,7 +1090,7 @@ export default function ProyectosGrid({
                   <td colSpan={totalCols} className="px-3 py-2.5">
                     <button
                       onClick={onAdd}
-                      className="flex items-center gap-1.5 text-[12px] text-ink/40 hover:text-brand-600 transition-colors"
+                      className="flex items-center gap-1.5 text-[12px] text-ink/60 hover:text-brand-600 transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                         <path d="M6 1v10M1 6h10" />
@@ -1160,14 +1105,14 @@ export default function ProyectosGrid({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%]" style={{ backgroundColor: '#FBFAFC' }}>
-          <span className="font-mono text-[11px] text-ink/55">
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: TABLE_FOOTER_BG }}>
+          <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>
           {totalRegistros > 0 && (
             <>
               <span className="font-mono text-[11px] text-ink/25">·</span>
-              <span className="font-mono text-[11px] text-ink/55">
+              <span className="font-mono text-[11px] text-ink/70">
                 Total registros: <strong className="font-semibold text-ink">{totalRegistros.toLocaleString('es-MX')}</strong>
               </span>
             </>

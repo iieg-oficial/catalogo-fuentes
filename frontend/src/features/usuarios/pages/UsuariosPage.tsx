@@ -1,6 +1,7 @@
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
+import Button from '@/components/Button'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import { useAuthContext } from '@/context/AuthContext'
@@ -169,7 +170,7 @@ function FilterDropdown({
         ref={triggerRef}
         type="button"
         onClick={openPanel}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-ink/[10%] rounded-lg text-[13px] text-ink/70 shadow-sm hover:bg-ink/[2%] transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-ink/[10%] rounded-lg text-[13px] text-ink/70 shadow-sm hover:bg-ink/[2%] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1"
       >
         <span className="font-medium text-ink/40">{label}:</span>
         <span className="font-medium">{selected?.label ?? label}</span>
@@ -275,6 +276,8 @@ export default function UsuariosPage() {
   const [filterStatus, setFilterStatus] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formCorreo, setFormCorreo] = useState('')
+  const [formNombre, setFormNombre] = useState('')
+  const [formPassword, setFormPassword] = useState('')
   const [formRolId, setFormRolId] = useState('')
   const [formError, setFormError] = useState('')
   const [formLoading, setFormLoading] = useState(false)
@@ -297,15 +300,23 @@ export default function UsuariosPage() {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
     setFormError('')
+    if (formPassword.length < 8) {
+      setFormError('La contraseña debe tener al menos 8 caracteres.')
+      return
+    }
     setFormLoading(true)
     try {
       const u = await createUsuario({
         correo: formCorreo,
+        nombre: formNombre,
+        password: formPassword,
         rol_id: formRolId || undefined,
       })
       setUsers((prev) => [...prev, u])
       setShowForm(false)
       setFormCorreo('')
+      setFormNombre('')
+      setFormPassword('')
       setFormRolId('')
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el correo no esté registrado.')
@@ -417,18 +428,15 @@ export default function UsuariosPage() {
       <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-ink">Gestión de usuarios</h1>
-          <p className="text-xs text-ink/40 mt-0.5">
+          <p className="text-xs text-ink/70 mt-0.5">
             Administra los niveles de acceso y permisos del personal.
           </p>
         </div>
         {canManageUsers && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shadow-sm"
-          >
+          <Button onClick={() => setShowForm(true)}>
             <span className="text-base leading-none">+</span>
             Crear usuario
-          </button>
+          </Button>
         )}
       </div>
 
@@ -459,6 +467,29 @@ export default function UsuariosPage() {
                 />
               </div>
               <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Nombre</label>
+                <input
+                  type="text"
+                  required
+                  value={formNombre}
+                  onChange={(e) => setFormNombre(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="Nombre completo"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-ink/50 mb-1">Contraseña temporal</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={formPassword}
+                  onChange={(e) => setFormPassword(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  placeholder="Mínimo 8 caracteres"
+                />
+              </div>
+              <div>
                 <label className="block text-xs font-medium text-ink/50 mb-1">Rol</label>
                 <FormDropdown
                   value={formRolId}
@@ -467,13 +498,9 @@ export default function UsuariosPage() {
                 />
               </div>
               {formError && <p className="text-xs text-red-600">{formError}</p>}
-              <button
-                type="submit"
-                disabled={formLoading}
-                className="w-full py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
-              >
+              <Button type="submit" fullWidth loading={formLoading}>
                 {formLoading ? 'Creando…' : 'Crear'}
-              </button>
+              </Button>
             </form>
           </div>
         </div>,
@@ -515,7 +542,7 @@ export default function UsuariosPage() {
             />
           </div>
         </div>
-        <span className="text-xs text-ink/40">
+        <span className="text-xs text-ink/60">
           {filtered.length} {filtered.length === 1 ? 'usuario' : 'usuarios'}
         </span>
       </div>
@@ -530,19 +557,19 @@ export default function UsuariosPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-ink/[6%]">
-                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/40 uppercase">
+                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/70 uppercase">
                   <span className="inline-flex items-center gap-1.5">{cuentaIcon()}<span>Cuenta</span></span>
                 </th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/40 uppercase">
+                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/70 uppercase">
                   <span className="inline-flex items-center gap-1.5">{correoIcon()}<span>Correo electrónico</span></span>
                 </th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/40 uppercase">
+                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/70 uppercase">
                   <span className="inline-flex items-center gap-1.5">{rolIcon()}<span>Rol</span></span>
                 </th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/40 uppercase">
+                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/70 uppercase">
                   <span className="inline-flex items-center gap-1.5">{estadoIcon()}<span>Estado</span></span>
                 </th>
-                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/40 uppercase">
+                <th className="text-left px-5 py-3 text-[11px] font-semibold tracking-wider text-ink/70 uppercase">
                   <span className="inline-flex items-center gap-1.5">{relojIcon()}<span>Último acceso</span></span>
                 </th>
                 <th className="px-5 py-3" />
@@ -563,7 +590,7 @@ export default function UsuariosPage() {
                       </div>
                     </td>
 
-                    <td className="px-5 py-3 text-ink/50 text-xs">{usuario.correo}</td>
+                    <td className="px-5 py-3 text-ink/70 text-xs">{usuario.correo}</td>
 
                     <td className="px-5 py-3">
                       {canEditRole(usuario) ? (
@@ -588,14 +615,14 @@ export default function UsuariosPage() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-ink/20">—</span>
+                        <span className="text-xs text-ink/60">—</span>
                       )}
                     </td>
 
                     <td className="px-5 py-3 text-xs text-ink/40">—</td>
 
                     <td className="px-5 py-3 text-right">
-                      <button className="p-1 rounded text-ink/20 hover:text-ink/50 hover:bg-ink/[5%] transition-colors" title="Más acciones">
+                      <button className="p-1 rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-colors" aria-label="Más acciones">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                           <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
                         </svg>
@@ -617,7 +644,7 @@ export default function UsuariosPage() {
 
           {/* Pagination footer */}
           <div className="flex items-center justify-between px-5 py-3 border-t border-ink/[6%] bg-neutral-50/50">
-            <div className="flex items-center gap-2 text-xs text-ink/50">
+            <div className="flex items-center gap-2 text-xs text-ink/70">
               <span>Filas por página:</span>
               <select
                 value={pageSize}
@@ -628,7 +655,7 @@ export default function UsuariosPage() {
               </select>
             </div>
             {totalPages > 1 && (
-              <div className="flex items-center gap-3 text-xs text-ink/50">
+              <div className="flex items-center gap-3 text-xs text-ink/70 cursor-default">
                 <span>
                   {filtered.length === 0 ? '0' : `${start + 1}–${Math.min(start + pageSize, filtered.length)}`}
                   {' '}de {filtered.length}
@@ -636,7 +663,7 @@ export default function UsuariosPage() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={safePage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M7.5 2L4 6l3.5 4" />
@@ -645,7 +672,7 @@ export default function UsuariosPage() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={safePage === totalPages}
-                  className="w-7 h-7 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded border border-ink/[10%] bg-white hover:bg-ink/[4%] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4.5 2L8 6l-3.5 4" />
