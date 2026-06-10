@@ -31,7 +31,6 @@ interface DataTableProps<T> {
   columns: Column<T>[]
   rows: T[]
   caption?: string
-  onRowClick?: (row: T) => void
   getKey: (row: T) => string
   isEditing?: boolean
   // Inline add row
@@ -102,12 +101,6 @@ const TYPE_ICON: Record<string, ReactNode> = {
   ),
 }
 
-const EYE_ICON = (
-  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/>
-    <circle cx="8" cy="8" r="2.5"/>
-  </svg>
-)
 
 function ColMenu({
   open,
@@ -336,7 +329,6 @@ export default function DataTable<T>({
   columns,
   rows,
   caption,
-  onRowClick,
   getKey,
   isEditing = false,
   onAdd,
@@ -356,7 +348,7 @@ export default function DataTable<T>({
   const [editingCell, setEditingCell] = useState<{ rowKey: string; colKey: string; value: string } | null>(null)
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const hasActionsCol = !!onDeleteRow
-  const hasLeftActionsCol = !!onRowClick || hasActionsCol
+  const hasLeftActionsCol = hasActionsCol
 
   const totalCols =
     columns.length +
@@ -452,28 +444,14 @@ export default function DataTable<T>({
             return (
               <tr
                 key={rowKey}
-                onClick={!isEditing && onRowClick ? () => onRowClick(row) : undefined}
                 className={`group row-item-enter bg-white transition-colors duration-100 hover:bg-brand-500/[2.5%] ${
-                  !isEditing && onRowClick ? 'cursor-pointer' : isEditing ? 'cursor-default' : ''
+                  isEditing ? 'cursor-default' : ''
                 }`}
                 style={{ animationDelay: `${Math.min(rowIndex, 10) * 22}ms` }}
               >
                 {hasLeftActionsCol && (
                   <td className="w-[88px] pl-4 pr-2 py-[14px] align-middle" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-0.5">
-                      {onRowClick && (
-                        <button
-                          onClick={() => onRowClick(row)}
-                          className="w-8 h-8 rounded-[6px] flex items-center justify-center
-                                     text-ink/[35%] group-hover:text-ink/[55%]
-                                     hover:bg-brand-500/10 hover:text-brand-600
-                                     transition-all duration-150 motion-safe:active:scale-90"
-                          aria-label="Ver detalle"
-                          title="Ver detalle"
-                        >
-                          {EYE_ICON}
-                        </button>
-                      )}
                       {hasActionsCol && (
                         <button
                           onClick={() => onDeleteRow?.(row)}
