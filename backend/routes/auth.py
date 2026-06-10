@@ -7,9 +7,16 @@ from db import get_db
 from exceptions.http import conflict, unauthorized
 from models.usuario import Usuario
 from routes.dependencies import get_current_user, require_admin
-from schemas.auth import LoginRequest, TokenResponse
+from schemas.auth import ChangePasswordRequest, LoginRequest, TokenResponse, UpdateProfileRequest
 from schemas.usuario import UsuarioCreate, UsuarioRead, UsuarioSignup
-from services.auth import activate_usuario, authenticate_usuario, create_access_token, get_usuario_by_correo
+from services.auth import (
+    activate_usuario,
+    authenticate_usuario,
+    change_password,
+    create_access_token,
+    get_usuario_by_correo,
+    update_profile,
+)
 from services.usuarios import create_usuario
 
 logger = logging.getLogger(__name__)
@@ -63,3 +70,26 @@ async def register(
 @router.get("/me", response_model=UsuarioRead)
 async def me(current_user: Usuario = Depends(get_current_user)):
     return current_user
+
+
+@router.put("/password", status_code=204)
+async def update_password(
+    data: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
+    """Change the current user's password."""
+    success = await change_password(db, current_user, data.current_password, data.new_password)
+    if not success:
+        raise unauthorized("Contraseña actual incorrecta")
+
+
+@router.put("/profile", response_model=UsuarioRead)
+async def update_my_profile(
+    data: UpdateProfileRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
+    """Update the current user's profile."""
+    updated = await update_profile(db, current_user, data.nombre)
+    return updated

@@ -10,18 +10,19 @@ interface AuthContextValue {
   isSuperAdmin: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, loading, login, logout } = useAuth()
+  const { user, loading, login, logout, refreshUser } = useAuth()
   const permisos = user?.permisos ?? []
   const canWrite = permisos.includes('catalog:write')
   const canManageUsers = permisos.includes('users:manage')
   const isSuperAdmin = permisos.includes('admin:full')
   return (
-    <AuthContext.Provider value={{ user, loading, canWrite, canManageUsers, isSuperAdmin, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, canWrite, canManageUsers, isSuperAdmin, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

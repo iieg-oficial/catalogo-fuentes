@@ -841,9 +841,9 @@ export default function CatalogGrid<T extends { id: string }>({
         <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 cursor-default" style={{ color: SECTION_LABEL_COLOR }}>
           {eyebrow}
         </p>
-        <h1 className="font-newsreader text-ink leading-none cursor-default" style={{ fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="text-ink leading-none cursor-default" style={{ fontSize: '28px', fontWeight: 700 }}>
           {title}
-          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '20px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
