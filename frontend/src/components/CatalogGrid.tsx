@@ -38,7 +38,6 @@ export interface CatalogGridProps<T> {
   rows: T[]
   columns: Column<T>[]
   getKey: (row: T) => string
-  onRowClick?: (row: T) => void
   canWrite?: boolean
   onAdd?: () => void
   addRowCells?: ReactNode
@@ -130,12 +129,6 @@ const SORT_DOWN_ICON = (
 const FILTER_ICON = (
   <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 3h12l-4.5 6v4l-3 1.5V9L2 3z" />
-  </svg>
-)
-const EYE_ICON = (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" />
-    <circle cx="8" cy="8" r="2" />
   </svg>
 )
 
@@ -635,7 +628,6 @@ export default function CatalogGrid<T extends { id: string }>({
   rows,
   columns,
   getKey,
-  onRowClick,
   canWrite,
   onAdd,
   addRowCells,
@@ -798,7 +790,7 @@ export default function CatalogGrid<T extends { id: string }>({
     setSelectedRows((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n })
   }
 
-  const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0) + 1
+  const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0)
 
   const exportToCsv = () => {
     const escape = (v: unknown) => {
@@ -992,7 +984,6 @@ export default function CatalogGrid<T extends { id: string }>({
                   </th>
                 )}
 
-                <th style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#FBFAFC', borderBottom: '1px solid rgba(26,22,37,.10)', width: 44, minWidth: 44 }} />
               </tr>
             </thead>
 
@@ -1192,20 +1183,6 @@ export default function CatalogGrid<T extends { id: string }>({
 
                     {onAddColumn && <td style={{ borderBottom: '1px solid rgba(26,22,37,.05)' }} />}
 
-                    <td
-                      style={{ width: 44, height: 40, verticalAlign: 'middle', textAlign: 'center', borderBottom: '1px solid rgba(26,22,37,.05)' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {isHovered && onRowClick && (
-                        <button
-                          onClick={() => onRowClick(row)}
-                          className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-all mx-auto"
-                          aria-label="Abrir"
-                        >
-                          {EYE_ICON}
-                        </button>
-                      )}
-                    </td>
                   </tr>
                 )
               })}

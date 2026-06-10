@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
@@ -14,7 +14,6 @@ import { nombreIcon, descripcionIcon, estadoIcon, urlIcon } from '@/consts/secti
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function FuentesPage() {
-  const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Fuente[]>([])
   const [loading, setLoading] = useState(true)
@@ -265,7 +264,6 @@ export default function FuentesPage() {
         rows={filtered}
         columns={columns}
         getKey={(r) => r.id}
-        onRowClick={(r) => navigate(`/fuentes/${r.id}`)}
         canWrite={canWrite}
         onAdd={canWrite ? () => setAddingRow(true) : undefined}
         addRowCells={canWrite && addingRow ? addRowCells : undefined}
