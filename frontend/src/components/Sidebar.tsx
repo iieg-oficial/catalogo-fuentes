@@ -3,7 +3,7 @@ import { CATALOG_LEVELS } from '@/consts'
 import {
   proyectosIcon, productosIcon, fuentesIcon, datasetsIcon,
   edicionesIcon, distribucionesIcon, basesDeDatosIcon,
-  informacionTablasIcon, archivosIcon, productoTablasIcon,
+  informacionTablasIcon, archivosIcon,
   entidadesIcon, usuariosIcon,
 } from '@/consts/sectionIcons'
 import { useSidebar } from '@/context/SidebarContext'
@@ -24,7 +24,6 @@ const CATALOG_ICONS: Record<string, () => React.ReactNode> = {
   'bases-de-datos':     () => basesDeDatosIcon({ size: 14 }),
   'informacion-tablas': () => informacionTablasIcon({ size: 14 }),
   archivos:             () => archivosIcon({ size: 14 }),
-  'producto-tablas':    () => productoTablasIcon({ size: 14 }),
 }
 
 function userInitials(correo: string): string {
