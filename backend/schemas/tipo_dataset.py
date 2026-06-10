@@ -4,25 +4,22 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class ProyectoBase(BaseModel):
+class TipoDatasetBase(BaseModel):
     nombre: str
     descripcion: str | None = None
-    meta: dict = {}
 
 
-class ProyectoCreate(ProyectoBase):
+class TipoDatasetCreate(TipoDatasetBase):
     pass
 
 
-class ProyectoUpdate(BaseModel):
+class TipoDatasetUpdate(BaseModel):
     nombre: str | None = None
     descripcion: str | None = None
-    meta: dict | None = None
 
 
-class ProyectoRead(ProyectoBase):
+class TipoDatasetRead(TipoDatasetBase):
     id: uuid.UUID
     created_at: datetime
-    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}

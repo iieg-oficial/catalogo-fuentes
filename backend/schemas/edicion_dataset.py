@@ -7,18 +7,14 @@ from schemas.refs import DatasetRef
 
 
 class EdicionDatasetBase(BaseModel):
-    nombre: str
+    edicion: str
     fecha_publicacion: date | None = None
     periodo_referencia_inicio: date | None = None
     periodo_referencia_fin: date | None = None
     tipo_periodo_referencia: str | None = None
-    fecha_levantamiento_inicio: date | None = None
-    fecha_levantamiento_fin: date | None = None
-    url_documentacion_edicion: str | None = None
-    url_comunicado_publicacion: str | None = None
+    url_metodologia_edicion: str | None = None
+    url_metadatos_edicion: str | None = None
     observaciones_edicion: str | None = None
-    version_publicacion: str | None = None
-    es_version_corregida: bool = False
     dataset_id: uuid.UUID | None = None
 
 
@@ -27,18 +23,14 @@ class EdicionDatasetCreate(EdicionDatasetBase):
 
 
 class EdicionDatasetUpdate(BaseModel):
-    nombre: str | None = None
+    edicion: str | None = None
     fecha_publicacion: date | None = None
     periodo_referencia_inicio: date | None = None
     periodo_referencia_fin: date | None = None
     tipo_periodo_referencia: str | None = None
-    fecha_levantamiento_inicio: date | None = None
-    fecha_levantamiento_fin: date | None = None
-    url_documentacion_edicion: str | None = None
-    url_comunicado_publicacion: str | None = None
+    url_metodologia_edicion: str | None = None
+    url_metadatos_edicion: str | None = None
     observaciones_edicion: str | None = None
-    version_publicacion: str | None = None
-    es_version_corregida: bool | None = None
     dataset_id: uuid.UUID | None = None
 
 

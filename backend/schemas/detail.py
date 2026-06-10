@@ -6,7 +6,6 @@ from schemas.edicion_dataset import EdicionDatasetRead
 from schemas.fuente import FuenteRead
 from schemas.informacion_tablas import InformacionTablasRead
 from schemas.producto import ProductoRead
-from schemas.producto_tabla import ProductoTablaRead
 from schemas.proyecto import ProyectoRead
 
 
@@ -15,7 +14,7 @@ class ProyectoDetail(ProyectoRead):
 
 
 class ProductoDetail(ProductoRead):
-    producto_tablas: list[ProductoTablaRead] = []
+    informacion_tablas: list[InformacionTablasRead] = []
 
 
 class FuenteDetail(FuenteRead):
@@ -24,7 +23,7 @@ class FuenteDetail(FuenteRead):
 
 class DatasetDetail(DatasetRead):
     ediciones: list[EdicionDatasetRead] = []
-    bases_de_datos: list[BaseDeDatosRead] = []
+    distribuciones: list[DistribucionRead] = []
 
 
 class EdicionDatasetDetail(EdicionDatasetRead):

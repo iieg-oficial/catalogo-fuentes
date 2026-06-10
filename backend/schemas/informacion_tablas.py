@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from schemas.refs import BaseDeDatosRef
+from schemas.refs import BaseDeDatosRef, ProductoRef
 
 
 class InformacionTablasBase(BaseModel):
@@ -11,6 +11,7 @@ class InformacionTablasBase(BaseModel):
     descripcion: str | None = None
     meta: dict = {}
     base_de_datos_id: uuid.UUID | None = None
+    producto_id: uuid.UUID | None = None
 
 
 class InformacionTablasCreate(InformacionTablasBase):
@@ -22,11 +23,13 @@ class InformacionTablasUpdate(BaseModel):
     descripcion: str | None = None
     meta: dict | None = None
     base_de_datos_id: uuid.UUID | None = None
+    producto_id: uuid.UUID | None = None
 
 
 class InformacionTablasRead(InformacionTablasBase):
     id: uuid.UUID
     base_de_datos: BaseDeDatosRef | None = None
+    producto: ProductoRef | None = None
     created_at: datetime
     updated_at: datetime | None = None
 
