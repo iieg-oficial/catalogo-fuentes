@@ -2,19 +2,8 @@ import { FormEvent, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuthContext } from '@/context/AuthContext'
 
-const STORAGE_KEY = 'login_remembered'
-
 const INPUT_CLASS =
   'w-full h-10 px-3 text-[13px] font-medium rounded-lg border border-transparent bg-[#F8F8F8] text-brand-600 placeholder:text-[#8E8E8E] placeholder:font-normal outline-none transition-all hover:border-brand-400 hover:shadow-[0_2px_16px_rgba(46,67,114,0.12)] focus:bg-white focus:border-brand-600 focus:shadow-[0_0_0_1px_#2e4372]'
-
-function loadRemembered(): { email: string } | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
 
 function Spinner() {
   return (
@@ -30,9 +19,8 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const successMessage = (location.state as { success?: string } | null)?.success ?? ''
-  const [email, setEmail] = useState(() => loadRemembered()?.email ?? '')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [remember, setRemember] = useState(() => !!loadRemembered())
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -41,11 +29,6 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    if (remember) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ email }))
-    } else {
-      localStorage.removeItem(STORAGE_KEY)
-    }
     try {
       await login(email, password)
       navigate('/', { replace: true })
@@ -130,16 +113,6 @@ export default function LoginPage() {
                     {error}
                   </p>
                 )}
-
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-300 text-brand-600 focus:ring-brand-500"
-                  />
-                  <span className="text-xs text-neutral-500">Recordar mi usuario</span>
-                </label>
 
                 <button
                   type="submit"
