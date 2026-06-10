@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.distribucion import Distribucion
 from models.edicion_dataset import EdicionDataset
 from schemas.edicion_dataset import EdicionDatasetCreate, EdicionDatasetUpdate
 
@@ -37,7 +38,9 @@ async def get_edicion_dataset_detail(db: AsyncSession, edicion_id: uuid.UUID) ->
         select(EdicionDataset)
         .options(
             selectinload(EdicionDataset.dataset),
-            selectinload(EdicionDataset.distribuciones),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.dataset),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.tipo_de_acceso),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.medio_distribucion),
         )
         .where(EdicionDataset.id == edicion_id)
     )

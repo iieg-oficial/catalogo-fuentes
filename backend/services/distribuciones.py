@@ -15,7 +15,12 @@ async def list_distribuciones(
     limit: int = 10_000,
     edicion_dataset_id: uuid.UUID | None = None,
 ) -> list[Distribucion]:
-    q = select(Distribucion).options(selectinload(Distribucion.edicion_dataset))
+    q = select(Distribucion).options(
+        selectinload(Distribucion.edicion_dataset),
+        selectinload(Distribucion.dataset),
+        selectinload(Distribucion.tipo_de_acceso),
+        selectinload(Distribucion.medio_distribucion),
+    )
     if edicion_dataset_id:
         q = q.where(Distribucion.edicion_dataset_id == edicion_dataset_id)
     q = q.order_by(Distribucion.created_at.asc()).offset(skip).limit(limit)
@@ -26,7 +31,12 @@ async def list_distribuciones(
 async def get_distribucion(db: AsyncSession, distribucion_id: uuid.UUID) -> Distribucion | None:
     result = await db.execute(
         select(Distribucion)
-        .options(selectinload(Distribucion.edicion_dataset))
+        .options(
+            selectinload(Distribucion.edicion_dataset),
+            selectinload(Distribucion.dataset),
+            selectinload(Distribucion.tipo_de_acceso),
+            selectinload(Distribucion.medio_distribucion),
+        )
         .where(Distribucion.id == distribucion_id)
     )
     return result.scalar_one_or_none()
@@ -37,6 +47,9 @@ async def get_distribucion_detail(db: AsyncSession, distribucion_id: uuid.UUID) 
         select(Distribucion)
         .options(
             selectinload(Distribucion.edicion_dataset),
+            selectinload(Distribucion.dataset),
+            selectinload(Distribucion.tipo_de_acceso),
+            selectinload(Distribucion.medio_distribucion),
             selectinload(Distribucion.archivos),
         )
         .where(Distribucion.id == distribucion_id)

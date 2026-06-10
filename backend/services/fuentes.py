@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.dataset import Dataset
 from models.fuente import Fuente
 from schemas.fuente import FuenteCreate, FuenteUpdate
 
@@ -23,7 +24,9 @@ async def get_fuente(db: AsyncSession, fuente_id: uuid.UUID) -> Fuente | None:
 
 async def get_fuente_detail(db: AsyncSession, fuente_id: uuid.UUID) -> Fuente | None:
     result = await db.execute(
-        select(Fuente).options(selectinload(Fuente.datasets)).where(Fuente.id == fuente_id)
+        select(Fuente)
+        .options(selectinload(Fuente.datasets).selectinload(Dataset.tipo_dataset))
+        .where(Fuente.id == fuente_id)
     )
     return result.scalar_one_or_none()
 

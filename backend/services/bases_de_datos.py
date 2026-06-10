@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from models.base_de_datos import BaseDeDatos
+from models.informacion_tablas import InformacionTablas
 from schemas.base_de_datos import BaseDeDatosCreate, BaseDeDatosUpdate
 
 
@@ -13,11 +14,11 @@ async def list_bases_de_datos(
     db: AsyncSession,
     skip: int = 0,
     limit: int = 10_000,
-    dataset_id: uuid.UUID | None = None,
+    archivo_id: uuid.UUID | None = None,
 ) -> list[BaseDeDatos]:
-    q = select(BaseDeDatos).options(selectinload(BaseDeDatos.dataset))
-    if dataset_id:
-        q = q.where(BaseDeDatos.dataset_id == dataset_id)
+    q = select(BaseDeDatos).options(selectinload(BaseDeDatos.archivo))
+    if archivo_id:
+        q = q.where(BaseDeDatos.archivo_id == archivo_id)
     q = q.order_by(BaseDeDatos.created_at.asc()).offset(skip).limit(limit)
     result = await db.execute(q)
     return list(result.scalars().all())
@@ -26,7 +27,7 @@ async def list_bases_de_datos(
 async def get_base_de_datos(db: AsyncSession, bd_id: uuid.UUID) -> BaseDeDatos | None:
     result = await db.execute(
         select(BaseDeDatos)
-        .options(selectinload(BaseDeDatos.dataset))
+        .options(selectinload(BaseDeDatos.archivo))
         .where(BaseDeDatos.id == bd_id)
     )
     return result.scalar_one_or_none()
@@ -36,8 +37,8 @@ async def get_base_de_datos_detail(db: AsyncSession, bd_id: uuid.UUID) -> BaseDe
     result = await db.execute(
         select(BaseDeDatos)
         .options(
-            selectinload(BaseDeDatos.dataset),
-            selectinload(BaseDeDatos.informacion_tablas),
+            selectinload(BaseDeDatos.archivo),
+            selectinload(BaseDeDatos.informacion_tablas).selectinload(InformacionTablas.producto),
         )
         .where(BaseDeDatos.id == bd_id)
     )
