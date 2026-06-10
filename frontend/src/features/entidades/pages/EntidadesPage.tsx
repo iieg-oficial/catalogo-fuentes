@@ -49,7 +49,6 @@ const ENTITIES: EntityDef[] = [
       { name: 'id',          kind: 'pk'   },
       { name: 'nombre',      kind: 'str'  },
       { name: 'descripcion', kind: 'text' },
-      { name: 'usuario_id',  kind: 'fk'   },
       { name: 'meta',        kind: 'json' },
     ],
   },
@@ -74,42 +73,67 @@ const ENTITIES: EntityDef[] = [
     ],
   },
   {
+    id: 'tipo_dataset', label: 'TipoDataset', route: '/datasets',
+    fields: [
+      { name: 'id',     kind: 'pk'  },
+      { name: 'nombre', kind: 'str' },
+    ],
+  },
+  {
     id: 'dataset', label: 'Dataset', route: '/datasets',
     fields: [
-      { name: 'id',           kind: 'pk'   },
-      { name: 'fuente_id',    kind: 'fk'   },
-      { name: 'nombre',       kind: 'str'  },
-      { name: 'descripcion',  kind: 'text' },
-      { name: 'periodicidad', kind: 'text' },
-      { name: 'vigente',      kind: 'str'  },
+      { name: 'id',              kind: 'pk'   },
+      { name: 'fuente_id',       kind: 'fk'   },
+      { name: 'tipo_dataset_id', kind: 'fk'   },
+      { name: 'nombre',          kind: 'str'  },
+      { name: 'descripcion',     kind: 'text' },
+      { name: 'periodicidad',    kind: 'text' },
+      { name: 'vigente',         kind: 'str'  },
     ],
   },
   {
     id: 'edicion_dataset', label: 'EdicionDataset', route: '/ediciones-dataset',
     fields: [
       { name: 'id',                kind: 'pk'   },
-      { name: 'dataset_id',       kind: 'fk'   },
-      { name: 'nombre',           kind: 'str'  },
+      { name: 'dataset_id',        kind: 'fk'   },
+      { name: 'edicion',           kind: 'str'  },
       { name: 'fecha_publicacion', kind: 'date' },
+    ],
+  },
+  {
+    id: 'tipo_de_acceso', label: 'TipoDeAcceso', route: '/distribuciones',
+    fields: [
+      { name: 'id',     kind: 'pk'  },
+      { name: 'nombre', kind: 'str' },
+    ],
+  },
+  {
+    id: 'medio_distribucion', label: 'MedioDistribucion', route: '/distribuciones',
+    fields: [
+      { name: 'id',     kind: 'pk'  },
+      { name: 'nombre', kind: 'str' },
     ],
   },
   {
     id: 'distribucion', label: 'Distribucion', route: '/distribuciones',
     fields: [
-      { name: 'id',                  kind: 'pk'   },
-      { name: 'edicion_dataset_id',  kind: 'fk'   },
-      { name: 'descriptor',          kind: 'str'  },
-      { name: 'url',                 kind: 'str'  },
+      { name: 'id',                    kind: 'pk'  },
+      { name: 'edicion_dataset_id',    kind: 'fk'  },
+      { name: 'dataset_id',            kind: 'fk'  },
+      { name: 'tipo_de_acceso_id',     kind: 'fk'  },
+      { name: 'medio_distribucion_id', kind: 'fk'  },
+      { name: 'distribucion',          kind: 'str' },
+      { name: 'url',                   kind: 'str' },
     ],
   },
   {
     id: 'base_de_datos', label: 'BaseDeDatos', route: '/bases-de-datos',
     fields: [
       { name: 'id',                  kind: 'pk'   },
-      { name: 'dataset_id',          kind: 'fk'   },
+      { name: 'archivo_id',          kind: 'fk'   },
       { name: 'db_nombre',           kind: 'str'  },
       { name: 'descripcion_esquema', kind: 'json' },
-      { name: 'meta',                kind: 'json' },
+      { name: 'etiquetas',           kind: 'json' },
     ],
   },
   {
@@ -117,18 +141,10 @@ const ENTITIES: EntityDef[] = [
     fields: [
       { name: 'id',               kind: 'pk'   },
       { name: 'base_de_datos_id', kind: 'fk'   },
+      { name: 'producto_id',      kind: 'fk'   },
       { name: 'nombre',           kind: 'str'  },
       { name: 'descripcion',      kind: 'text' },
       { name: 'meta',             kind: 'json' },
-    ],
-  },
-  {
-    id: 'producto_tabla', label: 'ProductoTabla', route: '/producto-tablas',
-    fields: [
-      { name: 'id',                    kind: 'pk'   },
-      { name: 'producto_id',           kind: 'fk'   },
-      { name: 'informacion_tablas_id', kind: 'fk'   },
-      { name: 'observaciones',         kind: 'text' },
     ],
   },
   {
@@ -144,28 +160,32 @@ const ENTITIES: EntityDef[] = [
 ]
 
 const RELATIONS: RelDef[] = [
-  { id: 'r1',  from: 'proyecto',         fromCard: '1', fromSide: 'bottom', to: 'producto',           toCard: 'N', toSide: 'top'    },
-  { id: 'r2',  from: 'fuente',           fromCard: '1', fromSide: 'bottom', to: 'dataset',            toCard: 'N', toSide: 'top'    },
-  { id: 'r3',  from: 'dataset',          fromCard: '1', fromSide: 'bottom', to: 'edicion_dataset',    toCard: 'N', toSide: 'top'    },
-  { id: 'r4',  from: 'edicion_dataset',  fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'top'    },
-  { id: 'r5',  from: 'distribucion',     fromCard: '1', fromSide: 'bottom', to: 'archivo',            toCard: 'N', toSide: 'top'    },
-  { id: 'r6',  from: 'dataset',          fromCard: '1', fromSide: 'right',  to: 'base_de_datos',      toCard: 'N', toSide: 'left'   },
-  { id: 'r7',  from: 'base_de_datos',    fromCard: '1', fromSide: 'bottom', to: 'informacion_tablas', toCard: 'N', toSide: 'top'    },
-  { id: 'r8',  from: 'producto',           fromCard: 'N', fromSide: 'bottom', to: 'producto_tabla',     toCard: 'N', toSide: 'top'    },
-  { id: 'r9',  from: 'informacion_tablas', fromCard: 'N', fromSide: 'left',  to: 'producto_tabla',    toCard: 'N', toSide: 'right'  },
+  { id: 'r1',  from: 'proyecto',           fromCard: '1', fromSide: 'bottom', to: 'producto',           toCard: 'N', toSide: 'top'    },
+  { id: 'r2',  from: 'fuente',             fromCard: '1', fromSide: 'bottom', to: 'dataset',            toCard: 'N', toSide: 'top'    },
+  { id: 'r3',  from: 'dataset',            fromCard: '1', fromSide: 'bottom', to: 'edicion_dataset',    toCard: 'N', toSide: 'top'    },
+  { id: 'r4',  from: 'edicion_dataset',    fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'top'    },
+  { id: 'r5',  from: 'distribucion',       fromCard: '1', fromSide: 'bottom', to: 'archivo',            toCard: 'N', toSide: 'top'    },
+  { id: 'r6',  from: 'archivo',            fromCard: '1', fromSide: 'right',  to: 'base_de_datos',      toCard: 'N', toSide: 'bottom' },
+  { id: 'r7',  from: 'base_de_datos',      fromCard: '1', fromSide: 'right',  to: 'informacion_tablas', toCard: 'N', toSide: 'top'    },
+  { id: 'r8',  from: 'producto',           fromCard: '1', fromSide: 'bottom', to: 'informacion_tablas', toCard: 'N', toSide: 'left'   },
+  { id: 'r9',  from: 'tipo_dataset',       fromCard: '1', fromSide: 'bottom', to: 'dataset',            toCard: 'N', toSide: 'right'  },
+  { id: 'r10', from: 'tipo_de_acceso',     fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'left'   },
+  { id: 'r11', from: 'medio_distribucion', fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'right'  },
 ]
 
 const INITIAL_POS: Record<string, Pos> = {
   proyecto:            { x: 200,  y: 40   },
   producto:            { x: 200,  y: 260  },
-  producto_tabla:      { x: 200,  y: 480  },
   fuente:              { x: 500,  y: 40   },
+  tipo_dataset:        { x: 800,  y: 40   },
   dataset:             { x: 500,  y: 260  },
   edicion_dataset:     { x: 500,  y: 500  },
+  tipo_de_acceso:      { x: 200,  y: 560  },
+  medio_distribucion:  { x: 800,  y: 560  },
   distribucion:        { x: 500,  y: 700  },
-  archivo:             { x: 500,  y: 900  },
-  base_de_datos:       { x: 800,  y: 260  },
-  informacion_tablas:  { x: 800,  y: 500  },
+  archivo:             { x: 500,  y: 960  },
+  base_de_datos:       { x: 800,  y: 800  },
+  informacion_tablas:  { x: 800,  y: 280  },
 }
 
 const ENTITY_MAP = Object.fromEntries(ENTITIES.map(e => [e.id, e]))

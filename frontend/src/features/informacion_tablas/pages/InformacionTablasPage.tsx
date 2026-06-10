@@ -6,13 +6,14 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { InformacionTablas, BaseDeDatos } from '@/types'
+import type { InformacionTablas, BaseDeDatos, Producto } from '@/types'
 import { TextCell } from '@/components/TextCell'
 import JsonEditorInput from '@/components/JsonEditorInput'
 import { JsonCell } from '@/components/JsonCell'
 import { getInformacionTablas, createInformacionTabla, updateInformacionTabla, deleteInformacionTabla } from '../services/informacionTablasService'
 import { getBasesDeDatos } from '@/features/bases_de_datos/services/basesDeDatosService'
-import { nombreIcon, descripcionIcon, basesDeDatosIcon, jsonIcon } from '@/consts/sectionIcons'
+import { getProductos } from '@/features/productos/services/productosService'
+import { nombreIcon, descripcionIcon, basesDeDatosIcon, productosIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -20,6 +21,7 @@ export default function InformacionTablasPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<InformacionTablas[]>([])
   const [basesDeDatos, setBasesDeDatos] = useState<BaseDeDatos[]>([])
+  const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
@@ -28,24 +30,26 @@ export default function InformacionTablasPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newDescripcion, setNewDescripcion] = useState('')
   const [newBaseDeDatosId, setNewBaseDeDatosId] = useState('')
+  const [newProductoId, setNewProductoId] = useState('')
   const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
     try {
-      const [tablas, bds] = await Promise.all([getInformacionTablas(), getBasesDeDatos()])
+      const [tablas, bds, prods] = await Promise.all([getInformacionTablas(), getBasesDeDatos(), getProductos()])
       setItems(tablas)
       setBasesDeDatos(bds)
+      setProductos(prods)
     } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDescripcion(''); setNewBaseDeDatosId(''); setNewMeta({}) }
+  const resetFields = () => { setNewNombre(''); setNewDescripcion(''); setNewBaseDeDatosId(''); setNewProductoId(''); setNewMeta({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
-    try { await createInformacionTabla({ nombre: newNombre, descripcion: newDescripcion || undefined, base_de_datos_id: newBaseDeDatosId || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined }); setAddingRow(false); resetFields(); await load(true) } finally {}
+    try { await createInformacionTabla({ nombre: newNombre, descripcion: newDescripcion || undefined, base_de_datos_id: newBaseDeDatosId || undefined, producto_id: newProductoId || undefined, meta: Object.keys(newMeta).length ? newMeta : undefined }); setAddingRow(false); resetFields(); await load(true) } finally {}
   }
 
   const handleEditCell = (row: InformacionTablas, field: string, value: string) => {
@@ -53,6 +57,9 @@ export default function InformacionTablasPage() {
     if (field === 'base_de_datos_id') {
       const bd = basesDeDatos.find((b) => b.id === value)
       setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, base_de_datos_id: value || null, base_de_datos: bd ? { id: bd.id, db_nombre: bd.db_nombre } : null } : i)))
+    } else if (field === 'producto_id') {
+      const p = productos.find((x) => x.id === value)
+      setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, producto_id: value || null, producto: p ? { id: p.id, nombre: p.nombre } : null } : i)))
     } else {
       setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
     }
@@ -64,7 +71,7 @@ export default function InformacionTablasPage() {
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.nombre, i.descripcion, i.base_de_datos?.db_nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
+    return !q || [i.nombre, i.descripcion, i.base_de_datos?.db_nombre, i.producto?.nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
   })
 
   const kd = (e: React.KeyboardEvent) => {
@@ -76,6 +83,7 @@ export default function InformacionTablasPage() {
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Descripción', icon: descripcionIcon(), render: (r) => <TextCell value={r.descripcion} />, getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
     { header: 'Base de datos', icon: basesDeDatosIcon(), selectOptions: basesDeDatos.map((b) => ({ value: b.id, label: b.db_nombre })), onEdit: (r, v) => handleEditCell(r, 'base_de_datos_id', v), render: (r) => r.base_de_datos ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.base_de_datos.db_nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, getValue: (r) => r.base_de_datos_id ?? '' },
+    { header: 'Producto', icon: productosIcon(), selectOptions: productos.map((p) => ({ value: p.id, label: p.nombre })), onEdit: (r, v) => handleEditCell(r, 'producto_id', v), render: (r) => r.producto ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.producto.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, getValue: (r) => r.producto_id ?? '' },
     { header: 'Metadata', icon: jsonIcon(), render: (r) => <JsonCell value={r.meta} />, getValue: (r) => JSON.stringify(r.meta ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateInformacionTabla(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} }, inputType: 'json' },
   ]
 
@@ -94,6 +102,15 @@ export default function InformacionTablasPage() {
           options={basesDeDatos.map((b) => ({ value: b.id, label: b.db_nombre }))}
           placeholder="Base de datos..."
           label="Base de datos"
+        />
+      </td>
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newProductoId}
+          onChange={setNewProductoId}
+          options={productos.map((p) => ({ value: p.id, label: p.nombre }))}
+          placeholder="Producto..."
+          label="Producto"
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

@@ -134,9 +134,9 @@ export function useGlobalSearch() {
         c.datasets = data.length
         data.forEach((r) => entries.push({
           id: String(r.id), type: 'dataset', typeLabel: 'Dataset',
-          label: String(r.nombre ?? ''), subtitle: r.tema_principal ? String(r.tema_principal) : undefined,
+          label: String(r.nombre ?? ''), subtitle: r.descripcion ? String(r.descripcion) : undefined,
           path: `/datasets?q=${encodeURIComponent(String(r.nombre ?? ''))}`,
-          text: [r.nombre, r.descripcion, r.tema_principal].filter(Boolean).map(String).join(' '),
+          text: [r.nombre, r.descripcion].filter(Boolean).map(String).join(' '),
         }))
       }
 
@@ -145,9 +145,9 @@ export function useGlobalSearch() {
         c['ediciones-dataset'] = data.length
         data.forEach((r) => entries.push({
           id: String(r.id), type: 'edicion_dataset', typeLabel: 'Edicion',
-          label: String(r.nombre ?? ''), subtitle: (r.dataset as Record<string, unknown> | null)?.nombre ? String((r.dataset as Record<string, unknown>).nombre) : undefined,
-          path: `/ediciones-dataset?q=${encodeURIComponent(String(r.nombre ?? ''))}`,
-          text: [r.nombre, (r.dataset as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
+          label: String(r.edicion ?? ''), subtitle: (r.dataset as Record<string, unknown> | null)?.nombre ? String((r.dataset as Record<string, unknown>).nombre) : undefined,
+          path: `/ediciones-dataset?q=${encodeURIComponent(String(r.edicion ?? ''))}`,
+          text: [r.edicion, (r.dataset as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
         }))
       }
 
@@ -156,10 +156,10 @@ export function useGlobalSearch() {
         c.distribuciones = data.length
         data.forEach((r) => entries.push({
           id: String(r.id), type: 'distribucion', typeLabel: 'Distribucion',
-          label: String(r.descriptor ?? String(r.id).slice(0, 8)),
+          label: String(r.distribucion ?? String(r.id).slice(0, 8)),
           subtitle: r.url ? String(r.url) : undefined,
-          path: `/distribuciones?q=${encodeURIComponent(String(r.descriptor ?? String(r.id).slice(0, 8)))}`,
-          text: [r.descriptor, r.url].filter(Boolean).map(String).join(' '),
+          path: `/distribuciones?q=${encodeURIComponent(String(r.distribucion ?? String(r.id).slice(0, 8)))}`,
+          text: [r.distribucion, r.url].filter(Boolean).map(String).join(' '),
         }))
       }
 
@@ -168,9 +168,9 @@ export function useGlobalSearch() {
         c['bases-de-datos'] = data.length
         data.forEach((r) => entries.push({
           id: String(r.id), type: 'base_de_datos', typeLabel: 'Base de datos',
-          label: String(r.db_nombre ?? ''), subtitle: (r.dataset as Record<string, unknown> | null)?.nombre ? String((r.dataset as Record<string, unknown>).nombre) : undefined,
+          label: String(r.db_nombre ?? ''), subtitle: (r.archivo as Record<string, unknown> | null)?.nombre_archivo ? String((r.archivo as Record<string, unknown>).nombre_archivo) : undefined,
           path: `/bases-de-datos?q=${encodeURIComponent(String(r.db_nombre ?? ''))}`,
-          text: [r.db_nombre, (r.dataset as Record<string, unknown> | null)?.nombre].filter(Boolean).map(String).join(' '),
+          text: [r.db_nombre, (r.archivo as Record<string, unknown> | null)?.nombre_archivo].filter(Boolean).map(String).join(' '),
         }))
       }
 
@@ -191,9 +191,9 @@ export function useGlobalSearch() {
         data.forEach((r) => entries.push({
           id: String(r.id), type: 'archivo', typeLabel: 'Archivo',
           label: String(r.nombre_archivo ?? ''),
-          subtitle: (r.distribucion as Record<string, unknown> | null)?.descriptor ? String((r.distribucion as Record<string, unknown>).descriptor) : undefined,
+          subtitle: (r.distribucion as Record<string, unknown> | null)?.distribucion ? String((r.distribucion as Record<string, unknown>).distribucion) : undefined,
           path: `/archivos?q=${encodeURIComponent(String(r.nombre_archivo ?? ''))}`,
-          text: [r.nombre_archivo, r.observaciones_archivo, (r.distribucion as Record<string, unknown> | null)?.descriptor].filter(Boolean).map(String).join(' '),
+          text: [r.nombre_archivo, r.observaciones_archivo, (r.distribucion as Record<string, unknown> | null)?.distribucion].filter(Boolean).map(String).join(' '),
         }))
       }
 

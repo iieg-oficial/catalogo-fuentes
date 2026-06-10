@@ -18,7 +18,6 @@ const TYPE_BADGE: Record<string, string> = {
 const CARD_BG: Record<string, string> = {
   proyectos:            'bg-brand-600',
   productos:            'bg-[#A63228]',
-  'producto-tablas':    'bg-[#2D5F8A]',
   'informacion-tablas': 'bg-[#C4621D]',
   'bases-de-datos':     'bg-[#7A2D5A]',
   datasets:             'bg-[#2A7F6F]',
