@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
@@ -15,7 +15,6 @@ import { nombreIcon, descripcionIcon, estadoIcon, edicionesIcon, urlIcon } from 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function DistribucionesPage() {
-  const navigate = useNavigate()
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Distribucion[]>([])
   const [ediciones, setEdiciones] = useState<EdicionDataset[]>([])
@@ -144,7 +143,7 @@ export default function DistribucionesPage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-auto p-8">
-      <CatalogGrid eyebrow="Catalogo" title="Distribuciones" addLabel="Nueva distribucion" entityLabel="distribuciones" rows={filtered} columns={columns} getKey={(r) => r.id} onRowClick={(r) => navigate(`/distribuciones/${r.id}`)} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} />
+      <CatalogGrid eyebrow="Catalogo" title="Distribuciones" addLabel="Nueva distribucion" entityLabel="distribuciones" rows={filtered} columns={columns} getKey={(r) => r.id} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} />
     </div>
   )
 }
