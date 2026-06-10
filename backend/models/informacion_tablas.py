@@ -22,6 +22,9 @@ class InformacionTablas(Base):
     base_de_datos_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("base_de_datos.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    producto_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("producto.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     base_de_datos: Mapped["BaseDeDatos | None"] = relationship("BaseDeDatos", back_populates="informacion_tablas")
-    producto_tablas: Mapped[list["ProductoTabla"]] = relationship("ProductoTabla", back_populates="informacion_tabla", passive_deletes=True)
+    producto: Mapped["Producto | None"] = relationship("Producto", back_populates="informacion_tablas")
