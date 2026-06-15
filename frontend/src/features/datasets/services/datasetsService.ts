@@ -71,3 +71,8 @@ export async function getTiposDataset(): Promise<TipoDataset[]> {
   const { data } = await apiClient.get<TipoDataset[]>('/tipos-dataset/')
   return data
 }
+
+export async function createTipoDataset(payload: { nombre: string; descripcion?: string }): Promise<TipoDataset> {
+  const { data } = await apiClient.post<TipoDataset>('/tipos-dataset/', payload)
+  return data
+}
