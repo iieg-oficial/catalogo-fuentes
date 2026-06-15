@@ -71,7 +71,8 @@ export default function InformacionTablasPage() {
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.nombre, i.descripcion, i.base_de_datos?.db_nombre, i.producto?.nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
+    const metaText = i.meta && Object.keys(i.meta).length ? Object.entries(i.meta).map(([k, v]) => `${k} ${String(v ?? '')}`).join(' ') : ''
+    return !q || [i.nombre, i.descripcion, i.base_de_datos?.db_nombre, i.producto?.nombre, metaText].some((v) => String(v ?? '').toLowerCase().includes(q))
   })
 
   const kd = (e: React.KeyboardEvent) => {
