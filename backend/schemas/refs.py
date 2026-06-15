@@ -21,6 +21,15 @@ class TipoDatasetRef(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TipoPeriodoRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre: str
+
+    model_config = {"from_attributes": True}
+
+
 class DatasetRef(BaseModel):
     """Lightweight reference for nesting inside other Read schemas."""
 

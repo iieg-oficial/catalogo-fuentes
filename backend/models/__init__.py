@@ -7,6 +7,7 @@ from models.producto import Producto
 from models.fuente import Fuente
 from models.tipo_dataset import TipoDataset
 from models.dataset import Dataset
+from models.tipo_periodo import TipoPeriodo
 from models.edicion_dataset import EdicionDataset
 from models.tipo_de_acceso import TipoDeAcceso
 from models.medio_distribucion import MedioDistribucion
@@ -26,6 +27,7 @@ __all__ = [
     "Fuente",
     "TipoDataset",
     "Dataset",
+    "TipoPeriodo",
     "EdicionDataset",
     "TipoDeAcceso",
     "MedioDistribucion",
