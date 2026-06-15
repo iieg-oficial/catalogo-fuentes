@@ -138,9 +138,9 @@ export default function Sidebar({ user, onLogout }: Props) {
       <div className="px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5">
         <button
           onClick={() => { navigate('/perfil'); closeSidebar() }}
-          className="w-7 h-7 rounded-full bg-brand-600 flex items-center justify-center shrink-0
-                     text-[11px] font-bold text-white/90 ring-1 ring-white/10
-                     hover:ring-white/30 transition-all duration-150
+          className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center shrink-0
+                     text-[11px] font-bold text-white ring-1 ring-white/20
+                     hover:ring-white/40 transition-all duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
           title="Mi perfil"
           aria-label="Ir a mi perfil"
