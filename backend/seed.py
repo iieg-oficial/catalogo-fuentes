@@ -26,6 +26,7 @@ from models.proyecto import Proyecto
 from models.rol import Rol
 from models.tipo_dataset import TipoDataset
 from models.tipo_de_acceso import TipoDeAcceso
+from models.tipo_periodo import TipoPeriodo
 from models.usuario import Usuario
 from services.auth import hash_password
 
@@ -150,14 +151,20 @@ async def seed_users(db: AsyncSession, roles: dict[str, Rol]) -> None:
 
 
 async def seed_catalogos(db: AsyncSession) -> dict[str, dict[str, object]]:
-    """Seed normalized catalogs: tipo_dataset, tipo_de_acceso, medio_distribucion."""
+    """Seed normalized catalogs: tipo_dataset, tipo_de_acceso, medio_distribucion, tipo_periodo."""
     result = await db.execute(select(TipoDataset))
     if result.scalars().first():
         logger.info("Catalogs already seeded, fetching existing.")
         tipos_dataset = {t.nombre: t for t in (await db.execute(select(TipoDataset))).scalars().all()}
         tipos_acceso = {t.nombre: t for t in (await db.execute(select(TipoDeAcceso))).scalars().all()}
         medios = {m.nombre: m for m in (await db.execute(select(MedioDistribucion))).scalars().all()}
-        return {"tipo_dataset": tipos_dataset, "tipo_de_acceso": tipos_acceso, "medio_distribucion": medios}
+        tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
+        return {
+            "tipo_dataset": tipos_dataset,
+            "tipo_de_acceso": tipos_acceso,
+            "medio_distribucion": medios,
+            "tipo_periodo": tipos_periodo,
+        }
 
     logger.info("Seeding catalogs...")
     tipos_dataset = {nombre: TipoDataset(nombre=nombre) for nombre in TIPOS_DATASET}
@@ -165,8 +172,15 @@ async def seed_catalogos(db: AsyncSession) -> dict[str, dict[str, object]]:
     medios = {nombre: MedioDistribucion(nombre=nombre) for nombre in MEDIOS_DISTRIBUCION}
     db.add_all([*tipos_dataset.values(), *tipos_acceso.values(), *medios.values()])
     await db.flush()
+    # tipo_periodo es enumeración fija sembrada por la migración; solo se consulta.
+    tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
     logger.info("Catalogs seeded.")
-    return {"tipo_dataset": tipos_dataset, "tipo_de_acceso": tipos_acceso, "medio_distribucion": medios}
+    return {
+        "tipo_dataset": tipos_dataset,
+        "tipo_de_acceso": tipos_acceso,
+        "medio_distribucion": medios,
+        "tipo_periodo": tipos_periodo,
+    }
 
 
 async def seed_catalog(db: AsyncSession) -> None:
@@ -183,6 +197,7 @@ async def seed_catalog(db: AsyncSession) -> None:
     tipos_dataset = catalogos["tipo_dataset"]
     tipos_acceso = catalogos["tipo_de_acceso"]
     medios = catalogos["medio_distribucion"]
+    tipos_periodo = catalogos["tipo_periodo"]
 
     # Fuentes
     inegi = Fuente(
@@ -265,25 +280,25 @@ async def seed_catalog(db: AsyncSession) -> None:
         fecha_publicacion=date(2024, 2, 15),
         periodo_referencia_inicio=date(2023, 10, 1),
         periodo_referencia_fin=date(2023, 12, 31),
-        tipo_periodo_referencia="rango",
+        tipo_periodo_id=tipos_periodo["rango"].id,
         dataset_id=ds_enoe.id,
     )
     ed_conapo_2023 = EdicionDataset(
         edicion="Proyecciones 2023",
         fecha_publicacion=date(2023, 5, 20),
-        tipo_periodo_referencia="corte",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_conapo_proy.id,
     )
     ed_siap_2022 = EdicionDataset(
         edicion="Producción 2022 definitiva",
         fecha_publicacion=date(2023, 12, 15),
-        tipo_periodo_referencia="corte",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_siap_prod.id,
     )
     ed_denue_2023 = EdicionDataset(
         edicion="DENUE 2023",
         fecha_publicacion=date(2023, 10, 1),
-        tipo_periodo_referencia="corte",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_denue.id,
     )
     db.add_all([ed_enoe_2023q4, ed_conapo_2023, ed_siap_2022, ed_denue_2023])
