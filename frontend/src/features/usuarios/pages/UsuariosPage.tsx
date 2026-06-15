@@ -1,9 +1,10 @@
-import { CSSProperties, FormEvent, useEffect, useRef, useState } from 'react'
+import { CSSProperties, FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import Button from '@/components/Button'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
+import Toast from '@/components/Toast'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Usuario, Rol } from '@/types'
 import { getUsuarios, createUsuario, updateUsuario } from '../services/usuariosService'
@@ -283,6 +284,8 @@ export default function UsuariosPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
+  const clearToast = useCallback(() => setToast(null), [])
 
   const load = async () => {
     setLoading(true)
@@ -318,6 +321,7 @@ export default function UsuariosPage() {
       setFormNombre('')
       setFormPassword('')
       setFormRolId('')
+      setToast({ message: 'Usuario creado', variant: 'success' })
     } catch {
       setFormError('No se pudo crear el usuario. Verifica que el correo no esté registrado.')
     } finally {
@@ -423,6 +427,7 @@ export default function UsuariosPage() {
 
   return (
     <div className="flex-1 overflow-auto p-6 bg-neutral-50">
+      {toast && <Toast message={toast.message} variant={toast.variant} onClose={clearToast} />}
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
