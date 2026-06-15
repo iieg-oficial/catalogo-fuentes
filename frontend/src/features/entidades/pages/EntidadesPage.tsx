@@ -96,8 +96,16 @@ const ENTITIES: EntityDef[] = [
     fields: [
       { name: 'id',                kind: 'pk'   },
       { name: 'dataset_id',        kind: 'fk'   },
+      { name: 'tipo_periodo_id',   kind: 'fk'   },
       { name: 'edicion',           kind: 'str'  },
       { name: 'fecha_publicacion', kind: 'date' },
+    ],
+  },
+  {
+    id: 'tipo_periodo', label: 'TipoPeriodo', route: '/ediciones-dataset',
+    fields: [
+      { name: 'id',     kind: 'pk'  },
+      { name: 'nombre', kind: 'str' },
     ],
   },
   {
@@ -171,6 +179,7 @@ const RELATIONS: RelDef[] = [
   { id: 'r9',  from: 'tipo_dataset',       fromCard: '1', fromSide: 'bottom', to: 'dataset',            toCard: 'N', toSide: 'right'  },
   { id: 'r10', from: 'tipo_de_acceso',     fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'left'   },
   { id: 'r11', from: 'medio_distribucion', fromCard: '1', fromSide: 'bottom', to: 'distribucion',       toCard: 'N', toSide: 'right'  },
+  { id: 'r12', from: 'tipo_periodo',       fromCard: '1', fromSide: 'right',  to: 'edicion_dataset',    toCard: 'N', toSide: 'left'   },
 ]
 
 const INITIAL_POS: Record<string, Pos> = {
@@ -180,6 +189,7 @@ const INITIAL_POS: Record<string, Pos> = {
   tipo_dataset:        { x: 800,  y: 40   },
   dataset:             { x: 500,  y: 260  },
   edicion_dataset:     { x: 500,  y: 500  },
+  tipo_periodo:        { x: 180,  y: 420  },
   tipo_de_acceso:      { x: 200,  y: 560  },
   medio_distribucion:  { x: 800,  y: 560  },
   distribucion:        { x: 500,  y: 700  },

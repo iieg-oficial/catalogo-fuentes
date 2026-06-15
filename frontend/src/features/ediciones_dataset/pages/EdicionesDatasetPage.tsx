@@ -6,9 +6,9 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { EdicionDataset, Dataset } from '@/types'
+import type { EdicionDataset, Dataset, TipoPeriodo } from '@/types'
 import { TextCell } from '@/components/TextCell'
-import { getEdicionesDataset, createEdicionDataset, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
+import { getEdicionesDataset, getTiposPeriodo, createEdicionDataset, createTipoPeriodo, updateEdicionDataset, deleteEdicionDataset } from '../services/edicionesDatasetService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, urlIcon } from '@/consts/sectionIcons'
@@ -19,6 +19,7 @@ export default function EdicionesDatasetPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<EdicionDataset[]>([])
   const [datasets, setDatasets] = useState<Dataset[]>([])
+  const [tiposPeriodo, setTiposPeriodo] = useState<TipoPeriodo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
@@ -28,7 +29,7 @@ export default function EdicionesDatasetPage() {
   const [newFechaPublicacion, setNewFechaPublicacion] = useState('')
   const [newPeriodoInicio, setNewPeriodoInicio] = useState('')
   const [newPeriodoFin, setNewPeriodoFin] = useState('')
-  const [newTipoPeriodo, setNewTipoPeriodo] = useState('')
+  const [newTipoPeriodoId, setNewTipoPeriodoId] = useState('')
   const [newUrlMetodologia, setNewUrlMetodologia] = useState('')
   const [newUrlMetadatos, setNewUrlMetadatos] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
@@ -37,8 +38,8 @@ export default function EdicionesDatasetPage() {
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
     try {
-      const [eds, ds] = await Promise.all([getEdicionesDataset(), getDatasets()])
-      setItems(eds); setDatasets(ds)
+      const [eds, ds, tipos] = await Promise.all([getEdicionesDataset(), getDatasets(), getTiposPeriodo()])
+      setItems(eds); setDatasets(ds); setTiposPeriodo(tipos)
     } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
@@ -46,7 +47,7 @@ export default function EdicionesDatasetPage() {
 
   const resetFields = () => {
     setNewEdicion(''); setNewFechaPublicacion(''); setNewPeriodoInicio(''); setNewPeriodoFin('')
-    setNewTipoPeriodo(''); setNewUrlMetodologia(''); setNewUrlMetadatos('')
+    setNewTipoPeriodoId(''); setNewUrlMetodologia(''); setNewUrlMetadatos('')
     setNewObservaciones(''); setNewDatasetId('')
   }
 
@@ -59,7 +60,7 @@ export default function EdicionesDatasetPage() {
         fecha_publicacion: newFechaPublicacion || undefined,
         periodo_referencia_inicio: newPeriodoInicio || undefined,
         periodo_referencia_fin: newPeriodoFin || undefined,
-        tipo_periodo_referencia: newTipoPeriodo || undefined,
+        tipo_periodo_id: newTipoPeriodoId || undefined,
         url_metodologia_edicion: newUrlMetodologia || undefined,
         url_metadatos_edicion: newUrlMetadatos || undefined,
         observaciones_edicion: newObservaciones || undefined,
@@ -92,13 +93,15 @@ export default function EdicionesDatasetPage() {
     try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
+  const tipoPeriodoOpts = tiposPeriodo.map((t) => ({ value: t.id, label: t.nombre }))
+
   const columns: Column<EdicionDataset>[] = [
     { header: 'Edición', icon: nombreIcon(), render: (r) => <TextCell value={r.edicion} />, className: 'w-48', getValue: (r) => r.edicion, onEdit: (r, v) => handleEditCell(r, 'edicion', v) },
     { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })), onEdit: (r, v) => { updateEdicionDataset(r.id, { dataset_id: v }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i))) }, render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, getValue: (r) => r.dataset_id ?? '' },
     { header: 'Publicación', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_publicacion) ?? '--'}</span>, getValue: (r) => r.fecha_publicacion ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_publicacion', v), inputType: 'date' },
+    { header: 'Tipo periodo', icon: descripcionIcon(), selectOptions: tipoPeriodoOpts, onEdit: (r, v) => { updateEdicionDataset(r.id, { tipo_periodo_id: v }); const t = tiposPeriodo.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tipo_periodo_id: v || null, tipo_periodo: t ? { id: t.id, nombre: t.nombre } : null } : i))) }, getValue: (r) => r.tipo_periodo_id ?? '', render: (r) => r.tipo_periodo ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.tipo_periodo.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Periodo referencia inicio', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_inicio) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_inicio ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_inicio', v), inputType: 'date' },
     { header: 'Periodo referencia fin', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.periodo_referencia_fin) ?? '--'}</span>, getValue: (r) => r.periodo_referencia_fin ?? '', onEdit: (r, v) => handleEditCell(r, 'periodo_referencia_fin', v), inputType: 'date' },
-    { header: 'Tipo periodo', icon: descripcionIcon(), render: (r) => <TextCell value={r.tipo_periodo_referencia} />, getValue: (r) => r.tipo_periodo_referencia ?? '', onEdit: (r, v) => handleEditCell(r, 'tipo_periodo_referencia', v) },
     { header: 'URL metodología edición', icon: urlIcon(), render: (r) => <TextCell value={r.url_metodologia_edicion} mono link />, getValue: (r) => r.url_metodologia_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metodologia_edicion', v) },
     { header: 'URL metadatos edición', icon: urlIcon(), render: (r) => <TextCell value={r.url_metadatos_edicion} mono link />, getValue: (r) => r.url_metadatos_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metadatos_edicion', v) },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_edicion} />, getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
@@ -118,17 +121,29 @@ export default function EdicionesDatasetPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <DatePickerInput value={newFechaPublicacion} onChange={setNewFechaPublicacion} placeholder="Publicacion..." onKeyDown={kd} />
       </td>
-      {/* 4. Periodo inicio */}
+      {/* 4. Tipo periodo (catálogo con opción de crear) */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newTipoPeriodoId}
+          onChange={setNewTipoPeriodoId}
+          options={tipoPeriodoOpts}
+          placeholder="Tipo periodo..."
+          label="Tipo de periodo"
+          createPlaceholder="Nuevo tipo…"
+          onCreate={async (nombre) => {
+            const t = await createTipoPeriodo({ nombre })
+            setTiposPeriodo((prev) => [...prev, t])
+            setNewTipoPeriodoId(t.id)
+          }}
+        />
+      </td>
+      {/* 5. Periodo inicio */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <DatePickerInput value={newPeriodoInicio} onChange={setNewPeriodoInicio} placeholder="Periodo inicio..." onKeyDown={kd} />
       </td>
-      {/* 5. Periodo fin */}
+      {/* 6. Periodo fin */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <DatePickerInput value={newPeriodoFin} onChange={setNewPeriodoFin} placeholder="Periodo fin..." onKeyDown={kd} />
-      </td>
-      {/* 6. Tipo periodo */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newTipoPeriodo} onChange={(e) => setNewTipoPeriodo(e.target.value)} onKeyDown={kd} placeholder="Tipo periodo..." className={inputCls} />
       </td>
       {/* 7. URL metodologia */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

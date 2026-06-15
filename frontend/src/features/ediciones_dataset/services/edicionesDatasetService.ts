@@ -1,5 +1,5 @@
 import apiClient from '@/services/apiClient'
-import type { EdicionDataset, EdicionDatasetDetail } from '@/types'
+import type { EdicionDataset, EdicionDatasetDetail, TipoPeriodo } from '@/types'
 
 interface EdicionFilters {
   dataset_id?: string | null
@@ -23,7 +23,7 @@ export async function createEdicionDataset(payload: {
   fecha_publicacion?: string
   periodo_referencia_inicio?: string
   periodo_referencia_fin?: string
-  tipo_periodo_referencia?: string
+  tipo_periodo_id?: string
   url_metodologia_edicion?: string
   url_metadatos_edicion?: string
   observaciones_edicion?: string
@@ -32,11 +32,21 @@ export async function createEdicionDataset(payload: {
   return data
 }
 
-export async function updateEdicionDataset(id: string, payload: { edicion?: string; dataset_id?: string; fecha_publicacion?: string; periodo_referencia_inicio?: string; periodo_referencia_fin?: string; tipo_periodo_referencia?: string; url_metodologia_edicion?: string; url_metadatos_edicion?: string; observaciones_edicion?: string }): Promise<EdicionDataset> {
+export async function updateEdicionDataset(id: string, payload: { edicion?: string; dataset_id?: string; fecha_publicacion?: string; periodo_referencia_inicio?: string; periodo_referencia_fin?: string; tipo_periodo_id?: string; url_metodologia_edicion?: string; url_metadatos_edicion?: string; observaciones_edicion?: string }): Promise<EdicionDataset> {
   const { data } = await apiClient.put<EdicionDataset>(`/ediciones-dataset/${id}`, payload)
   return data
 }
 
 export async function deleteEdicionDataset(id: string): Promise<void> {
   await apiClient.delete(`/ediciones-dataset/${id}`)
+}
+
+export async function getTiposPeriodo(): Promise<TipoPeriodo[]> {
+  const { data } = await apiClient.get<TipoPeriodo[]>('/tipos-periodo/')
+  return data
+}
+
+export async function createTipoPeriodo(payload: { nombre: string; descripcion?: string }): Promise<TipoPeriodo> {
+  const { data } = await apiClient.post<TipoPeriodo>('/tipos-periodo/', payload)
+  return data
 }

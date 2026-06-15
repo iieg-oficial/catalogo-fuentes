@@ -84,6 +84,13 @@ export interface TipoDataset {
   created_at: string
 }
 
+export interface TipoPeriodo {
+  id: string
+  nombre: string
+  descripcion: string | null
+  created_at: string
+}
+
 export interface TipoDeAcceso {
   id: string
   nombre: string
@@ -138,6 +145,11 @@ export interface TipoDatasetRef {
   nombre: string
 }
 
+export interface TipoPeriodoRef {
+  id: string
+  nombre: string
+}
+
 export interface TipoDeAccesoRef {
   id: string
   nombre: string
@@ -179,12 +191,13 @@ export interface EdicionDataset {
   fecha_publicacion: string | null
   periodo_referencia_inicio: string | null
   periodo_referencia_fin: string | null
-  tipo_periodo_referencia: string | null
   url_metodologia_edicion: string | null
   url_metadatos_edicion: string | null
   observaciones_edicion: string | null
   dataset_id: string | null
   dataset: DatasetRef | null
+  tipo_periodo_id: string | null
+  tipo_periodo: TipoPeriodoRef | null
   created_at: string
   updated_at: string | null
 }
