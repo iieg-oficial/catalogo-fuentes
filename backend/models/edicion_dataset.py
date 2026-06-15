@@ -16,7 +16,6 @@ class EdicionDataset(Base):
     fecha_publicacion: Mapped[date | None] = mapped_column(Date, index=True)
     periodo_referencia_inicio: Mapped[date | None] = mapped_column(Date)
     periodo_referencia_fin: Mapped[date | None] = mapped_column(Date)
-    tipo_periodo_referencia: Mapped[str | None] = mapped_column(String)
     url_metodologia_edicion: Mapped[str | None] = mapped_column(Text)
     url_metadatos_edicion: Mapped[str | None] = mapped_column(Text)
     observaciones_edicion: Mapped[str | None] = mapped_column(Text)
@@ -27,6 +26,10 @@ class EdicionDataset(Base):
     dataset_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("dataset.id", ondelete="SET NULL"), nullable=True, index=True
     )
+    tipo_periodo_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tipo_periodo.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     dataset: Mapped["Dataset | None"] = relationship("Dataset", back_populates="ediciones")
+    tipo_periodo: Mapped["TipoPeriodo | None"] = relationship("TipoPeriodo", back_populates="ediciones")
     distribuciones: Mapped[list["Distribucion"]] = relationship("Distribucion", back_populates="edicion_dataset", passive_deletes=True)
