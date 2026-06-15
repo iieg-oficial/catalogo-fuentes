@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import Button from './Button'
+import Toast from './Toast'
 import { useSidebar } from '@/context/SidebarContext'
 import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 
@@ -67,6 +68,8 @@ const EMPTY_DASH = (
 
 const INLINE_INPUT_CLS =
   'w-full px-1.5 py-0.5 text-[13px] border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+
+const DELETE_COLOR = '#a54757'
 
 // ---------------------------------------------------------------------------
 // Icons
@@ -674,6 +677,9 @@ export default function CatalogGrid<T extends { id: string }>({
   }, [formOpen])
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [headerHovered, setHeaderHovered] = useState(false)
   const [sortField, setSortField] = useState<string | null>(null)
@@ -788,6 +794,25 @@ export default function CatalogGrid<T extends { id: string }>({
   }
   const toggleSelectRow = (key: string) => {
     setSelectedRows((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n })
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!onDeleteRows) return
+    const count = selectedRows.size
+    setDeleting(true)
+    try {
+      await onDeleteRows([...selectedRows])
+      setSelectedRows(new Set())
+      setConfirmDelete(false)
+      setToast({
+        message: count === 1 ? 'Fila borrada correctamente' : `${count} filas borradas correctamente`,
+        variant: 'success',
+      })
+    } catch {
+      setToast({ message: 'No se pudieron borrar las filas', variant: 'error' })
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0)
@@ -1277,13 +1302,14 @@ export default function CatalogGrid<T extends { id: string }>({
           )}
           {selectedRows.size > 0 && onDeleteRows && (
             <button
-              onClick={() => { onDeleteRows([...selectedRows]); setSelectedRows(new Set()) }}
-              className="flex items-center gap-1.5 text-[11px] text-red-400 hover:text-red-500 px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
+              onClick={() => setConfirmDelete(true)}
+              style={{ color: DELETE_COLOR }}
+              className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
             >
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
               </svg>
-              Eliminar seleccionadas
+              Eliminar filas
             </button>
           )}
 
@@ -1319,6 +1345,38 @@ export default function CatalogGrid<T extends { id: string }>({
           )}
         </div>
       </div>
+
+      {confirmDelete && createPortal(
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => !deleting && setConfirmDelete(false)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-sm font-semibold text-ink mb-2">Eliminar {selectedRows.size === 1 ? 'fila' : 'filas'}</h3>
+            <p className="text-sm text-ink/70 mb-5">
+              {selectedRows.size === 1 ? '¿Seguro que deseas eliminar esta fila?' : '¿Seguro que deseas eliminar estas filas?'} Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/[4%] rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                style={{ backgroundColor: DELETE_COLOR }}
+                className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {deleting ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {toast && <Toast message={toast.message} variant={toast.variant} onClose={() => setToast(null)} />}
     </div>
   )
 }
