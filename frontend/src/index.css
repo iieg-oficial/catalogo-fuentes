@@ -242,9 +242,25 @@
     }
   }
 
+  .view-enter {
+    animation: view-fade-in 0.25s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+
+  @keyframes view-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .nav-item-enter,
-    .row-item-enter {
+    .row-item-enter,
+    .view-enter {
       animation: none;
     }
   }

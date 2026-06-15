@@ -15,6 +15,8 @@ const TYPE_BADGE: Record<string, string> = {
   archivo:            'bg-rose-50 text-rose-700',
 }
 
+const HOME_CARD_BG = '#f5f9ff'
+
 const MODULE_COLOR: Record<string, string> = {
   proyectos:            '#5C2472',
   productos:            '#7c3aed',
@@ -296,7 +298,7 @@ export default function HomePage() {
           </p>
 
           {view === 'grid' ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div key="grid" className="view-enter grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {CATALOG_LEVELS.map((level) => {
                 const count = counts[level.key as keyof typeof counts]
                 const color = MODULE_COLOR[level.key] ?? '#6b7280'
@@ -310,8 +312,8 @@ export default function HomePage() {
                                focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 text-left"
                   >
                     <div
-                      className="flex flex-1 items-center justify-center bg-gray-100 [&>svg]:w-12 [&>svg]:h-12"
-                      style={{ color }}
+                      className="flex flex-1 items-center justify-center [&>svg]:w-12 [&>svg]:h-12"
+                      style={{ color, backgroundColor: HOME_CARD_BG }}
                     >
                       {MODULE_ICONS[level.key]}
                     </div>
@@ -331,7 +333,7 @@ export default function HomePage() {
               })}
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div key="list" className="view-enter flex flex-col gap-2">
               {CATALOG_LEVELS.map((level) => {
                 const count = counts[level.key as keyof typeof counts]
                 const color = MODULE_COLOR[level.key] ?? '#6b7280'
@@ -346,7 +348,7 @@ export default function HomePage() {
                   >
                     <div
                       className="flex items-center justify-center w-11 h-11 rounded-lg shrink-0"
-                      style={{ color, backgroundColor: `${color}14` }}
+                      style={{ color, backgroundColor: HOME_CARD_BG }}
                     >
                       {MODULE_ICONS[level.key]}
                     </div>
