@@ -33,8 +33,9 @@ function userInitials(correo: string): string {
   return local.slice(0, 2).toUpperCase()
 }
 
-const navItemClass = (isActive: boolean) =>
+const navItemClass = (isActive: boolean, collapsed: boolean) =>
   `relative flex items-center gap-2.5 px-4 py-2.5 mx-2 rounded-md text-[13px] transition-colors duration-150
+   ${collapsed ? 'md:mx-auto md:my-1 md:w-10 md:h-10 md:px-0 md:py-0 md:justify-center md:rounded-lg' : ''}
    focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 ${
     isActive
       ? 'bg-brand-400 text-white font-semibold'
@@ -43,26 +44,45 @@ const navItemClass = (isActive: boolean) =>
 
 export default function Sidebar({ user, onLogout }: Props) {
   const navigate = useNavigate()
-  const { open, closeSidebar } = useSidebar()
+  const { open, closeSidebar, collapsed, toggleCollapsed } = useSidebar()
 
   return (
     <aside
       className={`
         fixed md:static inset-y-0 left-0 z-40 md:z-auto
-        w-60 min-h-screen bg-brand-600 text-white flex flex-col shadow-[2px_0_8px_rgba(0,0,0,0.1)]
-        transition-transform duration-300 ease-in-out cursor-default
-        ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
+        ${collapsed ? 'md:w-16' : 'w-60'} min-h-screen bg-brand-600 text-white flex flex-col shadow-[2px_0_8px_rgba(0,0,0,0.1)]
+        transition-[transform,width] duration-300 ease-in-out cursor-default
+        ${open ? 'translate-x-0 w-60' : '-translate-x-full'} md:translate-x-0
       `}
     >
-      <div className="px-5 py-6 flex items-center justify-between">
+      <div className={`px-5 py-6 flex items-center ${collapsed ? 'md:px-0 md:justify-center' : 'justify-between'}`}>
         <button
           onClick={() => { navigate('/'); closeSidebar() }}
           aria-label="Ir al inicio"
-          className="text-left transition-opacity duration-150 hover:opacity-80
-                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded"
+          className={`text-left transition-opacity duration-150 hover:opacity-80
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded
+                     ${collapsed ? 'md:hidden' : ''}`}
         >
           <img src="/logo_blanco_iieg.png" alt="IIEG Jalisco" className="h-7" />
         </button>
+        {/* Desktop collapse toggle */}
+        <button
+          onClick={toggleCollapsed}
+          className="hidden md:flex p-1 rounded text-white/50 hover:text-white
+                     transition-colors duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+          aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+            <path d="M6 2.5v11" />
+            {collapsed
+              ? <path d="M9.5 6.5L11.5 8l-2 1.5" />
+              : <path d="M11.5 6.5L9.5 8l2 1.5" />}
+          </svg>
+        </button>
+        {/* Mobile close */}
         <button
           onClick={closeSidebar}
           className="md:hidden p-1 rounded text-white/50 hover:text-white
@@ -76,8 +96,8 @@ export default function Sidebar({ user, onLogout }: Props) {
         </button>
       </div>
 
-      <nav className="flex-1 pb-4 overflow-y-auto" aria-label="Navegacion principal">
-        <p className="px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
+      <nav className={`flex-1 pb-4 overflow-y-auto ${collapsed ? 'md:pt-2' : ''}`} aria-label="Navegacion principal">
+        <p className={`px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none ${collapsed ? 'md:hidden' : ''}`}>
           Catalogo
         </p>
 
@@ -86,30 +106,34 @@ export default function Sidebar({ user, onLogout }: Props) {
             key={level.key}
             to={level.path}
             onClick={closeSidebar}
-            className={({ isActive }) => navItemClass(isActive)}
+            title={collapsed ? level.label : undefined}
+            className={({ isActive }) => navItemClass(isActive, collapsed)}
           >
             {() => (
               <>
                 <span className="shrink-0 opacity-70">
                   {CATALOG_ICONS[level.key]?.()}
                 </span>
-                <span className="flex-1 truncate">{level.label}</span>
+                <span className={`flex-1 truncate ${collapsed ? 'md:hidden' : ''}`}>{level.label}</span>
               </>
             )}
           </NavLink>
         ))}
 
-        <p className="px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none">
+        {collapsed && <div className="hidden md:block mx-3 my-3 border-t border-white/10" aria-hidden="true" />}
+
+        <p className={`px-4 pt-5 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none ${collapsed ? 'md:hidden' : ''}`}>
           Administracion
         </p>
 
         <NavLink
           to="/perfil"
           onClick={closeSidebar}
-          className={({ isActive }) => navItemClass(isActive)}
+          title={collapsed ? 'Perfil' : undefined}
+          className={({ isActive }) => navItemClass(isActive, collapsed)}
         >
           <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
-          <span className="flex-1 truncate">Perfil</span>
+          <span className={`flex-1 truncate ${collapsed ? 'md:hidden' : ''}`}>Perfil</span>
         </NavLink>
 
         {user?.permisos?.includes('users:manage') && (
@@ -117,25 +141,27 @@ export default function Sidebar({ user, onLogout }: Props) {
             <NavLink
               to="/entidades"
               onClick={closeSidebar}
-              className={({ isActive }) => navItemClass(isActive)}
+              title={collapsed ? 'Entidades' : undefined}
+              className={({ isActive }) => navItemClass(isActive, collapsed)}
             >
               <span className="shrink-0 opacity-70">{entidadesIcon({ size: 14 })}</span>
-              <span className="flex-1 truncate">Entidades</span>
+              <span className={`flex-1 truncate ${collapsed ? 'md:hidden' : ''}`}>Entidades</span>
             </NavLink>
 
             <NavLink
               to="/usuarios"
               onClick={closeSidebar}
-              className={({ isActive }) => navItemClass(isActive)}
+              title={collapsed ? 'Usuarios' : undefined}
+              className={({ isActive }) => navItemClass(isActive, collapsed)}
             >
               <span className="shrink-0 opacity-70">{usuariosIcon({ size: 14 })}</span>
-              <span className="flex-1 truncate">Usuarios</span>
+              <span className={`flex-1 truncate ${collapsed ? 'md:hidden' : ''}`}>Usuarios</span>
             </NavLink>
           </>
         )}
       </nav>
 
-      <div className="px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5">
+      <div className={`px-4 py-3.5 border-t border-white/10 flex items-center gap-2.5 ${collapsed ? 'md:px-0 md:flex-col md:gap-2' : ''}`}>
         <button
           onClick={() => { navigate('/perfil'); closeSidebar() }}
           className="w-7 h-7 rounded-full bg-brand-400 flex items-center justify-center shrink-0
@@ -149,8 +175,9 @@ export default function Sidebar({ user, onLogout }: Props) {
         </button>
         <button
           onClick={() => { navigate('/perfil'); closeSidebar() }}
-          className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity duration-150
-                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded"
+          className={`flex-1 min-w-0 text-left hover:opacity-80 transition-opacity duration-150
+                     focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded
+                     ${collapsed ? 'md:hidden' : ''}`}
         >
           <p className="text-[12px] text-white/[85%] truncate leading-tight">{user?.nombre ?? user?.correo}</p>
           <p className="text-[10px] text-white/55 capitalize leading-tight mt-0.5">{user?.rol?.nombre}</p>
@@ -159,7 +186,7 @@ export default function Sidebar({ user, onLogout }: Props) {
           onClick={() => { onLogout(); navigate('/login') }}
           title="Cerrar sesion"
           aria-label="Cerrar sesión"
-          className="w-8 h-8 rounded flex items-center justify-center
+          className="w-8 h-8 rounded flex items-center justify-center shrink-0
                      text-white/50 hover:text-white transition-colors duration-150
                      focus:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
         >
