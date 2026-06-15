@@ -7,7 +7,7 @@ import ErrorState from '@/components/ErrorState'
 import Toast from '@/components/Toast'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Usuario, Rol } from '@/types'
-import { getUsuarios, createUsuario, updateUsuario } from '../services/usuariosService'
+import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from '../services/usuariosService'
 import { getRoles } from '../services/rolesService'
 import { cuentaIcon, correoIcon, rolIcon, estadoIcon, relojIcon } from '@/consts/sectionIcons'
 
@@ -41,7 +41,7 @@ function shortId(uuid: string): string {
   return uuid.replace(/-/g, '').slice(0, 6).toUpperCase()
 }
 
-function usePortalDropdown() {
+function usePortalDropdown(align: 'left' | 'right' = 'left') {
   const [open, setOpen] = useState(false)
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({})
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -67,7 +67,10 @@ function usePortalDropdown() {
   const openPanel = () => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setPanelStyle({ position: 'fixed', top: rect.bottom + 4, left: rect.left, zIndex: 9999 })
+      const base: CSSProperties = { position: 'fixed', top: rect.bottom + 4, zIndex: 9999 }
+      setPanelStyle(align === 'right'
+        ? { ...base, right: window.innerWidth - rect.right }
+        : { ...base, left: rect.left })
     }
     setOpen(true)
   }
@@ -263,6 +266,54 @@ function RoleDropdown({
   )
 }
 
+function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete?: () => void }) {
+  const { open, setOpen, panelStyle, triggerRef, panelRef, openPanel } = usePortalDropdown('right')
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={openPanel}
+        className="p-1 rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-colors"
+        aria-label="Más acciones"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
+        </svg>
+      </button>
+
+      {open && createPortal(
+        <div ref={panelRef} style={panelStyle} className="bg-white border border-ink/[10%] rounded-xl shadow-xl shadow-ink/[6%] min-w-[150px] overflow-hidden py-1">
+          <button
+            type="button"
+            onClick={() => { setOpen(false); onEdit() }}
+            className="w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left text-ink/70 hover:bg-ink/[3%] transition-colors"
+          >
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" />
+            </svg>
+            Editar
+          </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => { setOpen(false); onDelete() }}
+              className="w-full flex items-center gap-2.5 px-3 py-[7px] text-[13px] text-left text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
+              </svg>
+              Eliminar
+            </button>
+          )}
+        </div>,
+        document.body,
+      )}
+    </>
+  )
+}
+
 export default function UsuariosPage() {
   const { user: currentUser, isSuperAdmin, canManageUsers } = useAuthContext()
   const isAdmin = currentUser?.rol?.nombre === 'admin'
@@ -276,6 +327,9 @@ export default function UsuariosPage() {
   const [filterRole, setFilterRole] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [editingUser, setEditingUser] = useState<Usuario | null>(null)
+  const [deletingUser, setDeletingUser] = useState<Usuario | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   const [formCorreo, setFormCorreo] = useState('')
   const [formNombre, setFormNombre] = useState('')
   const [formPassword, setFormPassword] = useState('')
@@ -300,32 +354,83 @@ export default function UsuariosPage() {
 
   useEffect(() => { setPage(1) }, [search, filterRole, filterStatus, pageSize])
 
-  const handleCreate = async (e: FormEvent) => {
+  const resetForm = () => {
+    setFormCorreo(''); setFormNombre(''); setFormPassword(''); setFormRolId(''); setFormError('')
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingUser(null)
+    resetForm()
+  }
+
+  const openCreate = () => {
+    setEditingUser(null)
+    resetForm()
+    setShowForm(true)
+  }
+
+  const openEdit = (usuario: Usuario) => {
+    setEditingUser(usuario)
+    setFormCorreo(usuario.correo)
+    setFormNombre(usuario.nombre ?? '')
+    setFormPassword('')
+    setFormRolId(usuario.rol_id ?? '')
+    setFormError('')
+    setShowForm(true)
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setFormError('')
-    if (formPassword.length < 8) {
+    if (!editingUser && formPassword.length < 8) {
       setFormError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
     setFormLoading(true)
     try {
-      const u = await createUsuario({
-        correo: formCorreo,
-        nombre: formNombre,
-        password: formPassword,
-        rol_id: formRolId || undefined,
-      })
-      setUsers((prev) => [...prev, u])
-      setShowForm(false)
-      setFormCorreo('')
-      setFormNombre('')
-      setFormPassword('')
-      setFormRolId('')
-      setToast({ message: 'Usuario creado', variant: 'success' })
+      if (editingUser) {
+        await updateUsuario(editingUser.id, {
+          nombre: formNombre,
+          rol_id: formRolId || undefined,
+        })
+        const newRol = roles.find((r) => r.id === formRolId) ?? editingUser.rol
+        setUsers((prev) => prev.map((u) =>
+          u.id === editingUser.id ? { ...u, nombre: formNombre, rol_id: formRolId || u.rol_id, rol: newRol } : u
+        ))
+        setToast({ message: 'Usuario actualizado', variant: 'success' })
+      } else {
+        const u = await createUsuario({
+          correo: formCorreo,
+          nombre: formNombre,
+          password: formPassword,
+          rol_id: formRolId || undefined,
+        })
+        setUsers((prev) => [...prev, u])
+        setToast({ message: 'Usuario creado', variant: 'success' })
+      }
+      closeForm()
     } catch {
-      setFormError('No se pudo crear el usuario. Verifica que el correo no esté registrado.')
+      setFormError(editingUser
+        ? 'No se pudo actualizar el usuario.'
+        : 'No se pudo crear el usuario. Verifica que el correo no esté registrado.')
     } finally {
       setFormLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deletingUser) return
+    setDeleteLoading(true)
+    try {
+      await deleteUsuario(deletingUser.id)
+      setUsers((prev) => prev.filter((u) => u.id !== deletingUser.id))
+      setToast({ message: 'Usuario eliminado', variant: 'success' })
+      setDeletingUser(null)
+    } catch {
+      setToast({ message: 'No se pudo eliminar el usuario', variant: 'error' })
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -358,6 +463,14 @@ export default function UsuariosPage() {
   }
 
   const canEditRole = (target: Usuario): boolean => {
+    if (target.rol?.nombre === 'superadmin') return false
+    if (isSuperAdmin) return true
+    if (isAdmin) return target.rol?.nombre !== 'admin'
+    return false
+  }
+
+  const canManageRow = (target: Usuario): boolean => {
+    if (!canManageUsers) return false
     if (target.rol?.nombre === 'superadmin') return false
     if (isSuperAdmin) return true
     if (isAdmin) return target.rol?.nombre !== 'admin'
@@ -438,36 +551,37 @@ export default function UsuariosPage() {
           </p>
         </div>
         {canManageUsers && (
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={openCreate}>
             <span className="text-base leading-none">+</span>
             Crear usuario
           </Button>
         )}
       </div>
 
-      {/* Create modal */}
+      {/* Create / edit modal */}
       {showForm && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
+          <div className="absolute inset-0 bg-black/40" onClick={closeForm} />
           <div className="relative bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-semibold text-ink">Nuevo usuario</h3>
-              <button onClick={() => setShowForm(false)} className="text-ink/30 hover:text-ink/60 transition-colors">
+              <h3 className="text-sm font-semibold text-ink">{editingUser ? 'Editar usuario' : 'Nuevo usuario'}</h3>
+              <button onClick={closeForm} className="text-ink/30 hover:text-ink/60 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M3 3l8 8M11 3L3 11" />
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleCreate} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-ink/50 mb-1">Correo</label>
                 <input
                   type="email"
                   required
-                  autoFocus
+                  autoFocus={!editingUser}
+                  disabled={!!editingUser}
                   value={formCorreo}
                   onChange={(e) => setFormCorreo(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className={`w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 ${editingUser ? 'bg-neutral-100 text-ink/50 cursor-not-allowed' : ''}`}
                   placeholder="usuario@iieg.gob.mx"
                 />
               </div>
@@ -476,24 +590,27 @@ export default function UsuariosPage() {
                 <input
                   type="text"
                   required
+                  autoFocus={!!editingUser}
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
                   placeholder="Nombre completo"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-ink/50 mb-1">Contraseña temporal</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={formPassword}
-                  onChange={(e) => setFormPassword(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  placeholder="Mínimo 8 caracteres"
-                />
-              </div>
+              {!editingUser && (
+                <div>
+                  <label className="block text-xs font-medium text-ink/50 mb-1">Contraseña temporal</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={8}
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-ink/[12%] rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-medium text-ink/50 mb-1">Rol</label>
                 <FormDropdown
@@ -504,9 +621,40 @@ export default function UsuariosPage() {
               </div>
               {formError && <p className="text-xs text-red-600">{formError}</p>}
               <Button type="submit" fullWidth loading={formLoading}>
-                {formLoading ? 'Creando…' : 'Crear'}
+                {editingUser
+                  ? (formLoading ? 'Guardando…' : 'Guardar')
+                  : (formLoading ? 'Creando…' : 'Crear')}
               </Button>
             </form>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* Delete confirm modal */}
+      {deletingUser && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setDeletingUser(null)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-sm font-semibold text-ink mb-2">Eliminar usuario</h3>
+            <p className="text-sm text-ink/70 mb-5">
+              ¿Seguro que deseas eliminar a <span className="font-medium text-ink">{deletingUser.nombre ?? deletingUser.correo}</span>? Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setDeletingUser(null)}
+                className="px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/[4%] rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleteLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {deleteLoading ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
           </div>
         </div>,
         document.body,
@@ -627,11 +775,12 @@ export default function UsuariosPage() {
                     <td className="px-5 py-3 text-xs text-ink/40">—</td>
 
                     <td className="px-5 py-3 text-right">
-                      <button className="p-1 rounded text-ink/60 hover:text-ink/80 hover:bg-ink/[5%] transition-colors" aria-label="Más acciones">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                          <circle cx="8" cy="3" r="1.2" /><circle cx="8" cy="8" r="1.2" /><circle cx="8" cy="13" r="1.2" />
-                        </svg>
-                      </button>
+                      {canManageRow(usuario) && (
+                        <RowActions
+                          onEdit={() => openEdit(usuario)}
+                          onDelete={usuario.id !== currentUser?.id ? () => setDeletingUser(usuario) : undefined}
+                        />
+                      )}
                     </td>
                   </tr>
                 )
