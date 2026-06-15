@@ -104,13 +104,13 @@ export default function DistribucionesPage() {
 
   const columns: Column<Distribucion>[] = [
     { header: 'Distribución', icon: nombreIcon(), render: (r) => <TextCell value={r.distribucion ?? r.id.slice(0, 8)} />, className: 'w-48', getValue: (r) => r.distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'distribucion', v) },
-    { header: 'URL', icon: urlIcon(), render: (r) => <TextCell value={r.url} mono link />, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
-    { header: 'Edición', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => { updateDistribucion(r.id, { edicion_dataset_id: v }); const e = ediciones.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, edicion_dataset_id: v || null, edicion_dataset: e ? { id: e.id, edicion: e.edicion } : null } : i))) }, getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.edicion}</span> : <span className="text-ink/60 text-[13px]">--</span> },
+    { header: 'Edición data set', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => { updateDistribucion(r.id, { edicion_dataset_id: v }); const e = ediciones.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, edicion_dataset_id: v || null, edicion_dataset: e ? { id: e.id, edicion: e.edicion } : null } : i))) }, getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.edicion}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasetOpts, onEdit: (r, v) => { updateDistribucion(r.id, { dataset_id: v }); const d = datasets.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: d ? { id: d.id, nombre: d.nombre } : null } : i))) }, getValue: (r) => r.dataset_id ?? '', render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
+    { header: 'URL', icon: urlIcon(), render: (r) => <TextCell value={r.url} mono link />, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
     { header: 'Tipo de acceso', icon: estadoIcon(), selectOptions: tipoAccesoOpts, onEdit: (r, v) => { updateDistribucion(r.id, { tipo_de_acceso_id: v }); const t = tiposAcceso.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tipo_de_acceso_id: v || null, tipo_de_acceso: t ? { id: t.id, nombre: t.nombre } : null } : i))) }, getValue: (r) => r.tipo_de_acceso_id ?? '', render: (r) => r.tipo_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.tipo_de_acceso.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Medio de distribución', icon: estadoIcon(), selectOptions: medioOpts, onEdit: (r, v) => { updateDistribucion(r.id, { medio_distribucion_id: v }); const m = medios.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, medio_distribucion_id: v || null, medio_distribucion: m ? { id: m.id, nombre: m.nombre } : null } : i))) }, getValue: (r) => r.medio_distribucion_id ?? '', render: (r) => r.medio_distribucion ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.medio_distribucion.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Req. control de acceso', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_control_de_acceso', v === 'true'), getValue: (r) => r.requiere_control_de_acceso ? 'true' : 'false', render: (r) => r.requiere_control_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
-    { header: 'URL persistente', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_url_persistente', v === 'true'), getValue: (r) => r.es_url_persistente ? 'true' : 'false', render: (r) => r.es_url_persistente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
+    { header: 'Es URL persistente', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_url_persistente', v === 'true'), getValue: (r) => r.es_url_persistente ? 'true' : 'false', render: (r) => r.es_url_persistente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_distribucion} />, getValue: (r) => r.observaciones_distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_distribucion', v) },
   ]
 
@@ -120,17 +120,17 @@ export default function DistribucionesPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newDistribucion} onChange={(e) => setNewDistribucion(e.target.value)} onKeyDown={kd} placeholder="Distribucion..." className={inputCls} />
       </td>
-      {/* 2. URL */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="URL..." className={inputCls} />
-      </td>
-      {/* 3. Edicion (FK select) */}
+      {/* 2. Edicion data set (FK select) */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newEdicionId} onChange={setNewEdicionId} options={edicionOpts} placeholder="Edicion..." label="Edicion" />
+        <SelectInput value={newEdicionId} onChange={setNewEdicionId} options={edicionOpts} placeholder="Edicion data set..." label="Edicion data set" />
       </td>
-      {/* 4. Dataset (FK select) */}
+      {/* 3. Dataset (FK select) */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput value={newDatasetId} onChange={setNewDatasetId} options={datasetOpts} placeholder="Dataset..." label="Dataset" />
+      </td>
+      {/* 4. URL */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="URL..." className={inputCls} />
       </td>
       {/* 5. Tipo de acceso (FK select) */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
@@ -144,9 +144,9 @@ export default function DistribucionesPage() {
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput value={newReqControl} onChange={setNewReqControl} options={boolOpts} placeholder="Req. control..." label="Req. control de acceso" />
       </td>
-      {/* 8. URL persistente */}
+      {/* 8. Es URL persistente */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newUrlPersistente} onChange={setNewUrlPersistente} options={boolOpts} placeholder="URL persist..." label="URL persistente" />
+        <SelectInput value={newUrlPersistente} onChange={setNewUrlPersistente} options={boolOpts} placeholder="Es URL persist..." label="Es URL persistente" />
       </td>
       {/* 9. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

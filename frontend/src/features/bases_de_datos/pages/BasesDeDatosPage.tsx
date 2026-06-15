@@ -88,10 +88,18 @@ export default function BasesDeDatosPage() {
 
   const columns: Column<BaseDeDatos>[] = [
     {
+      header: 'Descripción esquema',
+      icon: descripcionIcon(),
+      className: 'w-48',
+      render: (r) => <JsonCell value={r.descripcion_esquema} />,
+      getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
+      inputType: 'json',
+    },
+    {
       header: 'Base de datos',
       icon: nombreIcon(),
       render: (r) => <TextCell value={r.db_nombre} />,
-      className: 'w-48',
       getValue: (r) => r.db_nombre,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
     },
@@ -109,14 +117,6 @@ export default function BasesDeDatosPage() {
       getValue: (r) => r.archivo_id ?? '',
     },
     {
-      header: 'Descripción esquema',
-      icon: descripcionIcon(),
-      render: (r) => <JsonCell value={r.descripcion_esquema} />,
-      getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
-      inputType: 'json',
-    },
-    {
       header: 'Etiquetas',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.etiquetas ?? {}} />,
@@ -129,6 +129,9 @@ export default function BasesDeDatosPage() {
   const addRowCells = (
     <>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
@@ -139,9 +142,6 @@ export default function BasesDeDatosPage() {
           placeholder="Archivo..."
           label="Archivo"
         />
-      </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <JsonEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />

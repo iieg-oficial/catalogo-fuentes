@@ -124,16 +124,6 @@ export default function FuentesPage() {
       onEdit: (r, v) => handleEditCell(r, 'ambito', v),
     },
     {
-      header: 'Oficial',
-      icon: estadoIcon(),
-      render: (r) => r.es_fuente_oficial
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
-        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
-      selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
-      onEdit: (r, v) => handleEditCell(r, 'es_fuente_oficial', v === 'true'),
-      getValue: (r) => r.es_fuente_oficial ? 'true' : 'false',
-    },
-    {
       header: 'URL',
       icon: urlIcon(),
       render: (r) => <TextCell value={r.url} mono link />,
@@ -148,7 +138,17 @@ export default function FuentesPage() {
       onEdit: (r, v) => handleEditCell(r, 'descripcion', v),
     },
     {
-      header: 'Publicador',
+      header: 'Es fuente oficial',
+      icon: estadoIcon(),
+      render: (r) => r.es_fuente_oficial
+        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
+        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
+      selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
+      onEdit: (r, v) => handleEditCell(r, 'es_fuente_oficial', v === 'true'),
+      getValue: (r) => r.es_fuente_oficial ? 'true' : 'false',
+    },
+    {
+      header: 'Es publicador',
       icon: estadoIcon(),
       render: (r) => r.es_publicador
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
@@ -184,21 +184,21 @@ export default function FuentesPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newAmbito} onChange={(e) => setNewAmbito(e.target.value)} onKeyDown={kd} placeholder="Ambito..." className={inputCls} />
       </td>
-      {/* 5. Oficial */}
-      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newEsFuenteOficial} onChange={setNewEsFuenteOficial} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Oficial..." label="Oficial" />
-      </td>
-      {/* 6. URL */}
+      {/* 5. URL */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="URL..." className={inputCls} />
       </td>
-      {/* 8. Descripcion */}
+      {/* 6. Descripcion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      {/* 9. Publicador */}
+      {/* 7. Es fuente oficial */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newEsPublicador} onChange={setNewEsPublicador} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Publicador..." label="Publicador" />
+        <SelectInput value={newEsFuenteOficial} onChange={setNewEsFuenteOficial} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Es fuente oficial..." label="Es fuente oficial" />
+      </td>
+      {/* 8. Es publicador */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newEsPublicador} onChange={setNewEsPublicador} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Es publicador..." label="Es publicador" />
       </td>
       {/* 9. Contacto institucional */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
