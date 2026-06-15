@@ -615,7 +615,7 @@ export default function UsuariosPage() {
                 <label className="block text-xs font-medium text-ink/50 mb-1">Rol</label>
                 <FormDropdown
                   value={formRolId}
-                  options={roles.map((r) => ({ value: r.id, label: r.nombre }))}
+                  options={allowedRoles().map((r) => ({ value: r.id, label: r.nombre }))}
                   onChange={setFormRolId}
                 />
               </div>
