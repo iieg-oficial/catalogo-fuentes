@@ -13,7 +13,6 @@ import DistribucionesPage from '@/features/distribuciones/pages/DistribucionesPa
 import BasesDeDatosPage from '@/features/bases_de_datos/pages/BasesDeDatosPage'
 import InformacionTablasPage from '@/features/informacion_tablas/pages/InformacionTablasPage'
 import ArchivosPage from '@/features/archivos/pages/ArchivosPage'
-import ProductoTablasPage from '@/features/producto_tablas/pages/ProductoTablasPage'
 import UsuariosPage from '@/features/usuarios/pages/UsuariosPage'
 import EntidadesPage from '@/features/entidades/pages/EntidadesPage'
 import HomePage from '@/features/home/pages/HomePage'
@@ -34,7 +33,6 @@ function CatalogRoutes() {
         <Route path="bases-de-datos" element={<BasesDeDatosPage />} />
         <Route path="informacion-tablas" element={<InformacionTablasPage />} />
         <Route path="archivos" element={<ArchivosPage />} />
-        <Route path="producto-tablas" element={<ProductoTablasPage />} />
         <Route path="entidades" element={<EntidadesPage />} />
         {canManageUsers && <Route path="usuarios" element={<UsuariosPage />} />}
         <Route path="perfil" element={<ProfilePage />} />

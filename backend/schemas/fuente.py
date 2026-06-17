@@ -13,9 +13,6 @@ class FuenteBase(BaseModel):
     descripcion: str | None = None
     es_fuente_oficial: bool = False
     es_publicador: bool = False
-    jurisdiccion: str | None = None
-    url_terminos_uso: str | None = None
-    url_aviso_privacidad: str | None = None
     contacto_institucional: str | None = None
 
 
@@ -32,9 +29,6 @@ class FuenteUpdate(BaseModel):
     descripcion: str | None = None
     es_fuente_oficial: bool | None = None
     es_publicador: bool | None = None
-    jurisdiccion: str | None = None
-    url_terminos_uso: str | None = None
-    url_aviso_privacidad: str | None = None
     contacto_institucional: str | None = None
 
 

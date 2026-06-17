@@ -23,6 +23,6 @@ class Producto(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     proyecto: Mapped["Proyecto | None"] = relationship("Proyecto", back_populates="productos")
-    producto_tablas: Mapped[list["ProductoTabla"]] = relationship(
-        "ProductoTabla", back_populates="producto", passive_deletes=True
+    informacion_tablas: Mapped[list["InformacionTablas"]] = relationship(
+        "InformacionTablas", back_populates="producto", passive_deletes=True
     )

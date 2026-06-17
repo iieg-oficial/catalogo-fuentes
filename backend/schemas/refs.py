@@ -12,6 +12,24 @@ class FuenteRef(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TipoDatasetRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre: str
+
+    model_config = {"from_attributes": True}
+
+
+class TipoPeriodoRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre: str
+
+    model_config = {"from_attributes": True}
+
+
 class DatasetRef(BaseModel):
     """Lightweight reference for nesting inside other Read schemas."""
 
@@ -25,6 +43,24 @@ class EdicionDatasetRef(BaseModel):
     """Lightweight reference for nesting inside other Read schemas."""
 
     id: uuid.UUID
+    edicion: str
+
+    model_config = {"from_attributes": True}
+
+
+class TipoDeAccesoRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre: str
+
+    model_config = {"from_attributes": True}
+
+
+class MedioDistribucionRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
     nombre: str
 
     model_config = {"from_attributes": True}
@@ -34,7 +70,25 @@ class DistribucionRef(BaseModel):
     """Lightweight reference for nesting inside other Read schemas."""
 
     id: uuid.UUID
-    descriptor: str | None = None
+    distribucion: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class ArchivoRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre_archivo: str
+
+    model_config = {"from_attributes": True}
+
+
+class ProductoRef(BaseModel):
+    """Lightweight reference for nesting inside other Read schemas."""
+
+    id: uuid.UUID
+    nombre: str
 
     model_config = {"from_attributes": True}
 

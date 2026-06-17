@@ -43,6 +43,8 @@ async def create_usuario(
     db: AsyncSession = Depends(get_db),
     current_user: Usuario = Depends(require_admin),
 ):
+    if not await svc.can_assign_rol(db, current_user, data.rol_id):
+        raise forbidden()
     obj = await svc.create_usuario(db, data)
     if obj is None:
         raise conflict("Correo ya registrado")
@@ -60,6 +62,8 @@ async def update_usuario(
     if not target:
         raise not_found("Usuario")
     if target.rol and target.rol.nombre == "superadmin":
+        raise forbidden()
+    if not await svc.can_assign_rol(db, current_user, data.rol_id):
         raise forbidden()
     obj = await svc.update_usuario(db, usuario_id, data)
     return obj

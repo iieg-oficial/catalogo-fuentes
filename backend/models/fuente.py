@@ -20,9 +20,6 @@ class Fuente(Base):
     descripcion: Mapped[str | None] = mapped_column(Text)
     es_fuente_oficial: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     es_publicador: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    jurisdiccion: Mapped[str | None] = mapped_column(String)
-    url_terminos_uso: Mapped[str | None] = mapped_column(Text)
-    url_aviso_privacidad: Mapped[str | None] = mapped_column(Text)
     contacto_institucional: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))

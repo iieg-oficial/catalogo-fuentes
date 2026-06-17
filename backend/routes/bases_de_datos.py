@@ -19,11 +19,11 @@ router = APIRouter(prefix="/bases-de-datos", tags=["bases_de_datos"])
 async def list_bases_de_datos(
     skip: int = 0,
     limit: int = 10_000,
-    dataset_id: uuid.UUID | None = None,
+    archivo_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return await svc.list_bases_de_datos(db, skip=skip, limit=limit, dataset_id=dataset_id)
+    return await svc.list_bases_de_datos(db, skip=skip, limit=limit, archivo_id=archivo_id)
 
 
 @router.get("/{bd_id}", response_model=BaseDeDatosDetail)

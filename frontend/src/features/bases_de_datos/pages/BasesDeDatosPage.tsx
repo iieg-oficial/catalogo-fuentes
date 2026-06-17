@@ -6,37 +6,37 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { BaseDeDatos, Dataset } from '@/types'
+import type { Archivo, BaseDeDatos } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from '../services/basesDeDatosService'
-import { getDatasets } from '@/features/datasets/services/datasetsService'
+import { getArchivos } from '@/features/archivos/services/archivosService'
 import { TextCell } from '@/components/TextCell'
 import JsonEditorInput from '@/components/JsonEditorInput'
 import { JsonCell } from '@/components/JsonCell'
-import { nombreIcon, datasetsIcon, jsonIcon, descripcionIcon } from '@/consts/sectionIcons'
+import { nombreIcon, archivosIcon, jsonIcon, descripcionIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function BasesDeDatosPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<BaseDeDatos[]>([])
-  const [datasets, setDatasets] = useState<Dataset[]>([])
+  const [archivos, setArchivos] = useState<Archivo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
   const [addingRow, setAddingRow] = useState(false)
   const [newNombre, setNewNombre] = useState('')
-  const [newDatasetId, setNewDatasetId] = useState('')
+  const [newArchivoId, setNewArchivoId] = useState('')
   const [newDescripcionEsquema, setNewDescripcionEsquema] = useState<Record<string, unknown>>({})
-  const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
+  const [newEtiquetas, setNewEtiquetas] = useState<Record<string, unknown>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      const [bds, ds] = await Promise.all([getBasesDeDatos(), getDatasets()])
+      const [bds, arch] = await Promise.all([getBasesDeDatos(), getArchivos()])
       setItems(bds)
-      setDatasets(ds)
+      setArchivos(arch)
     } catch {
       setError(true)
     } finally {
@@ -46,16 +46,16 @@ export default function BasesDeDatosPage() {
 
   useEffect(() => { load() }, [])
 
-  const resetFields = () => { setNewNombre(''); setNewDatasetId(''); setNewDescripcionEsquema({}); setNewMeta({}) }
+  const resetFields = () => { setNewNombre(''); setNewArchivoId(''); setNewDescripcionEsquema({}); setNewEtiquetas({}) }
 
   const handleSaveRow = async () => {
     if (!newNombre.trim()) return
     try {
       await createBaseDeDatos({
         db_nombre: newNombre,
-        dataset_id: newDatasetId || undefined,
+        archivo_id: newArchivoId || undefined,
         descripcion_esquema: Object.keys(newDescripcionEsquema).length ? newDescripcionEsquema : undefined,
-        meta: Object.keys(newMeta).length ? newMeta : undefined,
+        etiquetas: Object.keys(newEtiquetas).length ? newEtiquetas : undefined,
       })
       setAddingRow(false)
       resetFields()
@@ -76,7 +76,7 @@ export default function BasesDeDatosPage() {
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.db_nombre, i.dataset?.nombre].some(
+    return !q || [i.db_nombre, i.archivo?.nombre_archivo].some(
       (v) => String(v ?? '').toLowerCase().includes(q),
     )
   })
@@ -88,40 +88,40 @@ export default function BasesDeDatosPage() {
 
   const columns: Column<BaseDeDatos>[] = [
     {
-      header: 'Base de datos',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.db_nombre} />,
-      className: 'w-48',
-      getValue: (r) => r.db_nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
-    },
-    {
-      header: 'Dataset',
-      icon: datasetsIcon(),
-      selectOptions: datasets.map((d) => ({ value: d.id, label: d.nombre })),
-      onEdit: (r, v) => {
-        updateBaseDeDatos(r.id, { dataset_id: v })
-        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: v ? { id: v, nombre: datasets.find((d) => d.id === v)?.nombre ?? '' } : null } : i)))
-      },
-      render: (r) => r.dataset
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span>
-        : <span className="text-ink/60 text-[13px]">--</span>,
-      getValue: (r) => r.dataset_id ?? '',
-    },
-    {
       header: 'Descripción esquema',
       icon: descripcionIcon(),
+      className: 'w-48',
       render: (r) => <JsonCell value={r.descripcion_esquema} />,
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
       onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
       inputType: 'json',
     },
     {
-      header: 'Metadata',
+      header: 'Base de datos',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.db_nombre} />,
+      getValue: (r) => r.db_nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
+    },
+    {
+      header: 'Archivo',
+      icon: archivosIcon(),
+      selectOptions: archivos.map((a) => ({ value: a.id, label: a.nombre_archivo })),
+      onEdit: (r, v) => {
+        updateBaseDeDatos(r.id, { archivo_id: v })
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivo_id: v || null, archivo: v ? { id: v, nombre_archivo: archivos.find((a) => a.id === v)?.nombre_archivo ?? '' } : null } : i)))
+      },
+      render: (r) => r.archivo
+        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.archivo.nombre_archivo}</span>
+        : <span className="text-ink/60 text-[13px]">--</span>,
+      getValue: (r) => r.archivo_id ?? '',
+    },
+    {
+      header: 'Etiquetas',
       icon: jsonIcon(),
-      render: (r) => <JsonCell value={r.meta} />,
-      getValue: (r) => JSON.stringify(r.meta ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      render: (r) => <JsonCell value={r.etiquetas ?? {}} />,
+      getValue: (r) => JSON.stringify(r.etiquetas ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { etiquetas: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: parsed } : i))) } catch {} },
       inputType: 'json',
     },
   ]
@@ -129,22 +129,22 @@ export default function BasesDeDatosPage() {
   const addRowCells = (
     <>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput
-          value={newDatasetId}
-          onChange={setNewDatasetId}
-          options={datasets.map((d) => ({ value: d.id, label: d.nombre }))}
-          placeholder="Dataset..."
-          label="Dataset"
+          value={newArchivoId}
+          onChange={setNewArchivoId}
+          options={archivos.map((a) => ({ value: a.id, label: a.nombre_archivo }))}
+          placeholder="Archivo..."
+          label="Archivo"
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
-      </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
+        <JsonEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />
       </td>
     </>
   )

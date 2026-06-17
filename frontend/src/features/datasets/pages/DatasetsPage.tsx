@@ -6,14 +6,13 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { Dataset, Fuente } from '@/types'
+import type { Dataset, Fuente, TipoDataset } from '@/types'
 import { TextCell } from '@/components/TextCell'
-import { getDatasets, createDataset, updateDataset, deleteDataset } from '../services/datasetsService'
+import { getDatasets, getTiposDataset, createDataset, createTipoDataset, updateDataset, deleteDataset } from '../services/datasetsService'
 import { getFuentes } from '@/features/fuentes/services/fuentesService'
-import DatePickerInput from '@/components/DatePickerInput'
 import JsonEditorInput from '@/components/JsonEditorInput'
 import { JsonCell } from '@/components/JsonCell'
-import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
+import { nombreIcon, descripcionIcon, temaIcon, frecuenciaIcon, estadoIcon, fuentesIcon, urlIcon, jsonIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -21,6 +20,7 @@ export default function DatasetsPage() {
   const { canWrite } = useAuthContext()
   const [items, setItems] = useState<Dataset[]>([])
   const [fuentes, setFuentes] = useState<Fuente[]>([])
+  const [tiposDataset, setTiposDataset] = useState<TipoDataset[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
@@ -29,42 +29,39 @@ export default function DatasetsPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newNombreCorto, setNewNombreCorto] = useState('')
   const [newDesc, setNewDesc] = useState('')
-  const [newIdentificador, setNewIdentificador] = useState('')
+  const [newUrlPersistente, setNewUrlPersistente] = useState('')
   const [newPeriodicidad, setNewPeriodicidad] = useState('')
   const [newVigente, setNewVigente] = useState('')
-  const [newUrlPagina, setNewUrlPagina] = useState('')
-  const [newUrlMetodologia, setNewUrlMetodologia] = useState('')
-  const [newUrlMetadatos, setNewUrlMetadatos] = useState('')
   const [newDesagregacion, setNewDesagregacion] = useState('')
-  const [newCobertura, setNewCobertura] = useState('')
-  const [newUnidadObs, setNewUnidadObs] = useState('')
-  const [newTema, setNewTema] = useState('')
+  const [newInicioCobertura, setNewInicioCobertura] = useState('')
   const [newProposito, setNewProposito] = useState('')
-  const [newFechaInicio, setNewFechaInicio] = useState('')
-  const [newFechaFin, setNewFechaFin] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
   const [newEtiquetas, setNewEtiquetas] = useState<Record<string, unknown>>({})
   const [newUrlNormativa, setNewUrlNormativa] = useState('')
+  const [newNomenclatura, setNewNomenclatura] = useState('')
+  const [newUrlTerminos, setNewUrlTerminos] = useState('')
+  const [newUrlAviso, setNewUrlAviso] = useState('')
   const [newFuenteId, setNewFuenteId] = useState('')
+  const [newTipoDatasetId, setNewTipoDatasetId] = useState('')
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      const [datasets, fuentesList] = await Promise.all([getDatasets(), getFuentes()])
+      const [datasets, fuentesList, tipos] = await Promise.all([getDatasets(), getFuentes(), getTiposDataset()])
       setItems(datasets)
       setFuentes(fuentesList)
+      setTiposDataset(tipos)
     } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
   useEffect(() => { load() }, [])
 
   const resetFields = () => {
-    setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewIdentificador('')
-    setNewPeriodicidad(''); setNewVigente(''); setNewUrlPagina(''); setNewUrlMetodologia('')
-    setNewUrlMetadatos(''); setNewDesagregacion(''); setNewCobertura(''); setNewUnidadObs('')
-    setNewTema(''); setNewProposito(''); setNewFechaInicio(''); setNewFechaFin('')
-    setNewObservaciones(''); setNewEtiquetas({}); setNewUrlNormativa(''); setNewFuenteId('')
+    setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewUrlPersistente('')
+    setNewPeriodicidad(''); setNewVigente(''); setNewDesagregacion(''); setNewInicioCobertura('')
+    setNewProposito(''); setNewObservaciones(''); setNewEtiquetas({}); setNewUrlNormativa('')
+    setNewNomenclatura(''); setNewUrlTerminos(''); setNewUrlAviso(''); setNewFuenteId(''); setNewTipoDatasetId('')
   }
 
   const handleSaveRow = async () => {
@@ -74,23 +71,20 @@ export default function DatasetsPage() {
         nombre: newNombre,
         nombre_corto: newNombreCorto || undefined,
         descripcion: newDesc || undefined,
-        identificador_persistente: newIdentificador || undefined,
+        url_persistente: newUrlPersistente || undefined,
         periodicidad: newPeriodicidad || undefined,
         vigente: newVigente ? newVigente === 'true' : undefined,
-        url_pagina_principal: newUrlPagina || undefined,
-        url_metodologia_general: newUrlMetodologia || undefined,
-        url_metadatos_general: newUrlMetadatos || undefined,
         desagregacion_geografica: newDesagregacion || undefined,
-        cobertura_temporal_general: newCobertura || undefined,
-        unidad_observacion: newUnidadObs || undefined,
-        tema_principal: newTema || undefined,
+        inicio_cobertura_temporal: newInicioCobertura || undefined,
         proposito: newProposito || undefined,
-        fecha_inicio_disponibilidad: newFechaInicio || undefined,
-        fecha_fin_disponibilidad: newFechaFin || undefined,
         observaciones_dataset: newObservaciones || undefined,
         etiquetas: Object.keys(newEtiquetas).length ? newEtiquetas : undefined,
         url_normativa_o_marco_legal: newUrlNormativa || undefined,
+        nomenclatura_edicion: newNomenclatura || undefined,
+        url_terminos_uso: newUrlTerminos || undefined,
+        url_aviso_privacidad: newUrlAviso || undefined,
         fuente_id: newFuenteId || undefined,
+        tipo_dataset_id: newTipoDatasetId || undefined,
       })
       setAddingRow(false); resetFields(); await load(true)
     } finally {}
@@ -107,7 +101,7 @@ export default function DatasetsPage() {
 
   const filtered = items.filter((i) => {
     const q = search.toLowerCase()
-    return !q || [i.nombre, i.descripcion, i.tema_principal, i.fuente?.nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
+    return !q || [i.nombre, i.descripcion, i.fuente?.nombre, i.tipo_dataset?.nombre].some((v) => String(v ?? '').toLowerCase().includes(q))
   })
 
   const kd = (e: React.KeyboardEvent) => {
@@ -115,33 +109,24 @@ export default function DatasetsPage() {
     if (e.key === 'Escape') { setAddingRow(false); resetFields() }
   }
 
-  const fmtDate = (d: string | null | undefined) => {
-    if (!d) return null
-    try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
-  }
-
-
   const columns: Column<Dataset>[] = [
     { header: 'Nombre', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre} />, className: 'w-48', getValue: (r) => r.nombre, onEdit: (r, v) => handleEditCell(r, 'nombre', v) },
     { header: 'Nombre corto', icon: nombreIcon(), render: (r) => <TextCell value={r.nombre_corto} />, getValue: (r) => r.nombre_corto ?? '', onEdit: (r, v) => handleEditCell(r, 'nombre_corto', v) },
     { header: 'Descripción', icon: descripcionIcon(), render: (r) => <TextCell value={r.descripcion} />, getValue: (r) => r.descripcion ?? '', onEdit: (r, v) => handleEditCell(r, 'descripcion', v) },
-    { header: 'ID persistente', icon: descripcionIcon(), render: (r) => <TextCell value={r.identificador_persistente} />, getValue: (r) => r.identificador_persistente ?? '', onEdit: (r, v) => handleEditCell(r, 'identificador_persistente', v) },
+    { header: 'Tipo de dataset', icon: temaIcon(), render: (r) => r.tipo_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.tipo_dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, selectOptions: tiposDataset.map((t) => ({ value: t.id, label: t.nombre })), onEdit: (r, v) => { updateDataset(r.id, { tipo_dataset_id: v }); const t = tiposDataset.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tipo_dataset_id: v || null, tipo_dataset: t ? { id: t.id, nombre: t.nombre } : null } : i))) }, getValue: (r) => r.tipo_dataset_id ?? '' },
+    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => { updateDataset(r.id, { fuente_id: v }); const f = fuentes.find((x) => x.id === v) ?? null; setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, fuente_id: v || null, fuente: f } : i))) }, getValue: (r) => r.fuente_id ?? '' },
+    { header: 'URL persistente', icon: urlIcon(), render: (r) => <TextCell value={r.url_persistente} mono link />, getValue: (r) => r.url_persistente ?? '', onEdit: (r, v) => handleEditCell(r, 'url_persistente', v) },
     { header: 'Periodicidad', icon: frecuenciaIcon(), render: (r) => <TextCell value={r.periodicidad} />, getValue: (r) => r.periodicidad ?? '', onEdit: (r, v) => handleEditCell(r, 'periodicidad', v) },
     { header: 'Vigente', icon: estadoIcon(), render: (r) => r.vigente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>, selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }], onEdit: (r, v) => handleEditCell(r, 'vigente', v === 'true'), getValue: (r) => r.vigente ? 'true' : 'false' },
-    { header: 'URL principal', icon: urlIcon(), render: (r) => <TextCell value={r.url_pagina_principal} mono link />, getValue: (r) => r.url_pagina_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_pagina_principal', v) },
-    { header: 'URL metodologia', icon: urlIcon(), render: (r) => <TextCell value={r.url_metodologia_general} mono link />, getValue: (r) => r.url_metodologia_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metodologia_general', v) },
-    { header: 'URL metadatos', icon: urlIcon(), render: (r) => <TextCell value={r.url_metadatos_general} mono link />, getValue: (r) => r.url_metadatos_general ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metadatos_general', v) },
     { header: 'Desagregacion geo', icon: descripcionIcon(), render: (r) => <TextCell value={r.desagregacion_geografica} />, getValue: (r) => r.desagregacion_geografica ?? '', onEdit: (r, v) => handleEditCell(r, 'desagregacion_geografica', v) },
-    { header: 'Cobertura temporal', icon: descripcionIcon(), render: (r) => <TextCell value={r.cobertura_temporal_general} />, getValue: (r) => r.cobertura_temporal_general ?? '', onEdit: (r, v) => handleEditCell(r, 'cobertura_temporal_general', v) },
-    { header: 'Unidad observacion', icon: descripcionIcon(), render: (r) => <TextCell value={r.unidad_observacion} />, getValue: (r) => r.unidad_observacion ?? '', onEdit: (r, v) => handleEditCell(r, 'unidad_observacion', v) },
-    { header: 'Tema', icon: temaIcon(), render: (r) => <TextCell value={r.tema_principal} />, getValue: (r) => r.tema_principal ?? '', onEdit: (r, v) => handleEditCell(r, 'tema_principal', v) },
+    { header: 'Inicio cobertura temporal', icon: descripcionIcon(), render: (r) => <TextCell value={r.inicio_cobertura_temporal} />, getValue: (r) => r.inicio_cobertura_temporal ?? '', onEdit: (r, v) => handleEditCell(r, 'inicio_cobertura_temporal', v) },
     { header: 'Proposito', icon: descripcionIcon(), render: (r) => <TextCell value={r.proposito} />, getValue: (r) => r.proposito ?? '', onEdit: (r, v) => handleEditCell(r, 'proposito', v) },
-    { header: 'Inicio disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_inicio_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_inicio_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_inicio_disponibilidad', v), inputType: 'date' },
-    { header: 'Fin disponibilidad', icon: fechaIcon(), render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_fin_disponibilidad) ?? '--'}</span>, getValue: (r) => r.fecha_fin_disponibilidad ?? '', onEdit: (r, v) => handleEditCell(r, 'fecha_fin_disponibilidad', v), inputType: 'date' },
-    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_dataset} />, getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
     { header: 'Etiquetas', icon: jsonIcon(), render: (r) => <JsonCell value={r.etiquetas} />, getValue: (r) => JSON.stringify(r.etiquetas ?? {}), onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateDataset(r.id, { etiquetas: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, etiquetas: parsed } : i))) } catch {} }, inputType: 'json' },
     { header: 'URL normativa', icon: urlIcon(), render: (r) => <TextCell value={r.url_normativa_o_marco_legal} mono link />, getValue: (r) => r.url_normativa_o_marco_legal ?? '', onEdit: (r, v) => handleEditCell(r, 'url_normativa_o_marco_legal', v) },
-    { header: 'Fuente', icon: fuentesIcon(), render: (r) => r.fuente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.fuente.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span>, selectOptions: fuentes.map((f) => ({ value: f.id, label: f.nombre })), onEdit: (r, v) => { updateDataset(r.id, { fuente_id: v }); const f = fuentes.find((x) => x.id === v) ?? null; setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, fuente_id: v || null, fuente: f } : i))) }, getValue: (r) => r.fuente_id ?? '' },
+    { header: 'Nomenclatura edicion', icon: descripcionIcon(), render: (r) => <TextCell value={r.nomenclatura_edicion} />, getValue: (r) => r.nomenclatura_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'nomenclatura_edicion', v) },
+    { header: 'URL terminos de uso', icon: urlIcon(), render: (r) => <TextCell value={r.url_terminos_uso} mono link />, getValue: (r) => r.url_terminos_uso ?? '', onEdit: (r, v) => handleEditCell(r, 'url_terminos_uso', v) },
+    { header: 'URL aviso privacidad', icon: urlIcon(), render: (r) => <TextCell value={r.url_aviso_privacidad} mono link />, getValue: (r) => r.url_aviso_privacidad ?? '', onEdit: (r, v) => handleEditCell(r, 'url_aviso_privacidad', v) },
+    { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_dataset} />, getValue: (r) => r.observaciones_dataset ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_dataset', v) },
   ]
 
   const addRowCells = (
@@ -158,73 +143,73 @@ export default function DatasetsPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      {/* 4. ID persistente */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newIdentificador} onChange={(e) => setNewIdentificador(e.target.value)} onKeyDown={kd} placeholder="ID persistente..." className={inputCls} />
+      {/* 4. Tipo de dataset (select con opción de crear) */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput
+          value={newTipoDatasetId}
+          onChange={setNewTipoDatasetId}
+          options={tiposDataset.map((t) => ({ value: t.id, label: t.nombre }))}
+          placeholder="Tipo..."
+          label="Tipo de dataset"
+          createPlaceholder="Nuevo tipo…"
+          onCreate={async (nombre) => {
+            const t = await createTipoDataset({ nombre })
+            setTiposDataset((prev) => [...prev, t])
+            setNewTipoDatasetId(t.id)
+          }}
+        />
       </td>
-      {/* 5. Periodicidad */}
+      {/* 5. Fuente */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newFuenteId} onChange={setNewFuenteId} options={fuentes.map((f) => ({ value: f.id, label: f.nombre }))} placeholder="Fuente..." label="Fuente" />
+      </td>
+      {/* 6. URL persistente */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlPersistente} onChange={(e) => setNewUrlPersistente(e.target.value)} onKeyDown={kd} placeholder="URL persistente..." className={inputCls} />
+      </td>
+      {/* 7. Periodicidad */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newPeriodicidad} onChange={(e) => setNewPeriodicidad(e.target.value)} onKeyDown={kd} placeholder="Periodicidad..." className={inputCls} />
       </td>
-      {/* 6. Vigente */}
+      {/* 8. Vigente */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput value={newVigente} onChange={setNewVigente} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Vigente..." label="Vigente" />
       </td>
-      {/* 7. URL principal */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlPagina} onChange={(e) => setNewUrlPagina(e.target.value)} onKeyDown={kd} placeholder="URL pagina..." className={inputCls} />
-      </td>
-      {/* 8. URL metodologia */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlMetodologia} onChange={(e) => setNewUrlMetodologia(e.target.value)} onKeyDown={kd} placeholder="URL metodologia..." className={inputCls} />
-      </td>
-      {/* 9. URL metadatos */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlMetadatos} onChange={(e) => setNewUrlMetadatos(e.target.value)} onKeyDown={kd} placeholder="URL metadatos..." className={inputCls} />
-      </td>
-      {/* 10. Desagregacion geo */}
+      {/* 9. Desagregacion geo */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesagregacion} onChange={(e) => setNewDesagregacion(e.target.value)} onKeyDown={kd} placeholder="Desagregacion..." className={inputCls} />
       </td>
-      {/* 11. Cobertura temporal */}
+      {/* 10. Inicio cobertura temporal */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newCobertura} onChange={(e) => setNewCobertura(e.target.value)} onKeyDown={kd} placeholder="Cobertura..." className={inputCls} />
+        <input value={newInicioCobertura} onChange={(e) => setNewInicioCobertura(e.target.value)} onKeyDown={kd} placeholder="Inicio cobertura..." className={inputCls} />
       </td>
-      {/* 12. Unidad observacion */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUnidadObs} onChange={(e) => setNewUnidadObs(e.target.value)} onKeyDown={kd} placeholder="Unidad obs..." className={inputCls} />
-      </td>
-      {/* 13. Tema */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newTema} onChange={(e) => setNewTema(e.target.value)} onKeyDown={kd} placeholder="Tema..." className={inputCls} />
-      </td>
-      {/* 14. Proposito */}
+      {/* 11. Proposito */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newProposito} onChange={(e) => setNewProposito(e.target.value)} onKeyDown={kd} placeholder="Proposito..." className={inputCls} />
       </td>
-      {/* 15. Inicio disponibilidad */}
+      {/* 12. Etiquetas */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <DatePickerInput value={newFechaInicio} onChange={setNewFechaInicio} placeholder="Inicio disp..." />
+        <JsonEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />
       </td>
-      {/* 16. Fin disponibilidad */}
+      {/* 13. URL normativa */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <DatePickerInput value={newFechaFin} onChange={setNewFechaFin} placeholder="Fin disp..." />
+        <input value={newUrlNormativa} onChange={(e) => setNewUrlNormativa(e.target.value)} onKeyDown={kd} placeholder="URL normativa..." className={inputCls} />
+      </td>
+      {/* 14. Nomenclatura edicion */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newNomenclatura} onChange={(e) => setNewNomenclatura(e.target.value)} onKeyDown={kd} placeholder="Nomenclatura..." className={inputCls} />
+      </td>
+      {/* 15. URL terminos de uso */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlTerminos} onChange={(e) => setNewUrlTerminos(e.target.value)} onKeyDown={kd} placeholder="URL terminos..." className={inputCls} />
+      </td>
+      {/* 16. URL aviso privacidad */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input value={newUrlAviso} onChange={(e) => setNewUrlAviso(e.target.value)} onKeyDown={kd} placeholder="URL aviso..." className={inputCls} />
       </td>
       {/* 17. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
-      </td>
-      {/* 18. Etiquetas */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newEtiquetas} onChange={setNewEtiquetas} label="Etiquetas" />
-      </td>
-      {/* 19. URL normativa */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlNormativa} onChange={(e) => setNewUrlNormativa(e.target.value)} onKeyDown={kd} placeholder="URL normativa..." className={inputCls} />
-      </td>
-      {/* 20. Fuente */}
-      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newFuenteId} onChange={setNewFuenteId} options={fuentes.map((f) => ({ value: f.id, label: f.nombre }))} placeholder="Fuente..." label="Fuente" />
       </td>
     </>
   )

@@ -1,5 +1,5 @@
 import apiClient from '@/services/apiClient'
-import type { Distribucion, DistribucionDetail } from '@/types'
+import type { Distribucion, DistribucionDetail, MedioDistribucion, TipoDeAcceso } from '@/types'
 
 interface DistribucionFilters {
   edicion_dataset_id?: string | null
@@ -19,23 +19,34 @@ export async function getDistribucion(id: string): Promise<DistribucionDetail> {
 
 export async function createDistribucion(payload: {
   edicion_dataset_id?: string
-  descriptor?: string
+  dataset_id?: string
+  tipo_de_acceso_id?: string
+  medio_distribucion_id?: string
+  distribucion?: string
   url?: string
-  requiere_autenticacion?: boolean
-  requiere_registro?: boolean
+  requiere_control_de_acceso?: boolean
   es_url_persistente?: boolean
-  estado_url_ultima_revision?: string
   observaciones_distribucion?: string
 }): Promise<Distribucion> {
   const { data } = await apiClient.post<Distribucion>('/distribuciones/', payload)
   return data
 }
 
-export async function updateDistribucion(id: string, payload: { descriptor?: string; url?: string; edicion_dataset_id?: string; requiere_autenticacion?: boolean; requiere_registro?: boolean; es_url_persistente?: boolean; estado_url_ultima_revision?: string; observaciones_distribucion?: string }): Promise<Distribucion> {
+export async function updateDistribucion(id: string, payload: { distribucion?: string; url?: string; edicion_dataset_id?: string; dataset_id?: string; tipo_de_acceso_id?: string; medio_distribucion_id?: string; requiere_control_de_acceso?: boolean; es_url_persistente?: boolean; observaciones_distribucion?: string }): Promise<Distribucion> {
   const { data } = await apiClient.put<Distribucion>(`/distribuciones/${id}`, payload)
   return data
 }
 
 export async function deleteDistribucion(id: string): Promise<void> {
   await apiClient.delete(`/distribuciones/${id}`)
+}
+
+export async function getTiposDeAcceso(): Promise<TipoDeAcceso[]> {
+  const { data } = await apiClient.get<TipoDeAcceso[]>('/tipos-de-acceso/')
+  return data
+}
+
+export async function getMediosDistribucion(): Promise<MedioDistribucion[]> {
+  const { data } = await apiClient.get<MedioDistribucion[]>('/medios-distribucion/')
+  return data
 }

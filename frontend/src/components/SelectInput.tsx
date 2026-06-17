@@ -7,13 +7,31 @@ interface SelectInputProps {
   options: { value: string; label: string }[]
   placeholder?: string
   label?: string
+  // Cuando se provee, muestra un campo para crear una opción nueva al final del panel.
+  onCreate?: (label: string) => void | Promise<void>
+  createPlaceholder?: string
 }
 
-function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label }: SelectInputProps) {
+function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label, onCreate, createPlaceholder = 'Agregar nuevo…' }: SelectInputProps) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
+  const [draft, setDraft] = useState('')
+  const [creating, setCreating] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  const submitCreate = async () => {
+    const v = draft.trim()
+    if (!v || creating) return
+    setCreating(true)
+    try {
+      await onCreate?.(v)
+      setDraft('')
+      setOpen(false)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -104,10 +122,32 @@ function SelectInput({ value, onChange, options, placeholder = 'Seleccionar…',
                 </button>
               )
             })}
-            {options.length === 0 && (
+            {options.length === 0 && !onCreate && (
               <p className="px-3 py-2.5 text-[12px] text-ink/60">Sin opciones disponibles</p>
             )}
           </div>
+          {onCreate && (
+            <div className="border-t border-ink/[6%] p-1.5 flex items-center gap-1.5">
+              <input
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); submitCreate() }
+                  if (e.key === 'Escape') setOpen(false)
+                }}
+                placeholder={createPlaceholder}
+                className="flex-1 min-w-0 px-2 py-1 text-[13px] border border-ink/[12%] rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-ink/40"
+              />
+              <button
+                type="button"
+                onClick={submitCreate}
+                disabled={!draft.trim() || creating}
+                className="shrink-0 px-2 py-1 text-[12px] font-medium rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Agregar
+              </button>
+            </div>
+          )}
         </div>,
         document.body,
       )}

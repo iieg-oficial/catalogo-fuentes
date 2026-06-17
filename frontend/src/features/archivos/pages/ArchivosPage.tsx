@@ -11,9 +11,7 @@ import { TextCell } from '@/components/TextCell'
 import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from '../services/archivosService'
 import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
 import DatePickerInput from '@/components/DatePickerInput'
-import JsonEditorInput from '@/components/JsonEditorInput'
-import { JsonCell } from '@/components/JsonCell'
-import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon, jsonIcon } from '@/consts/sectionIcons'
+import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon } from '@/consts/sectionIcons'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -29,12 +27,11 @@ export default function ArchivosPage() {
   const [newNombre, setNewNombre] = useState('')
   const [newRutaRelativa, setNewRutaRelativa] = useState('')
   const [newRol, setNewRol] = useState('')
-  const [newRutaAlmacenamiento, setNewRutaAlmacenamiento] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
+  const [newFechaObtencion, setNewFechaObtencion] = useState('')
   const [newFechaIngesta, setNewFechaIngesta] = useState('')
   const [newTamano, setNewTamano] = useState('')
   const [newHashSha256, setNewHashSha256] = useState('')
-  const [newArchivosRelacionados, setNewArchivosRelacionados] = useState<Record<string, unknown>>({})
   const [newDistribucionId, setNewDistribucionId] = useState('')
 
   const load = async (silent = false) => {
@@ -55,8 +52,8 @@ export default function ArchivosPage() {
 
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
-    setNewRutaAlmacenamiento(''); setNewObservaciones('')
-    setNewFechaIngesta(''); setNewTamano(''); setNewHashSha256(''); setNewArchivosRelacionados({})
+    setNewObservaciones('')
+    setNewFechaObtencion(''); setNewFechaIngesta(''); setNewTamano(''); setNewHashSha256('')
     setNewDistribucionId('')
   }
 
@@ -67,11 +64,10 @@ export default function ArchivosPage() {
         nombre_archivo: newNombre,
         ruta_relativa_en_distribucion: newRutaRelativa || undefined,
         rol_archivo: newRol || undefined,
-        fecha_ingesta_sistema: newFechaIngesta || undefined,
+        fecha_obtencion: newFechaObtencion || undefined,
+        fecha_ingesta: newFechaIngesta || undefined,
         tamano_bytes: newTamano ? Number(newTamano) : undefined,
         hash_sha256: newHashSha256 || undefined,
-        archivos_relacionados: Object.keys(newArchivosRelacionados).length ? newArchivosRelacionados : undefined,
-        ruta_almacenamiento: newRutaAlmacenamiento || undefined,
         observaciones_archivo: newObservaciones || undefined,
         distribucion_id: newDistribucionId || undefined,
       })
@@ -116,16 +112,28 @@ export default function ArchivosPage() {
     try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
-  const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.descriptor ?? d.id.slice(0, 8) }))
+  const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.distribucion ?? d.id.slice(0, 8) }))
 
   const columns: Column<Archivo>[] = [
     {
-      header: 'archivo',
+      header: 'Nombre',
       icon: nombreIcon(),
       render: (r) => <TextCell value={r.nombre_archivo} />,
       className: 'w-48',
       getValue: (r) => r.nombre_archivo,
       onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre_archivo', v),
+    },
+    {
+      header: 'Distribución',
+      icon: distribucionesIcon(),
+      selectOptions: distribucionOpts,
+      onEdit: (r, v) => {
+        updateArchivo(r.id, { distribucion_id: v })
+        const dist = distribuciones.find((d) => d.id === v)
+        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, distribucion_id: v || null, distribucion: dist ? { id: dist.id, distribucion: dist.distribucion } : null } : i)))
+      },
+      getValue: (r) => r.distribucion_id ?? '',
+      render: (r) => <TextCell value={r.distribucion ? (r.distribucion.distribucion ?? r.distribucion.id.slice(0, 8)) : null} />,
     },
     {
       header: 'Ruta en distribución',
@@ -135,25 +143,18 @@ export default function ArchivosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_relativa_en_distribucion', v),
     },
     {
-      header: 'Rol',
+      header: 'Rol archivo',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.rol_archivo} />,
       getValue: (r) => r.rol_archivo ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'rol_archivo', v),
     },
     {
-      header: 'Hash SHA-256',
-      icon: descripcionIcon(),
-      render: (r) => <TextCell value={r.hash_sha256} mono />,
-      getValue: (r) => r.hash_sha256 ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'hash_sha256', v),
-    },
-    {
-      header: 'Fecha ingesta',
+      header: 'Fecha obtención',
       icon: fechaIcon(),
-      render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_ingesta_sistema) ?? '--'}</span>,
-      getValue: (r) => r.fecha_ingesta_sistema ? r.fecha_ingesta_sistema.slice(0, 10) : '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'fecha_ingesta_sistema', v),
+      render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_obtencion) ?? '--'}</span>,
+      getValue: (r) => r.fecha_obtencion ? r.fecha_obtencion.slice(0, 10) : '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'fecha_obtencion', v),
       inputType: 'date',
     },
     {
@@ -164,19 +165,19 @@ export default function ArchivosPage() {
       onEdit: (r, v) => { const n = Number(v); if (!isNaN(n)) { updateArchivo(r.id, { tamano_bytes: n }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tamano_bytes: n } : i))) } },
     },
     {
-      header: 'Archivos relacionados',
-      icon: jsonIcon(),
-      render: (r) => <JsonCell value={r.archivos_relacionados} />,
-      getValue: (r) => JSON.stringify(r.archivos_relacionados ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateArchivo(r.id, { archivos_relacionados: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, archivos_relacionados: parsed } : i))) } catch {} },
-      inputType: 'json',
+      header: 'Fecha ingesta',
+      icon: fechaIcon(),
+      render: (r) => <span className="text-ink/70 text-[12px]">{fmtDate(r.fecha_ingesta) ?? '--'}</span>,
+      getValue: (r) => r.fecha_ingesta ? r.fecha_ingesta.slice(0, 10) : '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'fecha_ingesta', v),
+      inputType: 'date',
     },
     {
-      header: 'Ruta almacenamiento',
+      header: 'Hash SHA-256',
       icon: descripcionIcon(),
-      render: (r) => <TextCell value={r.ruta_almacenamiento} mono />,
-      getValue: (r) => r.ruta_almacenamiento ?? '',
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'ruta_almacenamiento', v),
+      render: (r) => <TextCell value={r.hash_sha256} mono />,
+      getValue: (r) => r.hash_sha256 ?? '',
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'hash_sha256', v),
     },
     {
       header: 'Observaciones',
@@ -184,18 +185,6 @@ export default function ArchivosPage() {
       render: (r) => <TextCell value={r.observaciones_archivo} />,
       getValue: (r) => r.observaciones_archivo ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'observaciones_archivo', v),
-    },
-    {
-      header: 'Distribución',
-      icon: distribucionesIcon(),
-      selectOptions: distribucionOpts,
-      onEdit: (r, v) => {
-        updateArchivo(r.id, { distribucion_id: v })
-        const dist = distribuciones.find((d) => d.id === v)
-        setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, distribucion_id: v || null, distribucion: dist ? { id: dist.id, descriptor: dist.descriptor } : null } : i)))
-      },
-      getValue: (r) => r.distribucion_id ?? '',
-      render: (r) => <TextCell value={r.distribucion ? (r.distribucion.descriptor ?? r.distribucion.id.slice(0, 8)) : null} />,
     },
   ]
 
@@ -205,41 +194,37 @@ export default function ArchivosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre archivo..." className={inputCls} />
       </td>
-      {/* 2. Ruta en distribucion */}
+      {/* 2. Distribucion (FK select) */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newDistribucionId} onChange={setNewDistribucionId} options={distribucionOpts} placeholder="Distribucion..." label="Distribucion" />
+      </td>
+      {/* 3. Ruta en distribucion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newRutaRelativa} onChange={(e) => setNewRutaRelativa(e.target.value)} onKeyDown={kd} placeholder="Ruta relativa..." className={inputCls} />
       </td>
-      {/* 3. Rol */}
+      {/* 4. Rol archivo */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol..." className={inputCls} />
+        <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol archivo..." className={inputCls} />
       </td>
-      {/* 4. Hash SHA-256 */}
+      {/* 5. Fecha obtencion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newHashSha256} onChange={(e) => setNewHashSha256(e.target.value)} onKeyDown={kd} placeholder="Hash SHA-256..." className={inputCls} />
+        <DatePickerInput value={newFechaObtencion} onChange={setNewFechaObtencion} placeholder="Fecha obtencion..." onKeyDown={kd} />
       </td>
-      {/* 5. Fecha ingesta */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <DatePickerInput value={newFechaIngesta} onChange={setNewFechaIngesta} placeholder="Fecha ingesta..." onKeyDown={kd} />
-      </td>
-      {/* 5. Tamano (bytes) */}
+      {/* 6. Tamano (bytes) */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input type="number" value={newTamano} onChange={(e) => setNewTamano(e.target.value)} onKeyDown={kd} placeholder="Bytes..." className={inputCls} />
       </td>
-      {/* 6. Archivos relacionados */}
+      {/* 7. Fecha ingesta */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newArchivosRelacionados} onChange={setNewArchivosRelacionados} label="Archivos relacionados" />
+        <DatePickerInput value={newFechaIngesta} onChange={setNewFechaIngesta} placeholder="Fecha ingesta..." onKeyDown={kd} />
       </td>
-      {/* 8. Ruta almacenamiento */}
+      {/* 8. Hash SHA-256 */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newRutaAlmacenamiento} onChange={(e) => setNewRutaAlmacenamiento(e.target.value)} onKeyDown={kd} placeholder="Ruta almac..." className={inputCls} />
+        <input value={newHashSha256} onChange={(e) => setNewHashSha256(e.target.value)} onKeyDown={kd} placeholder="Hash SHA-256..." className={inputCls} />
       </td>
       {/* 9. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
-      </td>
-      {/* 10. Distribucion (FK select) */}
-      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newDistribucionId} onChange={setNewDistribucionId} options={distribucionOpts} placeholder="Distribucion..." label="Distribucion" />
       </td>
     </>
   )

@@ -81,19 +81,19 @@ export default function ProyectosPage() {
 
   const columns: Column<Proyecto>[] = [
     {
-      header: 'Nombre',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.nombre} />,
-      className: 'w-64',
-      getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
-    },
-    {
       header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
+      className: 'w-64',
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
+    },
+    {
+      header: 'Nombre',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.nombre} />,
+      getValue: (r) => r.nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
     },
     {
       header: 'Metadata',
@@ -110,20 +110,20 @@ export default function ProyectosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input
           autoFocus
-          required
-          value={newNombre}
-          onChange={(e) => setNewNombre(e.target.value)}
+          value={newDesc}
+          onChange={(e) => setNewDesc(e.target.value)}
           onKeyDown={kd}
-          placeholder="Nombre..."
+          placeholder="Descripcion..."
           className={inputCls}
         />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
+          required
+          value={newNombre}
+          onChange={(e) => setNewNombre(e.target.value)}
           onKeyDown={kd}
-          placeholder="Descripcion..."
+          placeholder="Nombre..."
           className={inputCls}
         />
       </td>

@@ -15,7 +15,10 @@ async def list_informacion_tablas(
     limit: int = 10_000,
     base_de_datos_id: uuid.UUID | None = None,
 ) -> list[InformacionTablas]:
-    q = select(InformacionTablas).options(selectinload(InformacionTablas.base_de_datos))
+    q = select(InformacionTablas).options(
+        selectinload(InformacionTablas.base_de_datos),
+        selectinload(InformacionTablas.producto),
+    )
     if base_de_datos_id:
         q = q.where(InformacionTablas.base_de_datos_id == base_de_datos_id)
     q = q.order_by(InformacionTablas.created_at.asc()).offset(skip).limit(limit)
@@ -26,7 +29,10 @@ async def list_informacion_tablas(
 async def get_informacion_tabla(db: AsyncSession, tabla_id: uuid.UUID) -> InformacionTablas | None:
     result = await db.execute(
         select(InformacionTablas)
-        .options(selectinload(InformacionTablas.base_de_datos))
+        .options(
+            selectinload(InformacionTablas.base_de_datos),
+            selectinload(InformacionTablas.producto),
+        )
         .where(InformacionTablas.id == tabla_id)
     )
     return result.scalar_one_or_none()

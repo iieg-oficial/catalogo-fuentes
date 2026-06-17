@@ -3,18 +3,19 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from schemas.refs import EdicionDatasetRef
+from schemas.refs import DatasetRef, EdicionDatasetRef, MedioDistribucionRef, TipoDeAccesoRef
 
 
 class DistribucionBase(BaseModel):
-    descriptor: str | None = None
+    distribucion: str | None = None
     url: str | None = None
-    requiere_autenticacion: bool = False
-    requiere_registro: bool = False
+    requiere_control_de_acceso: bool = False
     es_url_persistente: bool = False
-    estado_url_ultima_revision: str | None = None
     observaciones_distribucion: str | None = None
     edicion_dataset_id: uuid.UUID | None = None
+    dataset_id: uuid.UUID | None = None
+    tipo_de_acceso_id: uuid.UUID | None = None
+    medio_distribucion_id: uuid.UUID | None = None
 
 
 class DistribucionCreate(DistribucionBase):
@@ -22,19 +23,23 @@ class DistribucionCreate(DistribucionBase):
 
 
 class DistribucionUpdate(BaseModel):
-    descriptor: str | None = None
+    distribucion: str | None = None
     url: str | None = None
-    requiere_autenticacion: bool | None = None
-    requiere_registro: bool | None = None
+    requiere_control_de_acceso: bool | None = None
     es_url_persistente: bool | None = None
-    estado_url_ultima_revision: str | None = None
     observaciones_distribucion: str | None = None
     edicion_dataset_id: uuid.UUID | None = None
+    dataset_id: uuid.UUID | None = None
+    tipo_de_acceso_id: uuid.UUID | None = None
+    medio_distribucion_id: uuid.UUID | None = None
 
 
 class DistribucionRead(DistribucionBase):
     id: uuid.UUID
     edicion_dataset: EdicionDatasetRef | None = None
+    dataset: DatasetRef | None = None
+    tipo_de_acceso: TipoDeAccesoRef | None = None
+    medio_distribucion: MedioDistribucionRef | None = None
     created_at: datetime
     updated_at: datetime | None = None
 

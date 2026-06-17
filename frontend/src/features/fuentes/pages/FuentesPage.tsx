@@ -27,11 +27,8 @@ export default function FuentesPage() {
   const [newSector, setNewSector] = useState('')
   const [newAmbito, setNewAmbito] = useState('')
   const [newEsFuenteOficial, setNewEsFuenteOficial] = useState('')
-  const [newJurisdiccion, setNewJurisdiccion] = useState('')
   const [newUrl, setNewUrl] = useState('')
   const [newEsPublicador, setNewEsPublicador] = useState('')
-  const [newUrlTerminos, setNewUrlTerminos] = useState('')
-  const [newUrlPrivacidad, setNewUrlPrivacidad] = useState('')
   const [newContacto, setNewContacto] = useState('')
 
   const load = async (silent = false) => {
@@ -50,8 +47,7 @@ export default function FuentesPage() {
 
   const resetFields = () => {
     setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewSector(''); setNewAmbito('')
-    setNewEsFuenteOficial(''); setNewJurisdiccion(''); setNewUrl(''); setNewEsPublicador('')
-    setNewUrlTerminos(''); setNewUrlPrivacidad(''); setNewContacto('')
+    setNewEsFuenteOficial(''); setNewUrl(''); setNewEsPublicador(''); setNewContacto('')
   }
 
   const handleSaveRow = async () => {
@@ -64,11 +60,8 @@ export default function FuentesPage() {
         sector: newSector || undefined,
         ambito: newAmbito || undefined,
         es_fuente_oficial: newEsFuenteOficial ? newEsFuenteOficial === 'true' : undefined,
-        jurisdiccion: newJurisdiccion || undefined,
         url: newUrl || undefined,
         es_publicador: newEsPublicador ? newEsPublicador === 'true' : undefined,
-        url_terminos_uso: newUrlTerminos || undefined,
-        url_aviso_privacidad: newUrlPrivacidad || undefined,
         contacto_institucional: newContacto || undefined,
       })
       setAddingRow(false)
@@ -131,23 +124,6 @@ export default function FuentesPage() {
       onEdit: (r, v) => handleEditCell(r, 'ambito', v),
     },
     {
-      header: 'Oficial',
-      icon: estadoIcon(),
-      render: (r) => r.es_fuente_oficial
-        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
-        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
-      selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
-      onEdit: (r, v) => handleEditCell(r, 'es_fuente_oficial', v === 'true'),
-      getValue: (r) => r.es_fuente_oficial ? 'true' : 'false',
-    },
-    {
-      header: 'Jurisdiccion',
-      icon: descripcionIcon(),
-      render: (r) => <TextCell value={r.jurisdiccion} />,
-      getValue: (r) => r.jurisdiccion ?? '',
-      onEdit: (r, v) => handleEditCell(r, 'jurisdiccion', v),
-    },
-    {
       header: 'URL',
       icon: urlIcon(),
       render: (r) => <TextCell value={r.url} mono link />,
@@ -162,7 +138,17 @@ export default function FuentesPage() {
       onEdit: (r, v) => handleEditCell(r, 'descripcion', v),
     },
     {
-      header: 'Publicador',
+      header: 'Es fuente oficial',
+      icon: estadoIcon(),
+      render: (r) => r.es_fuente_oficial
+        ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
+        : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span>,
+      selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
+      onEdit: (r, v) => handleEditCell(r, 'es_fuente_oficial', v === 'true'),
+      getValue: (r) => r.es_fuente_oficial ? 'true' : 'false',
+    },
+    {
+      header: 'Es publicador',
       icon: estadoIcon(),
       render: (r) => r.es_publicador
         ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span>
@@ -170,20 +156,6 @@ export default function FuentesPage() {
       selectOptions: [{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }],
       onEdit: (r, v) => handleEditCell(r, 'es_publicador', v === 'true'),
       getValue: (r) => r.es_publicador ? 'true' : 'false',
-    },
-    {
-      header: 'URL terminos uso',
-      icon: urlIcon(),
-      render: (r) => <TextCell value={r.url_terminos_uso} mono link />,
-      getValue: (r) => r.url_terminos_uso ?? '',
-      onEdit: (r, v) => handleEditCell(r, 'url_terminos_uso', v),
-    },
-    {
-      header: 'URL aviso privacidad',
-      icon: urlIcon(),
-      render: (r) => <TextCell value={r.url_aviso_privacidad} mono link />,
-      getValue: (r) => r.url_aviso_privacidad ?? '',
-      onEdit: (r, v) => handleEditCell(r, 'url_aviso_privacidad', v),
     },
     {
       header: 'Contacto institucional',
@@ -212,35 +184,23 @@ export default function FuentesPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newAmbito} onChange={(e) => setNewAmbito(e.target.value)} onKeyDown={kd} placeholder="Ambito..." className={inputCls} />
       </td>
-      {/* 5. Oficial */}
-      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newEsFuenteOficial} onChange={setNewEsFuenteOficial} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Oficial..." label="Oficial" />
-      </td>
-      {/* 6. Jurisdiccion */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newJurisdiccion} onChange={(e) => setNewJurisdiccion(e.target.value)} onKeyDown={kd} placeholder="Jurisdiccion..." className={inputCls} />
-      </td>
-      {/* 7. URL */}
+      {/* 5. URL */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} onKeyDown={kd} placeholder="URL..." className={inputCls} />
       </td>
-      {/* 8. Descripcion */}
+      {/* 6. Descripcion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
-      {/* 9. Publicador */}
+      {/* 7. Es fuente oficial */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newEsPublicador} onChange={setNewEsPublicador} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Publicador..." label="Publicador" />
+        <SelectInput value={newEsFuenteOficial} onChange={setNewEsFuenteOficial} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Es fuente oficial..." label="Es fuente oficial" />
       </td>
-      {/* 10. URL terminos uso */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlTerminos} onChange={(e) => setNewUrlTerminos(e.target.value)} onKeyDown={kd} placeholder="URL terminos..." className={inputCls} />
+      {/* 8. Es publicador */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newEsPublicador} onChange={setNewEsPublicador} options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]} placeholder="Es publicador..." label="Es publicador" />
       </td>
-      {/* 11. URL aviso privacidad */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newUrlPrivacidad} onChange={(e) => setNewUrlPrivacidad(e.target.value)} onKeyDown={kd} placeholder="URL privacidad..." className={inputCls} />
-      </td>
-      {/* 12. Contacto institucional */}
+      {/* 9. Contacto institucional */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newContacto} onChange={(e) => setNewContacto(e.target.value)} onKeyDown={kd} placeholder="Contacto..." className={inputCls} />
       </td>

@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.distribucion import Distribucion
 from models.edicion_dataset import EdicionDataset
 from schemas.edicion_dataset import EdicionDatasetCreate, EdicionDatasetUpdate
 
@@ -15,7 +16,7 @@ async def list_ediciones_dataset(
     limit: int = 10_000,
     dataset_id: uuid.UUID | None = None,
 ) -> list[EdicionDataset]:
-    q = select(EdicionDataset).options(selectinload(EdicionDataset.dataset))
+    q = select(EdicionDataset).options(selectinload(EdicionDataset.dataset), selectinload(EdicionDataset.tipo_periodo))
     if dataset_id:
         q = q.where(EdicionDataset.dataset_id == dataset_id)
     q = q.order_by(EdicionDataset.created_at.asc()).offset(skip).limit(limit)
@@ -26,7 +27,7 @@ async def list_ediciones_dataset(
 async def get_edicion_dataset(db: AsyncSession, edicion_id: uuid.UUID) -> EdicionDataset | None:
     result = await db.execute(
         select(EdicionDataset)
-        .options(selectinload(EdicionDataset.dataset))
+        .options(selectinload(EdicionDataset.dataset), selectinload(EdicionDataset.tipo_periodo))
         .where(EdicionDataset.id == edicion_id)
     )
     return result.scalar_one_or_none()
@@ -37,7 +38,10 @@ async def get_edicion_dataset_detail(db: AsyncSession, edicion_id: uuid.UUID) ->
         select(EdicionDataset)
         .options(
             selectinload(EdicionDataset.dataset),
-            selectinload(EdicionDataset.distribuciones),
+            selectinload(EdicionDataset.tipo_periodo),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.dataset),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.tipo_de_acceso),
+            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.medio_distribucion),
         )
         .where(EdicionDataset.id == edicion_id)
     )
