@@ -12,7 +12,7 @@ class InformacionTablas(Base):
     __tablename__ = "informacion_tablas"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nombre: Mapped[str] = mapped_column(String, nullable=False)
+    nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     descripcion: Mapped[str | None] = mapped_column(Text)
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
 
@@ -20,8 +20,11 @@ class InformacionTablas(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     base_de_datos_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("base_de_datos.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("base_de_datos.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    producto_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("producto.id", ondelete="SET NULL"), nullable=True, index=True
     )
 
     base_de_datos: Mapped["BaseDeDatos | None"] = relationship("BaseDeDatos", back_populates="informacion_tablas")
-    producto_tablas: Mapped[list["ProductoTabla"]] = relationship("ProductoTabla", back_populates="informacion_tabla", passive_deletes=True)
+    producto: Mapped["Producto | None"] = relationship("Producto", back_populates="informacion_tablas")

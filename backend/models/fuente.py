@@ -12,7 +12,7 @@ class Fuente(Base):
     __tablename__ = "fuente"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    nombre: Mapped[str] = mapped_column(String, nullable=False)
+    nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     nombre_corto: Mapped[str | None] = mapped_column(String)
     sector: Mapped[str | None] = mapped_column(String)
     ambito: Mapped[str | None] = mapped_column(String)
@@ -20,9 +20,6 @@ class Fuente(Base):
     descripcion: Mapped[str | None] = mapped_column(Text)
     es_fuente_oficial: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     es_publicador: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    jurisdiccion: Mapped[str | None] = mapped_column(String)
-    url_terminos_uso: Mapped[str | None] = mapped_column(Text)
-    url_aviso_privacidad: Mapped[str | None] = mapped_column(Text)
     contacto_institucional: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))

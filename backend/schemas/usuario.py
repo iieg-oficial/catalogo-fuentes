@@ -8,8 +8,9 @@ from schemas.rol import RolRead
 
 class UsuarioCreate(BaseModel):
     correo: str
-    nombre: str | None = None
+    nombre: str
     rol_id: uuid.UUID | None = None
+    password: str
 
 
 class UsuarioSignup(BaseModel):

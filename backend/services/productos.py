@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.informacion_tablas import InformacionTablas
 from models.producto import Producto
 from schemas.producto import ProductoCreate, ProductoUpdate
 
@@ -37,7 +38,7 @@ async def get_producto_detail(db: AsyncSession, producto_id: uuid.UUID) -> Produ
         select(Producto)
         .options(
             selectinload(Producto.proyecto),
-            selectinload(Producto.producto_tablas),
+            selectinload(Producto.informacion_tablas).selectinload(InformacionTablas.base_de_datos),
         )
         .where(Producto.id == producto_id)
     )

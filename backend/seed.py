@@ -1,9 +1,10 @@
 import asyncio
 import logging
-import subprocess
 from datetime import date
 from pathlib import Path
 
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -17,17 +18,32 @@ from models.distribucion import Distribucion
 from models.edicion_dataset import EdicionDataset
 from models.fuente import Fuente
 from models.informacion_tablas import InformacionTablas
+from models.medio_distribucion import MedioDistribucion
 from models.permiso import Permiso
 from models.permiso_rol import PermisoRol
 from models.producto import Producto
-from models.producto_tabla import ProductoTabla
 from models.proyecto import Proyecto
 from models.rol import Rol
+from models.tipo_dataset import TipoDataset
+from models.tipo_de_acceso import TipoDeAcceso
+from models.tipo_periodo import TipoPeriodo
 from models.usuario import Usuario
 from services.auth import hash_password
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+TIPOS_DATASET = [
+    "encuesta",
+    "censo",
+    "registro administrativo",
+    "índice",
+    "sistema de consulta",
+    "inventario",
+    "directorio",
+]
+TIPOS_DE_ACCESO = ["descarga", "API", "GeoServer"]
+MEDIOS_DISTRIBUCION = ["portal web", "portal de datos abiertos", "solicitud directa"]
 
 
 async def seed_rbac(db: AsyncSession) -> dict[str, Rol]:
@@ -134,8 +150,43 @@ async def seed_users(db: AsyncSession, roles: dict[str, Rol]) -> None:
     logger.info("Users seeded.")
 
 
+async def seed_catalogos(db: AsyncSession) -> dict[str, dict[str, object]]:
+    """Seed normalized catalogs: tipo_dataset, tipo_de_acceso, medio_distribucion, tipo_periodo."""
+    result = await db.execute(select(TipoDataset))
+    if result.scalars().first():
+        logger.info("Catalogs already seeded, fetching existing.")
+        tipos_dataset = {t.nombre: t for t in (await db.execute(select(TipoDataset))).scalars().all()}
+        tipos_acceso = {t.nombre: t for t in (await db.execute(select(TipoDeAcceso))).scalars().all()}
+        medios = {m.nombre: m for m in (await db.execute(select(MedioDistribucion))).scalars().all()}
+        tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
+        return {
+            "tipo_dataset": tipos_dataset,
+            "tipo_de_acceso": tipos_acceso,
+            "medio_distribucion": medios,
+            "tipo_periodo": tipos_periodo,
+        }
+
+    logger.info("Seeding catalogs...")
+    tipos_dataset = {nombre: TipoDataset(nombre=nombre) for nombre in TIPOS_DATASET}
+    tipos_acceso = {nombre: TipoDeAcceso(nombre=nombre) for nombre in TIPOS_DE_ACCESO}
+    medios = {nombre: MedioDistribucion(nombre=nombre) for nombre in MEDIOS_DISTRIBUCION}
+    db.add_all([*tipos_dataset.values(), *tipos_acceso.values(), *medios.values()])
+    await db.flush()
+    # tipo_periodo es enumeración fija sembrada por la migración; solo se consulta.
+    tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
+    logger.info("Catalogs seeded.")
+    return {
+        "tipo_dataset": tipos_dataset,
+        "tipo_de_acceso": tipos_acceso,
+        "medio_distribucion": medios,
+        "tipo_periodo": tipos_periodo,
+    }
+
+
 async def seed_catalog(db: AsyncSession) -> None:
     """Development seed: creates dummy catalog data for testing."""
+    catalogos = await seed_catalogos(db)
+
     result = await db.execute(select(Fuente))
     if result.scalars().first():
         logger.info("Catalog already seeded, skipping.")
@@ -143,36 +194,38 @@ async def seed_catalog(db: AsyncSession) -> None:
 
     logger.info("Seeding catalog...")
 
+    tipos_dataset = catalogos["tipo_dataset"]
+    tipos_acceso = catalogos["tipo_de_acceso"]
+    medios = catalogos["medio_distribucion"]
+    tipos_periodo = catalogos["tipo_periodo"]
+
     # Fuentes
     inegi = Fuente(
         nombre="INEGI",
         nombre_corto="INEGI",
-        sector="Gobierno",
-        ambito="Federal",
+        sector="publico",
+        ambito="federal",
         descripcion="Instituto Nacional de Estadística y Geografía",
         es_fuente_oficial=True,
         es_publicador=True,
-        jurisdiccion="Nacional",
     )
     conapo = Fuente(
         nombre="CONAPO",
         nombre_corto="CONAPO",
-        sector="Gobierno",
-        ambito="Federal",
+        sector="publico",
+        ambito="federal",
         descripcion="Consejo Nacional de Población",
         es_fuente_oficial=True,
         es_publicador=True,
-        jurisdiccion="Nacional",
     )
     siap = Fuente(
         nombre="SIAP",
         nombre_corto="SIAP",
-        sector="Gobierno",
-        ambito="Federal",
+        sector="publico",
+        ambito="federal",
         descripcion="Servicio de Información Agroalimentaria y Pesquera",
         es_fuente_oficial=True,
         es_publicador=True,
-        jurisdiccion="Nacional",
     )
     db.add_all([inegi, conapo, siap])
     await db.flush()
@@ -184,8 +237,9 @@ async def seed_catalog(db: AsyncSession) -> None:
         descripcion="Encuesta Nacional de Ocupación y Empleo",
         periodicidad="trimestral",
         vigente=True,
-        tema_principal="empleo",
         fuente_id=inegi.id,
+        tipo_dataset_id=tipos_dataset["encuesta"].id,
+        etiquetas={"temas": ["empleo"]},
     )
     ds_conapo_proy = Dataset(
         nombre="Proyecciones de Población",
@@ -193,8 +247,9 @@ async def seed_catalog(db: AsyncSession) -> None:
         descripcion="Proyecciones de la población de México y entidades federativas 2020-2050",
         periodicidad="anual",
         vigente=True,
-        tema_principal="demografía",
         fuente_id=conapo.id,
+        tipo_dataset_id=tipos_dataset["registro administrativo"].id,
+        etiquetas={"temas": ["demografía"]},
     )
     ds_siap_prod = Dataset(
         nombre="Producción Agropecuaria",
@@ -202,8 +257,9 @@ async def seed_catalog(db: AsyncSession) -> None:
         descripcion="Cifras de producción agrícola y pecuaria por municipio",
         periodicidad="anual",
         vigente=True,
-        tema_principal="agricultura",
         fuente_id=siap.id,
+        tipo_dataset_id=tipos_dataset["registro administrativo"].id,
+        etiquetas={"temas": ["agricultura"]},
     )
     ds_denue = Dataset(
         nombre="DENUE",
@@ -211,37 +267,38 @@ async def seed_catalog(db: AsyncSession) -> None:
         descripcion="Directorio Estadístico Nacional de Unidades Económicas",
         periodicidad="bienal",
         vigente=True,
-        tema_principal="economía",
         fuente_id=inegi.id,
+        tipo_dataset_id=tipos_dataset["directorio"].id,
+        etiquetas={"temas": ["economía"]},
     )
     db.add_all([ds_enoe, ds_conapo_proy, ds_siap_prod, ds_denue])
     await db.flush()
 
     # Ediciones
     ed_enoe_2023q4 = EdicionDataset(
-        nombre="ENOE T4-2023",
+        edicion="ENOE T4-2023",
         fecha_publicacion=date(2024, 2, 15),
         periodo_referencia_inicio=date(2023, 10, 1),
         periodo_referencia_fin=date(2023, 12, 31),
-        tipo_periodo_referencia="trimestral",
+        tipo_periodo_id=tipos_periodo["rango"].id,
         dataset_id=ds_enoe.id,
     )
     ed_conapo_2023 = EdicionDataset(
-        nombre="Proyecciones 2023",
+        edicion="Proyecciones 2023",
         fecha_publicacion=date(2023, 5, 20),
-        tipo_periodo_referencia="anual",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_conapo_proy.id,
     )
     ed_siap_2022 = EdicionDataset(
-        nombre="Producción 2022 definitiva",
+        edicion="Producción 2022 definitiva",
         fecha_publicacion=date(2023, 12, 15),
-        tipo_periodo_referencia="anual",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_siap_prod.id,
     )
     ed_denue_2023 = EdicionDataset(
-        nombre="DENUE 2023",
+        edicion="DENUE 2023",
         fecha_publicacion=date(2023, 10, 1),
-        tipo_periodo_referencia="bienal",
+        tipo_periodo_id=tipos_periodo["corte"].id,
         dataset_id=ds_denue.id,
     )
     db.add_all([ed_enoe_2023q4, ed_conapo_2023, ed_siap_2022, ed_denue_2023])
@@ -249,57 +306,60 @@ async def seed_catalog(db: AsyncSession) -> None:
 
     # Distribuciones
     dist_enoe = Distribucion(
-        descriptor="Microdatos ENOE T4-2023",
+        distribucion="Microdatos ENOE T4-2023",
         url="https://www.inegi.org.mx/programas/enoe/15ymas/",
         edicion_dataset_id=ed_enoe_2023q4.id,
+        dataset_id=ds_enoe.id,
+        tipo_de_acceso_id=tipos_acceso["descarga"].id,
+        medio_distribucion_id=medios["portal web"].id,
     )
     dist_conapo = Distribucion(
-        descriptor="Proyecciones CONAPO portal",
+        distribucion="Proyecciones CONAPO portal",
         url="https://www.gob.mx/conapo/documentos/proyecciones-de-la-poblacion",
         edicion_dataset_id=ed_conapo_2023.id,
+        dataset_id=ds_conapo_proy.id,
+        tipo_de_acceso_id=tipos_acceso["descarga"].id,
+        medio_distribucion_id=medios["portal de datos abiertos"].id,
     )
     dist_siap = Distribucion(
-        descriptor="Cifras definitivas SIAP",
+        distribucion="Cifras definitivas SIAP",
         url="https://www.gob.mx/siap/documentos/produccion-agropecuaria",
         edicion_dataset_id=ed_siap_2022.id,
+        dataset_id=ds_siap_prod.id,
+        tipo_de_acceso_id=tipos_acceso["descarga"].id,
+        medio_distribucion_id=medios["portal web"].id,
     )
     dist_denue = Distribucion(
-        descriptor="Descarga DENUE 2023",
+        distribucion="Descarga DENUE 2023",
         url="https://www.inegi.org.mx/app/descarga/?ti=6",
         edicion_dataset_id=ed_denue_2023.id,
+        dataset_id=ds_denue.id,
+        tipo_de_acceso_id=tipos_acceso["API"].id,
+        medio_distribucion_id=medios["portal de datos abiertos"].id,
     )
     db.add_all([dist_enoe, dist_conapo, dist_siap, dist_denue])
     await db.flush()
 
     # Archivos
-    archivos = [
-        Archivo(nombre_archivo="microdatos_enoe_t4_2023.csv", distribucion_id=dist_enoe.id, rol_archivo="datos"),
-        Archivo(nombre_archivo="cuestionario_enoe_basico.pdf", distribucion_id=dist_enoe.id, rol_archivo="documentacion"),
-        Archivo(nombre_archivo="proyecciones_municipales_2020_2050.xlsx", distribucion_id=dist_conapo.id, rol_archivo="datos"),
-        Archivo(nombre_archivo="notas_tecnicas_conapo.pdf", distribucion_id=dist_conapo.id, rol_archivo="documentacion"),
-        Archivo(nombre_archivo="produccion_agropecuaria_2022.xlsx", distribucion_id=dist_siap.id, rol_archivo="datos"),
-        Archivo(nombre_archivo="denue_2023_jalisco.csv", distribucion_id=dist_denue.id, rol_archivo="datos"),
-        Archivo(nombre_archivo="documentacion_denue_2023.pdf", distribucion_id=dist_denue.id, rol_archivo="documentacion"),
-    ]
-    db.add_all(archivos)
+    arch_enoe_datos = Archivo(nombre_archivo="microdatos_enoe_t4_2023.csv", distribucion_id=dist_enoe.id, rol_archivo="datos")
+    arch_enoe_doc = Archivo(nombre_archivo="cuestionario_enoe_basico.pdf", distribucion_id=dist_enoe.id, rol_archivo="documentacion")
+    arch_conapo_datos = Archivo(nombre_archivo="proyecciones_municipales_2020_2050.xlsx", distribucion_id=dist_conapo.id, rol_archivo="datos")
+    arch_conapo_doc = Archivo(nombre_archivo="notas_tecnicas_conapo.pdf", distribucion_id=dist_conapo.id, rol_archivo="documentacion")
+    arch_siap_datos = Archivo(nombre_archivo="produccion_agropecuaria_2022.xlsx", distribucion_id=dist_siap.id, rol_archivo="datos")
+    arch_denue_datos = Archivo(nombre_archivo="denue_2023_jalisco.csv", distribucion_id=dist_denue.id, rol_archivo="datos")
+    arch_denue_doc = Archivo(nombre_archivo="documentacion_denue_2023.pdf", distribucion_id=dist_denue.id, rol_archivo="documentacion")
+    db.add_all([
+        arch_enoe_datos, arch_enoe_doc, arch_conapo_datos, arch_conapo_doc,
+        arch_siap_datos, arch_denue_datos, arch_denue_doc,
+    ])
     await db.flush()
 
-    # Bases de datos
-    bd_enoe = BaseDeDatos(db_nombre="ENOE", meta={"fuente": "INEGI"}, dataset_id=ds_enoe.id)
-    bd_conapo = BaseDeDatos(db_nombre="CONAPO", meta={"fuente": "CONAPO"}, dataset_id=ds_conapo_proy.id)
-    bd_siap = BaseDeDatos(db_nombre="SIAP", meta={"fuente": "SAGARPA"}, dataset_id=ds_siap_prod.id)
-    bd_denue = BaseDeDatos(db_nombre="DENUE", meta={"fuente": "INEGI"}, dataset_id=ds_denue.id)
+    # Bases de datos (vinculadas al archivo de datos correspondiente)
+    bd_enoe = BaseDeDatos(db_nombre="ENOE", etiquetas={"fuente": "INEGI"}, archivo_id=arch_enoe_datos.id)
+    bd_conapo = BaseDeDatos(db_nombre="CONAPO", etiquetas={"fuente": "CONAPO"}, archivo_id=arch_conapo_datos.id)
+    bd_siap = BaseDeDatos(db_nombre="SIAP", etiquetas={"fuente": "SAGARPA"}, archivo_id=arch_siap_datos.id)
+    bd_denue = BaseDeDatos(db_nombre="DENUE", etiquetas={"fuente": "INEGI"}, archivo_id=arch_denue_datos.id)
     db.add_all([bd_enoe, bd_conapo, bd_siap, bd_denue])
-    await db.flush()
-
-    # Informacion tablas
-    t_ocupacion = InformacionTablas(nombre="01_vista_ocupacion_empleo", base_de_datos_id=bd_enoe.id)
-    t_desocupacion = InformacionTablas(nombre="07_vista_tasa_desocupacion", base_de_datos_id=bd_enoe.id)
-    t_pob_municipio = InformacionTablas(nombre="02_vista_poblacion_municipio", base_de_datos_id=bd_conapo.id)
-    t_superficie = InformacionTablas(nombre="04_vista_superficie_agricola", base_de_datos_id=bd_siap.id)
-    t_produccion = InformacionTablas(nombre="05_vista_produccion_cultivos", base_de_datos_id=bd_siap.id)
-    t_unidades = InformacionTablas(nombre="06_vista_unidades_economicas", base_de_datos_id=bd_denue.id)
-    db.add_all([t_ocupacion, t_desocupacion, t_pob_municipio, t_superficie, t_produccion, t_unidades])
     await db.flush()
 
     # Proyectos y productos
@@ -315,18 +375,16 @@ async def seed_catalog(db: AsyncSession) -> None:
     db.add_all([p_agricultura, p_poblacion, p_economia, p_indicadores])
     await db.flush()
 
-    # Producto-tabla links
-    vinculaciones = [
-        ProductoTabla(producto_id=p_economia.id, informacion_tablas_id=t_ocupacion.id),
-        ProductoTabla(producto_id=p_economia.id, informacion_tablas_id=t_desocupacion.id),
-        ProductoTabla(producto_id=p_economia.id, informacion_tablas_id=t_unidades.id),
-        ProductoTabla(producto_id=p_poblacion.id, informacion_tablas_id=t_pob_municipio.id),
-        ProductoTabla(producto_id=p_agricultura.id, informacion_tablas_id=t_superficie.id),
-        ProductoTabla(producto_id=p_agricultura.id, informacion_tablas_id=t_produccion.id),
-        ProductoTabla(producto_id=p_indicadores.id, informacion_tablas_id=t_ocupacion.id),
-        ProductoTabla(producto_id=p_indicadores.id, informacion_tablas_id=t_unidades.id),
+    # Informacion tablas (FK directa a producto)
+    tablas = [
+        InformacionTablas(nombre="01_vista_ocupacion_empleo", base_de_datos_id=bd_enoe.id, producto_id=p_economia.id),
+        InformacionTablas(nombre="07_vista_tasa_desocupacion", base_de_datos_id=bd_enoe.id, producto_id=p_economia.id),
+        InformacionTablas(nombre="02_vista_poblacion_municipio", base_de_datos_id=bd_conapo.id, producto_id=p_poblacion.id),
+        InformacionTablas(nombre="04_vista_superficie_agricola", base_de_datos_id=bd_siap.id, producto_id=p_agricultura.id),
+        InformacionTablas(nombre="05_vista_produccion_cultivos", base_de_datos_id=bd_siap.id, producto_id=p_agricultura.id),
+        InformacionTablas(nombre="06_vista_unidades_economicas", base_de_datos_id=bd_denue.id, producto_id=p_indicadores.id),
     ]
-    db.add_all(vinculaciones)
+    db.add_all(tablas)
     await db.flush()
     logger.info("Catalog seeded.")
 
@@ -342,31 +400,13 @@ async def seed(db: AsyncSession) -> None:
 
 
 def run_migrations() -> None:
-    """Execute all SQL migration files in order using psql."""
-    migrations_dir = Path(__file__).parent / "migrations"
-    env = {
-        "PGPASSWORD": settings.POSTGRES_PASSWORD,
-        "PATH": "/usr/bin:/bin:/usr/local/bin",
-    }
-    for migration_file in sorted(migrations_dir.glob("0*.sql")):
-        logger.info("Running migration %s...", migration_file.name)
-        subprocess.run(
-            [
-                "psql",
-                "-h", settings.POSTGRES_HOST,
-                "-p", str(settings.POSTGRES_PORT),
-                "-U", settings.POSTGRES_USER,
-                "-d", settings.POSTGRES_DB,
-                "-f", str(migration_file),
-            ],
-            env=env,
-            check=True,
-        )
+    """Apply pending Alembic migrations."""
+    alembic_cfg = Config(str(Path(__file__).parent / "alembic.ini"))
+    command.upgrade(alembic_cfg, "head")
     logger.info("Migrations completed.")
 
 
-async def main() -> None:
-    run_migrations()
+async def _seed_dev() -> None:
     engine = create_async_engine(settings.database_url, echo=False)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as db:
@@ -374,18 +414,7 @@ async def main() -> None:
     await engine.dispose()
 
 
-async def main_prod() -> None:
-    run_migrations()
-    engine = create_async_engine(settings.database_url, echo=False)
-    factory = async_sessionmaker(engine, expire_on_commit=False)
-    async with factory() as db:
-        await seed_superadmin(db)
-    await engine.dispose()
-
-
-async def main_dev_init() -> None:
-    """Migrations + superadmin only, for dev without full seed."""
-    run_migrations()
+async def _seed_superadmin() -> None:
     engine = create_async_engine(settings.database_url, echo=False)
     factory = async_sessionmaker(engine, expire_on_commit=False)
     async with factory() as db:
@@ -396,9 +425,10 @@ async def main_dev_init() -> None:
 if __name__ == "__main__":
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else "dev"
+    run_migrations()
     if mode == "prod":
-        asyncio.run(main_prod())
+        asyncio.run(_seed_superadmin())
     elif mode == "dev-init":
-        asyncio.run(main_dev_init())
+        asyncio.run(_seed_superadmin())
     else:
-        asyncio.run(main())
+        asyncio.run(_seed_dev())

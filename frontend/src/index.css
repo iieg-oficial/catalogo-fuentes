@@ -2,9 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Garet';
+  src: url('/fonts/Garet-Book.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('/fonts/Garet-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('/fonts/Garet-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('/fonts/Garet-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('/fonts/Garet-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+
 @layer base {
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Garet', system-ui, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -30,9 +68,9 @@
 
 /* DatePickerPanel — custom react-day-picker styles */
 .rdp-panel .rdp-custom {
-  --brand-500: #6E258B;
-  --brand-100: #F7F0FA;
-  --brand-600: #5C2472;
+  --brand-500: #2e4372;
+  --brand-100: #d9e1ee;
+  --brand-600: #2e4372;
   padding: 12px 14px;
   font-family: inherit;
   font-size: 13px;
@@ -62,6 +100,13 @@
   text-transform: capitalize;
 }
 
+.rdp-panel .rdp-dropdowns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .rdp-panel .rdp-nav {
   display: flex;
   justify-content: space-between;
@@ -70,6 +115,9 @@
   left: 0;
   right: 0;
   z-index: 1;
+  /* La barra cubre todo el ancho; deja pasar los clics salvo en las flechas,
+     para no bloquear los selectores de mes/año que quedan debajo. */
+  pointer-events: none;
 }
 
 .rdp-panel .rdp-nav-btn {
@@ -83,6 +131,7 @@
   background: transparent;
   cursor: pointer;
   transition: background 0.12s;
+  pointer-events: auto;
 }
 
 .rdp-panel .rdp-nav-btn:hover {
@@ -193,9 +242,25 @@
     }
   }
 
+  .view-enter {
+    animation: view-fade-in 0.25s cubic-bezier(0.25, 1, 0.5, 1) both;
+  }
+
+  @keyframes view-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .nav-item-enter,
-    .row-item-enter {
+    .row-item-enter,
+    .view-enter {
       animation: none;
     }
   }

@@ -72,7 +72,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
       })}
 
       {overflow > 0 && (
-        <span className="inline-flex items-center px-1.5 py-[2px] rounded-sm text-[11px] font-medium text-ink/50 bg-ink/[5%]">
+        <span className="inline-flex items-center px-1.5 py-[2px] rounded-sm text-[11px] font-medium text-ink/70 bg-ink/[5%]">
           +{overflow}
         </span>
       )}
@@ -86,13 +86,13 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
           onMouseLeave={scheduleHide}
         >
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">
               {label} · {items.length}
             </p>
             <button
               onClick={(e) => { e.stopPropagation(); handleCopy() }}
-              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors duration-150 text-ink/40 hover:text-ink/70 hover:bg-ink/[5%]"
-              title="Copiar lista"
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors duration-150 text-ink/60 hover:text-ink/70 hover:bg-ink/[5%]"
+              aria-label="Copiar lista"
             >
               {copied ? (
                 <>

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useMemo, createContext, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import Button from './Button'
+import Toast from './Toast'
 import { useSidebar } from '@/context/SidebarContext'
+import { SECTION_LABEL_COLOR, ACTIVE_FILTER_COLOR, TABLE_FOOTER_BG } from '@/consts/statusColors'
 
 export const CellContext = createContext<{ rowIndex: number; columnName: string } | null>(null)
 import SingleSelectPanel from '@/components/SingleSelectPanel'
@@ -9,7 +12,7 @@ import JsonEditorPanel from '@/components/JsonEditorPanel'
 import SelectInput from '@/components/SelectInput'
 import type { Column } from '@/components/DataTable'
 
-type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag' | 'priority'
+type ColumnType = 'text' | 'number' | 'url' | 'date' | 'boolean' | 'list' | 'tag'
 
 interface ListOption {
   label: string
@@ -36,7 +39,6 @@ export interface CatalogGridProps<T> {
   rows: T[]
   columns: Column<T>[]
   getKey: (row: T) => string
-  onRowClick?: (row: T) => void
   canWrite?: boolean
   onAdd?: () => void
   addRowCells?: ReactNode
@@ -66,6 +68,8 @@ const EMPTY_DASH = (
 
 const INLINE_INPUT_CLS =
   'w-full px-1.5 py-0.5 text-[13px] border border-brand-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 bg-white'
+
+const DELETE_COLOR = '#a54757'
 
 // ---------------------------------------------------------------------------
 // Icons
@@ -113,20 +117,7 @@ const TYPE_ICON: Record<string, ReactNode> = {
       <path d="M2 2v4l5 5 4-4-5-5H2z" /><circle cx="4" cy="4" r=".7" />
     </svg>
   ),
-  priority: (
-    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 9h2V5H2zM5 9h2V3H5zM8 9h2V1H8z" />
-    </svg>
-  ),
 }
-
-const PRIORITY_LEVELS = [
-  { label: 'Urgente',       color: '#dc2626' },
-  { label: 'Alta',          color: '#f97316' },
-  { label: 'Media',         color: '#f59e0b' },
-  { label: 'Baja',          color: '#22c55e' },
-  { label: 'Sin prioridad', color: '#94a3b8' },
-]
 
 const SORT_UP_ICON = (
   <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -141,12 +132,6 @@ const SORT_DOWN_ICON = (
 const FILTER_ICON = (
   <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 3h12l-4.5 6v4l-3 1.5V9L2 3z" />
-  </svg>
-)
-const EYE_ICON = (
-  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" />
-    <circle cx="8" cy="8" r="2" />
   </svg>
 )
 
@@ -291,7 +276,7 @@ function FilterPanel({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="px-3 py-2.5 border-b border-ink/[6%]">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/70">
           Filtrar · {label}
         </p>
       </div>
@@ -470,11 +455,11 @@ function GridColHeader({
             width: 20, height: 20, borderRadius: 4,
             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             background: hasFilter ? 'rgba(110,37,139,.12)' : 'transparent',
-            color: hasFilter ? '#5C2472' : 'rgba(26,22,37,.55)',
+            color: hasFilter ? ACTIVE_FILTER_COLOR : 'rgba(26,22,37,.55)',
             border: 'none', cursor: 'pointer',
             transition: 'opacity 120ms, background 120ms', flexShrink: 0,
           }}
-          title="Filtrar"
+          aria-label="Filtrar"
         >
           {FILTER_ICON}
         </button>
@@ -492,7 +477,7 @@ function GridColHeader({
                 transition: 'opacity 120ms', flexShrink: 0,
                 fontSize: 14, lineHeight: 1, letterSpacing: 1,
               }}
-              title="Opciones"
+              aria-label="Opciones"
             >
               ···
             </button>
@@ -563,7 +548,7 @@ function URLCell({ url }: { url: string }) {
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 5,
         maxWidth: '100%', fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-        fontSize: 12, color: '#5C2472', textDecoration: 'none', overflow: 'hidden',
+        fontSize: 12, color: ACTIVE_FILTER_COLOR, textDecoration: 'none', overflow: 'hidden',
       }}
     >
       <span style={{ display: 'flex', opacity: 0.55, flexShrink: 0 }}>
@@ -596,7 +581,7 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
       try { return new Date(value).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) }
       catch { return value }
     })()
-    return <span className={`text-[12px] text-ink/55 ${editCls}`}>{fmt}</span>
+    return <span className={`text-[12px] text-ink/70 ${editCls}`}>{fmt}</span>
   }
 
   if (def.type === 'boolean') {
@@ -618,20 +603,6 @@ function MetaCellView({ value, def, editable }: { value: string; def: MetaColumn
             className={`w-[5px] h-[5px] rounded-full shrink-0${!color ? ' bg-brand-500' : ''}`}
             style={color ? { backgroundColor: color } : undefined}
           />
-          {value}
-        </span>
-      </span>
-    )
-  }
-
-  if (def.type === 'priority') {
-    const level = PRIORITY_LEVELS.find((l) => l.label === value)
-    const color = level?.color ?? '#94a3b8'
-    return (
-      <span className={editCls}>
-        <span className="inline-flex items-center gap-1.5 px-2 py-[2px] rounded-sm text-[12px] font-medium whitespace-nowrap"
-          style={{ backgroundColor: `${color}1a`, color }}>
-          <span className="w-[5px] h-[5px] rounded-full shrink-0" style={{ backgroundColor: color }} />
           {value}
         </span>
       </span>
@@ -660,7 +631,6 @@ export default function CatalogGrid<T extends { id: string }>({
   rows,
   columns,
   getKey,
-  onRowClick,
   canWrite,
   onAdd,
   addRowCells,
@@ -707,6 +677,9 @@ export default function CatalogGrid<T extends { id: string }>({
   }, [formOpen])
   const [openColMenu, setOpenColMenu] = useState<string | null>(null)
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
   const [headerHovered, setHeaderHovered] = useState(false)
   const [sortField, setSortField] = useState<string | null>(null)
@@ -733,8 +706,6 @@ export default function CatalogGrid<T extends { id: string }>({
     metaColumnDefs?.forEach((def) => {
       if (def.type === 'list' && def.options?.length) {
         result[def.key] = def.options.map((o) => o.label)
-      } else if (def.type === 'priority') {
-        result[def.key] = PRIORITY_LEVELS.map((l) => l.label)
       } else {
         const vals = [...new Set(rows.map((r) => String(getMeta?.(r)?.[def.key] ?? '')).filter(Boolean))]
         result[def.key] = vals.slice(0, 30)
@@ -782,7 +753,6 @@ export default function CatalogGrid<T extends { id: string }>({
     })
 
     if (sortField) {
-      const isPriority = metaColumnDefs?.find((d) => d.key === sortField)?.type === 'priority'
       r.sort((a, b) => {
         let av: string, bv: string
         if (sortField.startsWith('__col_')) {
@@ -793,14 +763,7 @@ export default function CatalogGrid<T extends { id: string }>({
           av = String(getMeta?.(a)?.[sortField] ?? '')
           bv = String(getMeta?.(b)?.[sortField] ?? '')
         }
-        let cmp: number
-        if (isPriority) {
-          const ai = PRIORITY_LEVELS.findIndex((l) => l.label === av)
-          const bi = PRIORITY_LEVELS.findIndex((l) => l.label === bv)
-          cmp = (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi)
-        } else {
-          cmp = av.localeCompare(bv, 'es', { numeric: true })
-        }
+        const cmp = av.localeCompare(bv, 'es', { numeric: true })
         return sortDir === 'asc' ? cmp : -cmp
       })
     }
@@ -833,7 +796,26 @@ export default function CatalogGrid<T extends { id: string }>({
     setSelectedRows((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n })
   }
 
-  const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0) + 1
+  const handleConfirmDelete = async () => {
+    if (!onDeleteRows) return
+    const count = selectedRows.size
+    setDeleting(true)
+    try {
+      await onDeleteRows([...selectedRows])
+      setSelectedRows(new Set())
+      setConfirmDelete(false)
+      setToast({
+        message: count === 1 ? 'Fila borrada correctamente' : `${count} filas borradas correctamente`,
+        variant: 'success',
+      })
+    } catch {
+      setToast({ message: 'No se pudieron borrar las filas', variant: 'error' })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const totalCols = 1 + columns.length + (metaColumnDefs?.length ?? 0) + (onAddColumn ? 1 : 0)
 
   const exportToCsv = () => {
     const escape = (v: unknown) => {
@@ -872,13 +854,13 @@ export default function CatalogGrid<T extends { id: string }>({
   return (
     <div className="flex flex-col gap-5">
       {/* Editorial header */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1" style={{ color: '#9F8FA8' }}>
+      <div className="cursor-default">
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-1 cursor-default" style={{ color: SECTION_LABEL_COLOR }}>
           {eyebrow}
         </p>
-        <h1 className="text-ink leading-none" style={{ fontFamily: '"Newsreader", "EB Garamond", Georgia, serif', fontSize: '32px', fontWeight: 500 }}>
+        <h1 className="text-ink leading-none cursor-default" style={{ fontSize: '28px', fontWeight: 700 }}>
           {title}
-          <span style={{ color: '#9F8FA8', fontSize: '22px', fontWeight: 400, marginLeft: '12px' }}>
+          <span className="cursor-default" style={{ color: SECTION_LABEL_COLOR, fontSize: '20px', fontWeight: 400, marginLeft: '12px' }}>
             {displayedRows.length} resultados
           </span>
         </h1>
@@ -921,8 +903,8 @@ export default function CatalogGrid<T extends { id: string }>({
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={exportToCsv}
-            title="Exportar a CSV"
-            className="h-8 px-3 rounded-md text-[13px] font-medium bg-ink/[8%] text-ink/50 hover:bg-accent hover:text-white transition-all duration-300 inline-flex items-center gap-1.5"
+            aria-label="Exportar a CSV"
+            className="h-8 px-3 rounded-md text-[13px] font-medium bg-ink/[8%] text-ink/70 hover:bg-accent hover:text-white transition-all duration-300 inline-flex items-center gap-1.5"
           >
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M7 1v8M4 6l3 3 3-3" />
@@ -931,15 +913,13 @@ export default function CatalogGrid<T extends { id: string }>({
             CSV
           </button>
           {canWrite && onAdd && (
-            <button
+            <Button
+              size="sm"
               onClick={onAdd}
-              className="h-8 px-4 rounded-md text-[13px] font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors inline-flex items-center gap-1.5"
+              icon={<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6 1v10M1 6h10" /></svg>}
             >
-              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                <path d="M6 1v10M1 6h10" />
-              </svg>
               {addLabel}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -1019,8 +999,8 @@ export default function CatalogGrid<T extends { id: string }>({
                   }}>
                     <button
                       onClick={onAddColumn}
-                      className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
-                      title="Agregar campo"
+                      className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-brand-600 hover:bg-brand-500/10 transition-all duration-150 mx-auto"
+                      aria-label="Agregar campo"
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M7 1v12M1 7h12" />
@@ -1029,7 +1009,6 @@ export default function CatalogGrid<T extends { id: string }>({
                   </th>
                 )}
 
-                <th style={{ position: 'sticky', top: 0, zIndex: 2, backgroundColor: '#FBFAFC', borderBottom: '1px solid rgba(26,22,37,.10)', width: 44, minWidth: 44 }} />
               </tr>
             </thead>
 
@@ -1065,9 +1044,10 @@ export default function CatalogGrid<T extends { id: string }>({
                     >
                       {isHovered || isSelected ? (
                         <input type="checkbox" checked={isSelected} onChange={() => toggleSelectRow(rowKey)}
+                          aria-label={`Seleccionar fila ${page * PAGE_SIZE + rowIndex + 1}`}
                           className="w-3.5 h-3.5 rounded accent-brand-600 cursor-pointer" />
                       ) : (
-                        <span className="font-mono text-[10px] text-ink/30 select-none">{page * PAGE_SIZE + rowIndex + 1}</span>
+                        <span aria-hidden="true" className="font-mono text-[10px] text-ink/30 select-none">{page * PAGE_SIZE + rowIndex + 1}</span>
                       )}
                     </td>
 
@@ -1208,19 +1188,6 @@ export default function CatalogGrid<T extends { id: string }>({
                                   label={def.label ?? def.key}
                                 />
                               </>
-                            ) : def.type === 'priority' ? (
-                              <>
-                                <MetaCellView value={currentVal} def={def} editable={false} />
-                                <SingleSelectPanel
-                                  options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
-                                  value={editingCell!.value}
-                                  onChange={(v) => onEditMetaCell?.(row, def.key, v)}
-                                  onClose={() => setEditingCell(null)}
-                                  top={editingCellPos.top}
-                                  left={editingCellPos.left}
-                                  label={def.label ?? def.key}
-                                />
-                              </>
                             ) : (
                               <input autoFocus type={def.type === 'date' ? 'date' : 'text'}
                                 value={editingCell!.value}
@@ -1241,20 +1208,6 @@ export default function CatalogGrid<T extends { id: string }>({
 
                     {onAddColumn && <td style={{ borderBottom: '1px solid rgba(26,22,37,.05)' }} />}
 
-                    <td
-                      style={{ width: 44, height: 40, verticalAlign: 'middle', textAlign: 'center', borderBottom: '1px solid rgba(26,22,37,.05)' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {isHovered && onRowClick && (
-                        <button
-                          onClick={() => onRowClick(row)}
-                          className="w-6 h-6 rounded flex items-center justify-center text-ink/30 hover:text-ink/60 hover:bg-ink/[5%] transition-all mx-auto"
-                          title="Abrir"
-                        >
-                          {EYE_ICON}
-                        </button>
-                      )}
-                    </td>
                   </tr>
                 )
               })}
@@ -1292,13 +1245,6 @@ export default function CatalogGrid<T extends { id: string }>({
                             options={def.options.map((o) => ({ value: o.label, label: o.label }))}
                             label={def.label ?? def.key}
                           />
-                        ) : def.type === 'priority' ? (
-                          <SelectInput
-                            value={addRowMetaValues?.[def.key] ?? ''}
-                            onChange={(v) => onAddRowMetaChange(def.key, v)}
-                            options={PRIORITY_LEVELS.map((l) => ({ value: l.label, label: l.label }))}
-                            label={def.label ?? def.key}
-                          />
                         ) : (
                           <input type={def.type === 'date' ? 'date' : 'text'}
                             value={addRowMetaValues?.[def.key] ?? ''}
@@ -1319,7 +1265,7 @@ export default function CatalogGrid<T extends { id: string }>({
                   <td colSpan={totalCols} className="px-3 py-2.5">
                     <button
                       onClick={onAdd}
-                      className="flex items-center gap-1.5 text-[12px] text-ink/40 hover:text-brand-600 transition-colors"
+                      className="flex items-center gap-1.5 text-[12px] text-ink/60 hover:text-brand-600 transition-colors"
                     >
                       <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                         <path d="M6 1v10M1 6h10" />
@@ -1334,14 +1280,14 @@ export default function CatalogGrid<T extends { id: string }>({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%]" style={{ backgroundColor: '#FBFAFC' }}>
-          <span className="font-mono text-[11px] text-ink/55">
+        <div className="flex items-center gap-2 px-3 py-1.5 border-t border-ink/[6%] cursor-default" style={{ backgroundColor: TABLE_FOOTER_BG }}>
+          <span className="font-mono text-[11px] text-ink/70">
             <strong className="font-semibold text-ink">{displayedRows.length}</strong> {displayedRows.length === 1 ? 'fila' : 'filas'}
           </span>
           {totalRegistros > 0 && (
             <>
               <span className="font-mono text-[11px] text-ink/25">·</span>
-              <span className="font-mono text-[11px] text-ink/55">
+              <span className="font-mono text-[11px] text-ink/70">
                 Total registros: <strong className="font-semibold text-ink">{totalRegistros.toLocaleString('es-MX')}</strong>
               </span>
             </>
@@ -1356,38 +1302,39 @@ export default function CatalogGrid<T extends { id: string }>({
           )}
           {selectedRows.size > 0 && onDeleteRows && (
             <button
-              onClick={() => { onDeleteRows([...selectedRows]); setSelectedRows(new Set()) }}
-              className="flex items-center gap-1.5 text-[11px] text-red-400 hover:text-red-500 px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
+              onClick={() => setConfirmDelete(true)}
+              style={{ color: DELETE_COLOR }}
+              className="flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded hover:bg-red-50 transition-colors"
             >
               <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 4h12M5 4V2.5h6V4M6 7v5M10 7v5M3 4l1 9.5h8L13 4" />
               </svg>
-              Eliminar seleccionadas
+              Eliminar filas
             </button>
           )}
 
           {totalPages > 1 && (
             <div className="ml-auto flex items-center gap-2">
-              <span className="font-mono text-[11px] text-ink/40">
+              <span className="font-mono text-[11px] text-ink/60">
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, displayedRows.length)} de {displayedRows.length}
               </span>
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 aria-label="Página anterior"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7.5 2.5L4.5 6l3 3.5" />
                 </svg>
               </button>
-              <span className="font-mono text-[11px] text-ink/55">
+              <span className="font-mono text-[11px] text-ink/70">
                 {page + 1} / {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="w-6 h-6 rounded flex items-center justify-center text-ink/40 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                className="w-8 h-8 rounded flex items-center justify-center text-ink/60 hover:text-ink hover:bg-ink/[6%] disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
                 aria-label="Página siguiente"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -1398,6 +1345,38 @@ export default function CatalogGrid<T extends { id: string }>({
           )}
         </div>
       </div>
+
+      {confirmDelete && createPortal(
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => !deleting && setConfirmDelete(false)} />
+          <div className="relative bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-sm font-semibold text-ink mb-2">Eliminar {selectedRows.size === 1 ? 'fila' : 'filas'}</h3>
+            <p className="text-sm text-ink/70 mb-5">
+              {selectedRows.size === 1 ? '¿Seguro que deseas eliminar esta fila?' : '¿Seguro que deseas eliminar estas filas?'} Esta acción no se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-sm font-medium text-ink/70 hover:bg-ink/[4%] rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                style={{ backgroundColor: DELETE_COLOR }}
+                className="px-4 py-2 text-sm font-medium text-white rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {deleting ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {toast && <Toast message={toast.message} variant={toast.variant} onClose={() => setToast(null)} />}
     </div>
   )
 }

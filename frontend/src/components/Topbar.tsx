@@ -26,11 +26,11 @@ export default function Topbar({ title, search, onSearch, filters, actions }: Pr
         </svg>
       </button>
 
-      <h2
+      <p
         className="text-[11px] font-semibold uppercase tracking-[0.12em] text-neutral-400 shrink-0"
       >
         {title}
-      </h2>
+      </p>
 
       {onSearch !== undefined && (
         <div className="relative max-w-xs w-full">

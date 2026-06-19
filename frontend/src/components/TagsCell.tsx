@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { createPortal } from 'react-dom'
 
 interface TagsCellProps {
@@ -19,7 +19,7 @@ function colorizeArray(tags: string[]): React.ReactNode[] {
   return parts
 }
 
-export function TagsCell({ value }: TagsCellProps) {
+function TagsCell({ value }: TagsCellProps) {
   const tags = (value ?? []).map(String)
   const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; above: boolean } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -69,7 +69,7 @@ export function TagsCell({ value }: TagsCellProps) {
     copyTimer.current = setTimeout(() => setCopied(false), 1200)
   }, [tags])
 
-  if (!tags.length) return <span className="text-ink/30 text-[13px]">--</span>
+  if (!tags.length) return <span className="text-ink/60 text-[13px]">--</span>
 
   return (
     <>
@@ -81,7 +81,7 @@ export function TagsCell({ value }: TagsCellProps) {
       >
         {tags.map((tag, i) => (
           <span key={tag}>
-            {i > 0 && <span className="text-ink/20 mx-0.5">·</span>}
+            {i > 0 && <span className="text-ink/20 mx-0.5" aria-hidden="true">·</span>}
             <span className="text-brand-700">{tag}</span>
           </span>
         ))}
@@ -99,12 +99,12 @@ export function TagsCell({ value }: TagsCellProps) {
           onMouseLeave={scheduleHide}
         >
           <div className="px-5 pt-5 pb-4 max-h-80 overflow-y-auto">
-            <pre className="font-mono text-[12px] leading-relaxed text-ink/55 whitespace-pre-wrap break-all">{colorizeArray(tags)}</pre>
+            <pre className="font-mono text-[12px] leading-relaxed text-ink/70 whitespace-pre-wrap break-all">{colorizeArray(tags)}</pre>
           </div>
           <div className="flex justify-end border-t border-ink/5 px-5 py-3">
             <button
               onClick={handleCopy}
-              className="flex items-center gap-1.5 text-[13px] text-ink/35 transition-colors hover:text-brand-600"
+              className="flex items-center gap-1.5 text-[13px] text-ink/60 transition-colors hover:text-brand-600"
             >
               <span>{copied ? 'Copiado' : 'Copiar JSON'}</span>
               {copied ? (
@@ -125,3 +125,6 @@ export function TagsCell({ value }: TagsCellProps) {
     </>
   )
 }
+
+export default memo(TagsCell)
+export { TagsCell }

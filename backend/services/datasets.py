@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from models.dataset import Dataset
+from models.distribucion import Distribucion
 from schemas.dataset import DatasetCreate, DatasetUpdate
 
 
@@ -15,7 +16,7 @@ async def list_datasets(
     limit: int = 10_000,
     fuente_id: uuid.UUID | None = None,
 ) -> list[Dataset]:
-    q = select(Dataset).options(selectinload(Dataset.fuente))
+    q = select(Dataset).options(selectinload(Dataset.fuente), selectinload(Dataset.tipo_dataset))
     if fuente_id:
         q = q.where(Dataset.fuente_id == fuente_id)
     q = q.order_by(Dataset.created_at.asc()).offset(skip).limit(limit)
@@ -25,7 +26,9 @@ async def list_datasets(
 
 async def get_dataset(db: AsyncSession, dataset_id: uuid.UUID) -> Dataset | None:
     result = await db.execute(
-        select(Dataset).options(selectinload(Dataset.fuente)).where(Dataset.id == dataset_id)
+        select(Dataset)
+        .options(selectinload(Dataset.fuente), selectinload(Dataset.tipo_dataset))
+        .where(Dataset.id == dataset_id)
     )
     return result.scalar_one_or_none()
 
@@ -35,8 +38,11 @@ async def get_dataset_detail(db: AsyncSession, dataset_id: uuid.UUID) -> Dataset
         select(Dataset)
         .options(
             selectinload(Dataset.fuente),
+            selectinload(Dataset.tipo_dataset),
             selectinload(Dataset.ediciones),
-            selectinload(Dataset.bases_de_datos),
+            selectinload(Dataset.distribuciones).selectinload(Distribucion.edicion_dataset),
+            selectinload(Dataset.distribuciones).selectinload(Distribucion.tipo_de_acceso),
+            selectinload(Dataset.distribuciones).selectinload(Distribucion.medio_distribucion),
         )
         .where(Dataset.id == dataset_id)
     )

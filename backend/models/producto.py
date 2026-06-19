@@ -13,9 +13,9 @@ class Producto(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     proyecto_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("proyecto.id", ondelete="SET NULL"), nullable=True
+        UUID(as_uuid=True), ForeignKey("proyecto.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    nombre: Mapped[str] = mapped_column(String, nullable=False)
+    nombre: Mapped[str] = mapped_column(String, nullable=False, index=True)
     descripcion: Mapped[str | None] = mapped_column(Text)
     meta: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict, server_default="{}")
 
@@ -23,6 +23,6 @@ class Producto(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     proyecto: Mapped["Proyecto | None"] = relationship("Proyecto", back_populates="productos")
-    producto_tablas: Mapped[list["ProductoTabla"]] = relationship(
-        "ProductoTabla", back_populates="producto", passive_deletes=True
+    informacion_tablas: Mapped[list["InformacionTablas"]] = relationship(
+        "InformacionTablas", back_populates="producto", passive_deletes=True
     )

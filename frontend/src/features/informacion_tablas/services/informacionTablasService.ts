@@ -20,6 +20,7 @@ export async function getInformacionTabla(id: string): Promise<InformacionTablas
 export async function createInformacionTabla(payload: {
   nombre: string
   base_de_datos_id?: string
+  producto_id?: string
   descripcion?: string
   meta?: Record<string, unknown>
 }): Promise<InformacionTablas> {
@@ -27,7 +28,7 @@ export async function createInformacionTabla(payload: {
   return data
 }
 
-export async function updateInformacionTabla(id: string, payload: { nombre?: string; descripcion?: string; meta?: Record<string, unknown>; base_de_datos_id?: string }): Promise<InformacionTablas> {
+export async function updateInformacionTabla(id: string, payload: { nombre?: string; descripcion?: string; meta?: Record<string, unknown>; base_de_datos_id?: string; producto_id?: string }): Promise<InformacionTablas> {
   const { data } = await apiClient.put<InformacionTablas>(`/informacion-tablas/${id}`, payload)
   return data
 }

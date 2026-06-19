@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { createPortal } from 'react-dom'
 
 interface MultiSelectInputProps {
@@ -9,7 +9,7 @@ interface MultiSelectInputProps {
   label?: string
 }
 
-export default function MultiSelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label }: MultiSelectInputProps) {
+function MultiSelectInput({ value, onChange, options, placeholder = 'Seleccionar…', label }: MultiSelectInputProps) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const btnRef = useRef<HTMLButtonElement>(null)
@@ -54,8 +54,8 @@ export default function MultiSelectInput({ value, onChange, options, placeholder
         ref={btnRef}
         type="button"
         onClick={handleOpen}
-        className="w-full h-full flex items-center gap-1 text-[13px] px-1"
-        style={{ color: value.length > 0 ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.35)' }}
+        className="w-full h-full flex items-center gap-1 text-[13px] px-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1 rounded"
+        style={{ color: value.length > 0 ? 'rgba(26,22,37,.87)' : 'rgba(26,22,37,.60)' }}
       >
         <span className="flex-1 truncate text-left">{displayText}</span>
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.45, flexShrink: 0 }}>
@@ -72,7 +72,7 @@ export default function MultiSelectInput({ value, onChange, options, placeholder
         >
           {label && (
             <div className="px-3 py-2.5 border-b border-ink/[6%]">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/60">
                 {label}{value.length > 0 ? ` · ${value.length}` : ''}
               </p>
             </div>
@@ -103,7 +103,7 @@ export default function MultiSelectInput({ value, onChange, options, placeholder
               )
             })}
             {options.length === 0 && (
-              <p className="px-3 py-2.5 text-[12px] text-ink/40">Sin opciones disponibles</p>
+              <p className="px-3 py-2.5 text-[12px] text-ink/60">Sin opciones disponibles</p>
             )}
           </div>
           <div className="border-t border-ink/[6%] px-2 py-1.5">
@@ -121,3 +121,5 @@ export default function MultiSelectInput({ value, onChange, options, placeholder
     </>
   )
 }
+
+export default memo(MultiSelectInput)

@@ -35,7 +35,6 @@ export interface Proyecto {
   nombre: string
   descripcion: string | null
   meta: Record<string, unknown>
-  usuario_id: string | null
   created_at: string
   updated_at: string | null
 }
@@ -56,7 +55,7 @@ export interface Producto {
 }
 
 export interface ProductoDetail extends Producto {
-  producto_tablas: ProductoTabla[]
+  informacion_tablas: InformacionTablas[]
 }
 
 export interface Fuente {
@@ -69,9 +68,6 @@ export interface Fuente {
   descripcion: string | null
   es_fuente_oficial: boolean
   es_publicador: boolean
-  jurisdiccion: string | null
-  url_terminos_uso: string | null
-  url_aviso_privacidad: string | null
   contacto_institucional: string | null
   created_at: string
   updated_at: string | null
@@ -81,36 +77,62 @@ export interface FuenteDetail extends Fuente {
   datasets: Dataset[]
 }
 
+export interface TipoDataset {
+  id: string
+  nombre: string
+  descripcion: string | null
+  created_at: string
+}
+
+export interface TipoPeriodo {
+  id: string
+  nombre: string
+  descripcion: string | null
+  created_at: string
+}
+
+export interface TipoDeAcceso {
+  id: string
+  nombre: string
+  descripcion: string | null
+  created_at: string
+}
+
+export interface MedioDistribucion {
+  id: string
+  nombre: string
+  descripcion: string | null
+  created_at: string
+}
+
 export interface Dataset {
   id: string
   nombre: string
   nombre_corto: string | null
   descripcion: string | null
-  identificador_persistente: string | null
+  url_persistente: string | null
   periodicidad: string | null
   vigente: boolean
-  url_pagina_principal: string | null
-  url_metodologia_general: string | null
-  url_metadatos_general: string | null
   desagregacion_geografica: string | null
-  cobertura_temporal_general: string | null
-  unidad_observacion: string | null
-  tema_principal: string | null
+  inicio_cobertura_temporal: string | null
   proposito: string | null
-  fecha_inicio_disponibilidad: string | null
-  fecha_fin_disponibilidad: string | null
   observaciones_dataset: string | null
   etiquetas: Record<string, unknown> | null
   url_normativa_o_marco_legal: string | null
+  nomenclatura_edicion: string | null
+  url_terminos_uso: string | null
+  url_aviso_privacidad: string | null
   fuente_id: string | null
   fuente: Fuente | null
+  tipo_dataset_id: string | null
+  tipo_dataset: TipoDatasetRef | null
   created_at: string
   updated_at: string | null
 }
 
 export interface DatasetDetail extends Dataset {
   ediciones: EdicionDataset[]
-  bases_de_datos: BaseDeDatos[]
+  distribuciones: Distribucion[]
 }
 
 export interface DatasetRef {
@@ -118,14 +140,44 @@ export interface DatasetRef {
   nombre: string
 }
 
-export interface EdicionDatasetRef {
+export interface TipoDatasetRef {
   id: string
   nombre: string
 }
 
+export interface TipoPeriodoRef {
+  id: string
+  nombre: string
+}
+
+export interface TipoDeAccesoRef {
+  id: string
+  nombre: string
+}
+
+export interface MedioDistribucionRef {
+  id: string
+  nombre: string
+}
+
+export interface EdicionDatasetRef {
+  id: string
+  edicion: string
+}
+
 export interface DistribucionRef {
   id: string
-  descriptor: string | null
+  distribucion: string | null
+}
+
+export interface ArchivoRef {
+  id: string
+  nombre_archivo: string
+}
+
+export interface ProductoRef {
+  id: string
+  nombre: string
 }
 
 export interface BaseDeDatosRef {
@@ -135,20 +187,17 @@ export interface BaseDeDatosRef {
 
 export interface EdicionDataset {
   id: string
-  nombre: string
+  edicion: string
   fecha_publicacion: string | null
   periodo_referencia_inicio: string | null
   periodo_referencia_fin: string | null
-  tipo_periodo_referencia: string | null
-  fecha_levantamiento_inicio: string | null
-  fecha_levantamiento_fin: string | null
-  url_documentacion_edicion: string | null
-  url_comunicado_publicacion: string | null
+  url_metodologia_edicion: string | null
+  url_metadatos_edicion: string | null
   observaciones_edicion: string | null
-  version_publicacion: string | null
   dataset_id: string | null
   dataset: DatasetRef | null
-  es_version_corregida: boolean
+  tipo_periodo_id: string | null
+  tipo_periodo: TipoPeriodoRef | null
   created_at: string
   updated_at: string | null
 }
@@ -159,15 +208,19 @@ export interface EdicionDatasetDetail extends EdicionDataset {
 
 export interface Distribucion {
   id: string
-  descriptor: string | null
+  distribucion: string | null
   url: string | null
-  requiere_autenticacion: boolean
-  requiere_registro: boolean
+  requiere_control_de_acceso: boolean
   es_url_persistente: boolean
-  estado_url_ultima_revision: string | null
   observaciones_distribucion: string | null
   edicion_dataset_id: string | null
   edicion_dataset: EdicionDatasetRef | null
+  dataset_id: string | null
+  dataset: DatasetRef | null
+  tipo_de_acceso_id: string | null
+  tipo_de_acceso: TipoDeAccesoRef | null
+  medio_distribucion_id: string | null
+  medio_distribucion: MedioDistribucionRef | null
   created_at: string
   updated_at: string | null
 }
@@ -180,9 +233,9 @@ export interface BaseDeDatos {
   id: string
   db_nombre: string
   descripcion_esquema: Record<string, unknown>
-  meta: Record<string, unknown>
-  dataset_id: string | null
-  dataset: DatasetRef | null
+  etiquetas: Record<string, unknown> | null
+  archivo_id: string | null
+  archivo: ArchivoRef | null
   created_at: string
   updated_at: string | null
 }
@@ -198,17 +251,10 @@ export interface InformacionTablas {
   meta: Record<string, unknown>
   base_de_datos_id: string | null
   base_de_datos: BaseDeDatosRef | null
+  producto_id: string | null
+  producto: ProductoRef | null
   created_at: string
   updated_at: string | null
-}
-
-export interface ProductoTabla {
-  id: string
-  producto_id: string
-  informacion_tablas_id: string
-  fecha_vinculacion: string | null
-  observaciones: string | null
-  created_at: string
 }
 
 export interface Archivo {
@@ -216,11 +262,10 @@ export interface Archivo {
   nombre_archivo: string
   ruta_relativa_en_distribucion: string | null
   rol_archivo: string | null
-  fecha_ingesta_sistema: string | null
+  fecha_obtencion: string | null
+  fecha_ingesta: string | null
   tamano_bytes: number | null
   hash_sha256: string | null
-  archivos_relacionados: Record<string, unknown>
-  ruta_almacenamiento: string | null
   observaciones_archivo: string | null
   distribucion_id: string | null
   distribucion: DistribucionRef | null

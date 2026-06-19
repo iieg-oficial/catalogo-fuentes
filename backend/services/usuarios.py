@@ -4,10 +4,32 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from consts.roles import ROLE_RANK
 from models.rol import Rol
 from models.usuario import Usuario
 from schemas.usuario import UsuarioCreate, UsuarioUpdate
-from services.auth import get_usuario_by_correo
+from services.auth import get_usuario_by_correo, hash_password
+
+
+async def can_assign_rol(db: AsyncSession, current_user: Usuario, rol_id: uuid.UUID | None) -> bool:
+    """Validar que current_user pueda asignar rol_id (rango estrictamente menor al propio).
+
+    Args:
+        db: Sesión de base de datos.
+        current_user: Usuario que realiza la acción.
+        rol_id: Rol a asignar; None significa sin rol (permitido).
+
+    Returns:
+        True si la asignación es permitida, False en caso contrario.
+    """
+    if rol_id is None:
+        return True
+    actor_rank = ROLE_RANK.get(current_user.rol.nombre, -1) if current_user.rol else -1
+    result = await db.execute(select(Rol).where(Rol.id == rol_id))
+    target_rol = result.scalar_one_or_none()
+    if target_rol is None:
+        return False
+    return ROLE_RANK.get(target_rol.nombre, -1) < actor_rank
 
 
 async def list_usuarios(db: AsyncSession, skip: int = 0, limit: int = 10_000) -> list[Usuario]:
@@ -34,7 +56,13 @@ async def create_usuario(db: AsyncSession, data: UsuarioCreate) -> Usuario | Non
     existing = await get_usuario_by_correo(db, data.correo)
     if existing:
         return None
-    obj = Usuario(correo=data.correo, nombre=data.nombre, rol_id=data.rol_id, activo=False)
+    obj = Usuario(
+        correo=data.correo,
+        nombre=data.nombre,
+        rol_id=data.rol_id,
+        hashed_password=hash_password(data.password),
+        activo=True,
+    )
     db.add(obj)
     await db.commit()
     await db.refresh(obj)
