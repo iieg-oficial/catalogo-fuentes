@@ -12,6 +12,7 @@ import { getEdicionesDataset, getTiposPeriodo, createEdicionDataset, createTipoP
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, fechaIcon, datasetsIcon, urlIcon } from '@/consts/sectionIcons'
+import { DICTAMEN_OPTIONS, DICTAMEN_DESCRIPCIONES, dictamenBadgeClass, puntajeBadgeClass } from '../consts/dictamen'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -33,6 +34,8 @@ export default function EdicionesDatasetPage() {
   const [newUrlMetodologia, setNewUrlMetodologia] = useState('')
   const [newUrlMetadatos, setNewUrlMetadatos] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
+  const [newPuntaje, setNewPuntaje] = useState('')
+  const [newDictamen, setNewDictamen] = useState('')
   const [newDatasetId, setNewDatasetId] = useState('')
 
   const load = async (silent = false) => {
@@ -48,7 +51,7 @@ export default function EdicionesDatasetPage() {
   const resetFields = () => {
     setNewEdicion(''); setNewFechaPublicacion(''); setNewPeriodoInicio(''); setNewPeriodoFin('')
     setNewTipoPeriodoId(''); setNewUrlMetodologia(''); setNewUrlMetadatos('')
-    setNewObservaciones(''); setNewDatasetId('')
+    setNewObservaciones(''); setNewPuntaje(''); setNewDictamen(''); setNewDatasetId('')
   }
 
   const handleSaveRow = async () => {
@@ -64,6 +67,8 @@ export default function EdicionesDatasetPage() {
         url_metodologia_edicion: newUrlMetodologia || undefined,
         url_metadatos_edicion: newUrlMetadatos || undefined,
         observaciones_edicion: newObservaciones || undefined,
+        puntaje: newPuntaje !== '' ? Number(newPuntaje) : undefined,
+        dictamen: newDictamen || undefined,
       })
       setAddingRow(false); resetFields(); await load(true)
     } finally {}
@@ -105,6 +110,8 @@ export default function EdicionesDatasetPage() {
     { header: 'URL metodología edición', icon: urlIcon(), render: (r) => <TextCell value={r.url_metodologia_edicion} mono link />, getValue: (r) => r.url_metodologia_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metodologia_edicion', v) },
     { header: 'URL metadatos edición', icon: urlIcon(), render: (r) => <TextCell value={r.url_metadatos_edicion} mono link />, getValue: (r) => r.url_metadatos_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'url_metadatos_edicion', v) },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_edicion} />, getValue: (r) => r.observaciones_edicion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_edicion', v) },
+    { header: 'Puntaje', icon: descripcionIcon(), inputType: 'number', getValue: (r) => r.puntaje != null ? String(r.puntaje) : '', onEdit: (r, v) => { const n = v === '' ? null : Number(v); updateEdicionDataset(r.id, { puntaje: n }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, puntaje: n } : i))) }, render: (r) => r.puntaje != null ? <span className={puntajeBadgeClass(r.puntaje)}>{r.puntaje}</span> : <span className="text-ink/60 text-[13px]">--</span> },
+    { header: 'Dictamen', icon: descripcionIcon(), selectOptions: DICTAMEN_OPTIONS, onEdit: (r, v) => { updateEdicionDataset(r.id, { dictamen: v || null }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dictamen: v || null } : i))) }, getValue: (r) => r.dictamen ?? '', render: (r) => r.dictamen ? <span className={dictamenBadgeClass(r.dictamen)} title={DICTAMEN_DESCRIPCIONES[r.dictamen]}>{r.dictamen}</span> : <span className="text-ink/60 text-[13px]">--</span> },
   ]
 
   const addRowCells = (
@@ -156,6 +163,14 @@ export default function EdicionesDatasetPage() {
       {/* 9. Observaciones */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newObservaciones} onChange={(e) => setNewObservaciones(e.target.value)} onKeyDown={kd} placeholder="Observaciones..." className={inputCls} />
+      </td>
+      {/* 10. Puntaje */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input type="number" min={0} max={100} step={0.1} value={newPuntaje} onChange={(e) => setNewPuntaje(e.target.value)} onKeyDown={kd} placeholder="Puntaje..." className={inputCls} />
+      </td>
+      {/* 11. Dictamen (catálogo fijo A1..C) */}
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newDictamen} onChange={setNewDictamen} options={DICTAMEN_OPTIONS} placeholder="Dictamen..." label="Dictamen" />
       </td>
     </>
   )

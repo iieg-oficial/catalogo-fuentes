@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, String, Text, text
+from sqlalchemy import Date, DateTime, Float, ForeignKey, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,6 +19,8 @@ class EdicionDataset(Base):
     url_metodologia_edicion: Mapped[str | None] = mapped_column(Text)
     url_metadatos_edicion: Mapped[str | None] = mapped_column(Text)
     observaciones_edicion: Mapped[str | None] = mapped_column(Text)
+    puntaje: Mapped[float | None] = mapped_column(Float)
+    dictamen: Mapped[str | None] = mapped_column(String)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

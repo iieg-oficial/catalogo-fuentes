@@ -24,7 +24,7 @@ export interface Column<T> {
   getValue?: (row: T) => string
   selectOptions?: { value: string; label: string; group?: string }[]
   multiple?: boolean
-  inputType?: 'text' | 'date' | 'json'
+  inputType?: 'text' | 'date' | 'json' | 'number'
 }
 
 interface DataTableProps<T> {
