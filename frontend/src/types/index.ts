@@ -194,6 +194,8 @@ export interface EdicionDataset {
   url_metodologia_edicion: string | null
   url_metadatos_edicion: string | null
   observaciones_edicion: string | null
+  puntaje: number | null
+  dictamen: string | null
   dataset_id: string | null
   dataset: DatasetRef | null
   tipo_periodo_id: string | null
