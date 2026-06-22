@@ -1,5 +1,89 @@
 # Changelog
 
+## [1.1.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.0.0...v1.1.0) (2026-06-22)
+
+
+### ✨ Features
+
+* **backend:** add alembic migration for new tracking structure ([7405598](https://github.com/iieg-oficial/catalogo-fuentes/commit/740559812b1ccad6acf0d724942e1687ae8f0406))
+* **backend:** add change password and update profile endpoints ([1114d2e](https://github.com/iieg-oficial/catalogo-fuentes/commit/1114d2ec081c9e503500bed12e3053411b4be1ad))
+* **backend:** add password and profile schemas, hash password on user creation ([9873fc6](https://github.com/iieg-oficial/catalogo-fuentes/commit/9873fc6a29119a0995896d92cacf33a38f73b89e))
+* **backend:** add tipo_periodo catalog model, schema, service, route ([23ff5df](https://github.com/iieg-oficial/catalogo-fuentes/commit/23ff5dfa654022e317bba724e5c47322fc3e5de6))
+* **backend:** add tipo_periodo migration and seed base values ([e2be86d](https://github.com/iieg-oficial/catalogo-fuentes/commit/e2be86da1b63178361576d51fdc28f8689c0ae4a))
+* **backend:** link edicion_dataset to tipo_periodo via foreign key ([26aab14](https://github.com/iieg-oficial/catalogo-fuentes/commit/26aab14a0acda7a3493377f5b7237ecaa28fbcf3))
+* **ediciones:** add puntaje and dictamen fields with color coding ([6360bd3](https://github.com/iieg-oficial/catalogo-fuentes/commit/6360bd384d111914e0fcd7ee79c72a4405ec4393))
+* **entidades:** render ERD from models via erdalchemy ([f5250b1](https://github.com/iieg-oficial/catalogo-fuentes/commit/f5250b134e312a6e2ae753caf9dc50fbdf32983c))
+* **frontend:** add collapsible sidebar toggle ([d9f2e0b](https://github.com/iieg-oficial/catalogo-fuentes/commit/d9f2e0bce575fe0ef70c2258713fa1eb34457eab))
+* **frontend:** add delete confirmation and toast to catalog grid ([9dbba09](https://github.com/iieg-oficial/catalogo-fuentes/commit/9dbba09c85f126db0c5630af98e6ef722f2e4b31))
+* **frontend:** add edit and delete user actions ([9a0be8b](https://github.com/iieg-oficial/catalogo-fuentes/commit/9a0be8b39b49be08345b43c602b69c7e1abb8701))
+* **frontend:** add fade-in animation to home page sections ([043567d](https://github.com/iieg-oficial/catalogo-fuentes/commit/043567de04e6d77118e55af87544bc01b2d50dd9))
+* **frontend:** add inline-create option to SelectInput ([9de7cb8](https://github.com/iieg-oficial/catalogo-fuentes/commit/9de7cb8488ef2979909262a7364b1c6acab4c12f))
+* **frontend:** add month and year navigation to date picker ([baa6647](https://github.com/iieg-oficial/catalogo-fuentes/commit/baa6647e143a552ce0557a9aeddb91d1c531e8e3))
+* **frontend:** add nombre and temp password fields to create user modal ([e3e48b4](https://github.com/iieg-oficial/catalogo-fuentes/commit/e3e48b45f32d855bef3ea2b1989ff4f753f31dc0))
+* **frontend:** add profile page with password change and sidebar navigation ([ce91318](https://github.com/iieg-oficial/catalogo-fuentes/commit/ce91318a84883ac5ef4e15e3aa00faf607defa00))
+* **frontend:** add reusable Toast notification component ([95bdb07](https://github.com/iieg-oficial/catalogo-fuentes/commit/95bdb0793cf1e390fa67d8c8d3873fc634b4975b))
+* **frontend:** add tipo_dataset create and reorder datasets columns ([ea034a7](https://github.com/iieg-oficial/catalogo-fuentes/commit/ea034a70f6c57cb23ad72577b9a6dd451668f3a5))
+* **frontend:** adopt Garet font, blue institutional palette and sidebar redesign ([a70b68c](https://github.com/iieg-oficial/catalogo-fuentes/commit/a70b68c6b187a5e90ceead058be802a3dc9c138f))
+* **frontend:** consume tipo_periodo catalog in ediciones and ERD ([60a8dfb](https://github.com/iieg-oficial/catalogo-fuentes/commit/60a8dfbb5eb9eeb44b809b4101ca0281bd2ca873))
+* **frontend:** redesign login page to match godin two-column layout ([90bdd9a](https://github.com/iieg-oficial/catalogo-fuentes/commit/90bdd9ae0823f348b0ceef20c1c2d55436931bef))
+* **frontend:** show toast on user creation ([cd3b4b0](https://github.com/iieg-oficial/catalogo-fuentes/commit/cd3b4b06e9b7956dac6c30ce5c49506b2d75cefb))
+* **justfile:** add confirmation prompts to destructive commands ([c028473](https://github.com/iieg-oficial/catalogo-fuentes/commit/c0284731bed8dfaa690b41b9daaa01f54607e625))
+* **migrations:** add schema_migrations tracking table to prevent re-running applied migrations ([c9a8d20](https://github.com/iieg-oficial/catalogo-fuentes/commit/c9a8d200f9763b68818e85088502a9c75c4abdfc)), closes [#42](https://github.com/iieg-oficial/catalogo-fuentes/issues/42)
+* **migrations:** migrate from raw SQL to Alembic for schema management ([90f1c0b](https://github.com/iieg-oficial/catalogo-fuentes/commit/90f1c0b6d95b771a1c4435cb9ee95ee581193f32))
+
+
+### 🔄 Updates
+
+* **backend:** align Pydantic schemas with new tracking structure ([ee8279d](https://github.com/iieg-oficial/catalogo-fuentes/commit/ee8279dffb16888b269d7e803d7cef74496c68db))
+* **backend:** migrate SQLAlchemy models to new tracking structure ([7d3de44](https://github.com/iieg-oficial/catalogo-fuentes/commit/7d3de4486d850a8375f2ba1abd12bde41f1b1aa0))
+* **backend:** seed catalogs and data matching new structure ([f2bfcfe](https://github.com/iieg-oficial/catalogo-fuentes/commit/f2bfcfe0e22b41d45c28e0a79461c5aa97fa98be))
+* **backend:** update services and routes for new schema and catalogs ([90ba16e](https://github.com/iieg-oficial/catalogo-fuentes/commit/90ba16e7e80b5ae10484ad661afab11c48f7bedf))
+* **frontend:** add profile nav link and increase sidebar item spacing ([3ae5ae6](https://github.com/iieg-oficial/catalogo-fuentes/commit/3ae5ae6d81cd9893de333e94882471df7bd421d5))
+* **frontend:** align types and services with new tracking structure ([d11f40a](https://github.com/iieg-oficial/catalogo-fuentes/commit/d11f40a5d3a0f8a7b5b566f20e2de8cdfe93265f))
+* **frontend:** change CatalogGrid heading from Newsreader to Garet ([c73cd2f](https://github.com/iieg-oficial/catalogo-fuentes/commit/c73cd2fe91f8f83b699977fdd4fc09314f34898a))
+* **frontend:** improve sidebar avatar contrast ([ff3145e](https://github.com/iieg-oficial/catalogo-fuentes/commit/ff3145e7cc725979a5d60c3e7dd3e5fe0eda8456))
+* **frontend:** redesign home with grid and list module views ([826a34e](https://github.com/iieg-oficial/catalogo-fuentes/commit/826a34ef18a4c79dfb1dfb55c58f1cd27f9efa5a))
+* **frontend:** refine profile page layout and avatar to match godin ([9b899c7](https://github.com/iieg-oficial/catalogo-fuentes/commit/9b899c737cd00d8f84eef1000020d7d1ec9eac2a))
+* **frontend:** remove remember-user checkbox from login page ([09d73c7](https://github.com/iieg-oficial/catalogo-fuentes/commit/09d73c7341a060cc8f0106fef2f94bc53672595f))
+* **frontend:** reorder catalog columns, panel order and labels ([482a9b2](https://github.com/iieg-oficial/catalogo-fuentes/commit/482a9b23b6e8fc953b17cf7298ed2a43bfcbc3bb))
+* **frontend:** search tables across metadata column ([b8eb5be](https://github.com/iieg-oficial/catalogo-fuentes/commit/b8eb5be1cad67591b0da4b0e76e61ecf77a0284c))
+* **frontend:** set base font-size to 14px matching godin ([b3d4713](https://github.com/iieg-oficial/catalogo-fuentes/commit/b3d4713ae13f59397fcb41fb6486df24177ef0ff))
+* **frontend:** update catalog pages to new schema fields ([4078f41](https://github.com/iieg-oficial/catalogo-fuentes/commit/4078f413d87dddb37ad449ef3ea889478931406d))
+* **frontend:** update document title to Catálogo de fuentes ([19bdfcb](https://github.com/iieg-oficial/catalogo-fuentes/commit/19bdfcbb74cd05121b0a811655ddc363bf997a77))
+
+
+### 🐛 Bug Fixes
+
+* **a11y:** apply full audit remediation — contrast, aria, memo, touch targets, font token ([f32e23d](https://github.com/iieg-oficial/catalogo-fuentes/commit/f32e23dddbe5d53a3277cf62b13205119255426a))
+* **a11y:** fix aria-labels, touch targets, contrast and extract color constants ([6c0d459](https://github.com/iieg-oficial/catalogo-fuentes/commit/6c0d45959affabaaea727f29fd26963596bfb173))
+* **a11y:** fix contrast failures and missing labels from second a11y scan ([d5cdb75](https://github.com/iieg-oficial/catalogo-fuentes/commit/d5cdb7591a08d8c96bc9e62e6a97435f9d37e69a))
+* **a11y:** fix contrast failures, aria labels, touch targets, and deduplicate PRIORITY_LEVELS ([1ed2a45](https://github.com/iieg-oficial/catalogo-fuentes/commit/1ed2a45454c78cd3d3648b372f9dfd0b65f9b77e))
+* **a11y:** raise text-ink/55 to text-ink/70 across remaining cell renderers ([f135771](https://github.com/iieg-oficial/catalogo-fuentes/commit/f135771fc39e4f3c91189384f39a22c232b39cfa))
+* **backend:** enforce role hierarchy when assigning user roles ([1fb4230](https://github.com/iieg-oficial/catalogo-fuentes/commit/1fb4230d87f05c98b7f93b56fb3bc132b675c569))
+* **ediciones:** send null to clear puntaje and dictamen on edit ([483ddf6](https://github.com/iieg-oficial/catalogo-fuentes/commit/483ddf60cde1886ddc8fb1e460712d05f716d1c4))
+* **entidades:** disable diagram controls until iframe loads ([b53c123](https://github.com/iieg-oficial/catalogo-fuentes/commit/b53c1239b68ef9615132dfb5dbac635fd17928d9))
+* **frontend:** apply a11y, performance, and theming audit fixes ([c92546c](https://github.com/iieg-oficial/catalogo-fuentes/commit/c92546c97fc8a8040957a3f4f65f2237d7b3e173))
+* **frontend:** restrict role dropdown to assignable roles ([88f3aac](https://github.com/iieg-oficial/catalogo-fuentes/commit/88f3aacd9de2661816a70ded50d6c1cfaf181417))
+* **justfile:** correct build recipe ([21fc385](https://github.com/iieg-oficial/catalogo-fuentes/commit/21fc385bc0a14c69f6547417d946929dde197ac0))
+* **producto-tablas:** add pagination params to list endpoint ([432c273](https://github.com/iieg-oficial/catalogo-fuentes/commit/432c273cde09824167f8fa6ecf4f7d2f39fc0aa9))
+* **security:** restrict CORS origins and remove hardcoded secrets ([ba0d497](https://github.com/iieg-oficial/catalogo-fuentes/commit/ba0d4974f7276212f8fcb7921f53f7b585066ea3))
+* **sidebar:** add missing accent in Catálogo label ([4bae01c](https://github.com/iieg-oficial/catalogo-fuentes/commit/4bae01ce3b4356e990f67314ce87a497cc2824ec))
+* **ux:** set cursor-default on UI chrome elements ([94640af](https://github.com/iieg-oficial/catalogo-fuentes/commit/94640af59b084688c65e7794e1dcbdfa73e2278e))
+
+
+### ♻️ Refactors
+
+* **auth:** extract signup activation logic to service layer ([5469770](https://github.com/iieg-oficial/catalogo-fuentes/commit/54697704bf01339596c5ed2f084d87e690c98175))
+* **catalog:** remove unused priority column type and PRIORITY_LEVELS ([0f7445c](https://github.com/iieg-oficial/catalogo-fuentes/commit/0f7445c5de33736049fecd2b00c7202c8241defd))
+* **frontend:** replace inline buttons with reusable Button component ([35cf6bb](https://github.com/iieg-oficial/catalogo-fuentes/commit/35cf6bb00647558af10226d602db9c3ced0e4451))
+* **justfile:** split monolithic justfile into modular subcommands ([187988f](https://github.com/iieg-oficial/catalogo-fuentes/commit/187988fd191f79da086cb25841f34250005276df))
+* **structure:** normalize all feature pages into pages/ subdirectory ([f2dc28f](https://github.com/iieg-oficial/catalogo-fuentes/commit/f2dc28fdd1a1fc3649d682231e9794435632331f))
+
+
+### 🔧 Chores
+
+* remove empty barrel files and unused feature index files ([96a4ce4](https://github.com/iieg-oficial/catalogo-fuentes/commit/96a4ce43ae403f90c060436425b770fe2ab7fd37))
+
 ## [1.0.0](https://github.com/iieg-oficial/dashboard-tracking/compare/v0.3.0...v1.0.0) (2026-05-15)
 
 
