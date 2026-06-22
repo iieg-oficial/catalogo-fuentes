@@ -34,7 +34,7 @@ export async function createEdicionDataset(payload: {
   return data
 }
 
-export async function updateEdicionDataset(id: string, payload: { edicion?: string; dataset_id?: string; fecha_publicacion?: string; periodo_referencia_inicio?: string; periodo_referencia_fin?: string; tipo_periodo_id?: string; url_metodologia_edicion?: string; url_metadatos_edicion?: string; observaciones_edicion?: string; puntaje?: number; dictamen?: string }): Promise<EdicionDataset> {
+export async function updateEdicionDataset(id: string, payload: { edicion?: string; dataset_id?: string; fecha_publicacion?: string; periodo_referencia_inicio?: string; periodo_referencia_fin?: string; tipo_periodo_id?: string; url_metodologia_edicion?: string; url_metadatos_edicion?: string; observaciones_edicion?: string; puntaje?: number | null; dictamen?: string | null }): Promise<EdicionDataset> {
   const { data } = await apiClient.put<EdicionDataset>(`/ediciones-dataset/${id}`, payload)
   return data
 }
