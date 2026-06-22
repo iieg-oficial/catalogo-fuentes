@@ -98,7 +98,7 @@ export default function Sidebar({ user, onLogout }: Props) {
 
       <nav className={`flex-1 pb-4 overflow-y-auto ${collapsed ? 'md:pt-2' : ''}`} aria-label="Navegacion principal">
         <p className={`px-4 pt-1 pb-2 text-[10px] font-bold tracking-[0.18em] text-white/60 uppercase select-none ${collapsed ? 'md:hidden' : ''}`}>
-          Catalogo
+          Catálogo
         </p>
 
         {CATALOG_LEVELS.map((level) => (
