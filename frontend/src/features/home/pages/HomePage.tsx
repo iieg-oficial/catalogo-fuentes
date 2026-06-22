@@ -312,7 +312,7 @@ export default function HomePage() {
                                focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 text-left"
                   >
                     <div
-                      className="flex flex-1 items-center justify-center [&>svg]:w-12 [&>svg]:h-12"
+                      className="flex flex-1 items-center justify-center [&>svg]:w-[4.5rem] [&>svg]:h-[4.5rem]"
                       style={{ color, backgroundColor: HOME_CARD_BG }}
                     >
                       {MODULE_ICONS[level.key]}
