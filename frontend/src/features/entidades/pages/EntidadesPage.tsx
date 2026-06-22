@@ -14,11 +14,13 @@ export default function EntidadesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [format, setFormat] = useState<ExportFormat>('html')
+  const [frameReady, setFrameReady] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const load = async () => {
     setLoading(true)
     setError(false)
+    setFrameReady(false)
     try {
       setHtml(await getEntidadesErd())
     } catch {
@@ -42,7 +44,7 @@ export default function EntidadesPage() {
     win?.[fn]?.()
   }
 
-  const actions = html ? (
+  const actions = html && frameReady ? (
     <div className="flex items-center gap-2">
       <select
         value={format}
@@ -80,6 +82,7 @@ export default function EntidadesPage() {
             ref={iframeRef}
             title="Diagrama de entidades"
             srcDoc={html ?? ''}
+            onLoad={() => setFrameReady(true)}
             className="w-full h-full border-0"
           />
         )}
