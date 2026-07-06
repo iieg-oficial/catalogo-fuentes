@@ -19,7 +19,6 @@ async def list_distribuciones(
         selectinload(Distribucion.edicion_dataset),
         selectinload(Distribucion.dataset),
         selectinload(Distribucion.tipo_de_acceso),
-        selectinload(Distribucion.medio_distribucion),
     )
     if edicion_dataset_id:
         q = q.where(Distribucion.edicion_dataset_id == edicion_dataset_id)
@@ -35,7 +34,6 @@ async def get_distribucion(db: AsyncSession, distribucion_id: uuid.UUID) -> Dist
             selectinload(Distribucion.edicion_dataset),
             selectinload(Distribucion.dataset),
             selectinload(Distribucion.tipo_de_acceso),
-            selectinload(Distribucion.medio_distribucion),
         )
         .where(Distribucion.id == distribucion_id)
     )
@@ -49,7 +47,6 @@ async def get_distribucion_detail(db: AsyncSession, distribucion_id: uuid.UUID) 
             selectinload(Distribucion.edicion_dataset),
             selectinload(Distribucion.dataset),
             selectinload(Distribucion.tipo_de_acceso),
-            selectinload(Distribucion.medio_distribucion),
             selectinload(Distribucion.archivos),
         )
         .where(Distribucion.id == distribucion_id)

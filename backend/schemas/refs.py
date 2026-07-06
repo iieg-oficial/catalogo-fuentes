@@ -57,15 +57,6 @@ class TipoDeAccesoRef(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class MedioDistribucionRef(BaseModel):
-    """Lightweight reference for nesting inside other Read schemas."""
-
-    id: uuid.UUID
-    nombre: str
-
-    model_config = {"from_attributes": True}
-
-
 class DistribucionRef(BaseModel):
     """Lightweight reference for nesting inside other Read schemas."""
 

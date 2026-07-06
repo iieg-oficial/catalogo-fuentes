@@ -30,12 +30,8 @@ class Distribucion(Base):
     tipo_de_acceso_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("tipo_de_acceso.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    medio_distribucion_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("medio_distribucion.id", ondelete="SET NULL"), nullable=True, index=True
-    )
 
     edicion_dataset: Mapped["EdicionDataset | None"] = relationship("EdicionDataset", back_populates="distribuciones")
     dataset: Mapped["Dataset | None"] = relationship("Dataset", back_populates="distribuciones")
     tipo_de_acceso: Mapped["TipoDeAcceso | None"] = relationship("TipoDeAcceso", back_populates="distribuciones")
-    medio_distribucion: Mapped["MedioDistribucion | None"] = relationship("MedioDistribucion", back_populates="distribuciones")
     archivos: Mapped[list["Archivo"]] = relationship("Archivo", back_populates="distribucion", passive_deletes=True)

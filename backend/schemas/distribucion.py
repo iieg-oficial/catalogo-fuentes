@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from schemas.refs import DatasetRef, EdicionDatasetRef, MedioDistribucionRef, TipoDeAccesoRef
+from schemas.refs import DatasetRef, EdicionDatasetRef, TipoDeAccesoRef
 
 
 class DistribucionBase(BaseModel):
@@ -15,7 +15,6 @@ class DistribucionBase(BaseModel):
     edicion_dataset_id: uuid.UUID | None = None
     dataset_id: uuid.UUID | None = None
     tipo_de_acceso_id: uuid.UUID | None = None
-    medio_distribucion_id: uuid.UUID | None = None
 
 
 class DistribucionCreate(DistribucionBase):
@@ -31,7 +30,6 @@ class DistribucionUpdate(BaseModel):
     edicion_dataset_id: uuid.UUID | None = None
     dataset_id: uuid.UUID | None = None
     tipo_de_acceso_id: uuid.UUID | None = None
-    medio_distribucion_id: uuid.UUID | None = None
 
 
 class DistribucionRead(DistribucionBase):
@@ -39,7 +37,6 @@ class DistribucionRead(DistribucionBase):
     edicion_dataset: EdicionDatasetRef | None = None
     dataset: DatasetRef | None = None
     tipo_de_acceso: TipoDeAccesoRef | None = None
-    medio_distribucion: MedioDistribucionRef | None = None
     created_at: datetime
     updated_at: datetime | None = None
 

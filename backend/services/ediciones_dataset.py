@@ -41,7 +41,6 @@ async def get_edicion_dataset_detail(db: AsyncSession, edicion_id: uuid.UUID) ->
             selectinload(EdicionDataset.tipo_periodo),
             selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.dataset),
             selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.tipo_de_acceso),
-            selectinload(EdicionDataset.distribuciones).selectinload(Distribucion.medio_distribucion),
         )
         .where(EdicionDataset.id == edicion_id)
     )
