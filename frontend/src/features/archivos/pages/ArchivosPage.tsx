@@ -12,6 +12,7 @@ import { getArchivos, createArchivo, updateArchivo, deleteArchivo } from '../ser
 import { getDistribuciones } from '@/features/distribuciones/services/distribucionesService'
 import DatePickerInput from '@/components/DatePickerInput'
 import { nombreIcon, descripcionIcon, distribucionesIcon, fechaIcon } from '@/consts/sectionIcons'
+import { ROL_ARCHIVO_OPTIONS } from '../consts/rolArchivo'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -145,6 +146,7 @@ export default function ArchivosPage() {
     {
       header: 'Rol archivo',
       icon: descripcionIcon(),
+      selectOptions: ROL_ARCHIVO_OPTIONS,
       render: (r) => <TextCell value={r.rol_archivo} />,
       getValue: (r) => r.rol_archivo ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'rol_archivo', v),
@@ -203,8 +205,8 @@ export default function ArchivosPage() {
         <input value={newRutaRelativa} onChange={(e) => setNewRutaRelativa(e.target.value)} onKeyDown={kd} placeholder="Ruta relativa..." className={inputCls} />
       </td>
       {/* 4. Rol archivo */}
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input value={newRol} onChange={(e) => setNewRol(e.target.value)} onKeyDown={kd} placeholder="Rol archivo..." className={inputCls} />
+      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <SelectInput value={newRol} onChange={setNewRol} options={ROL_ARCHIVO_OPTIONS} placeholder="Rol archivo..." label="Rol archivo" />
       </td>
       {/* 5. Fecha obtencion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>

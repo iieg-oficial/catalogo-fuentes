@@ -18,7 +18,6 @@ from models.distribucion import Distribucion
 from models.edicion_dataset import EdicionDataset
 from models.fuente import Fuente
 from models.informacion_tablas import InformacionTablas
-from models.medio_distribucion import MedioDistribucion
 from models.permiso import Permiso
 from models.permiso_rol import PermisoRol
 from models.producto import Producto
@@ -34,16 +33,29 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TIPOS_DATASET = [
-    "encuesta",
-    "censo",
-    "registro administrativo",
-    "índice",
-    "sistema de consulta",
-    "inventario",
-    "directorio",
+    "Encuesta",
+    "Censo",
+    "Medición instrumental",
+    "Registro administrativo",
+    "Estimación estadística",
+    "Índice",
+    "Cartografía",
+    "Raster",
+    "Imagen satelital",
+    "Otro",
 ]
-TIPOS_DE_ACCESO = ["descarga", "API", "GeoServer"]
-MEDIOS_DISTRIBUCION = ["portal web", "portal de datos abiertos", "solicitud directa"]
+TIPOS_DE_ACCESO = [
+    "descarga_directa",
+    "consulta_web",
+    "api_servicio",
+    "servicio_geografico",
+    "repositorio",
+    "pagina_descriptiva",
+    "documentacion",
+    "solicitud_acceso",
+    "transferencia_institucional",
+    "otro",
+]
 
 
 async def seed_rbac(db: AsyncSession) -> dict[str, Rol]:
@@ -151,26 +163,23 @@ async def seed_users(db: AsyncSession, roles: dict[str, Rol]) -> None:
 
 
 async def seed_catalogos(db: AsyncSession) -> dict[str, dict[str, object]]:
-    """Seed normalized catalogs: tipo_dataset, tipo_de_acceso, medio_distribucion, tipo_periodo."""
+    """Seed normalized catalogs: tipo_dataset, tipo_de_acceso, tipo_periodo."""
     result = await db.execute(select(TipoDataset))
     if result.scalars().first():
         logger.info("Catalogs already seeded, fetching existing.")
         tipos_dataset = {t.nombre: t for t in (await db.execute(select(TipoDataset))).scalars().all()}
         tipos_acceso = {t.nombre: t for t in (await db.execute(select(TipoDeAcceso))).scalars().all()}
-        medios = {m.nombre: m for m in (await db.execute(select(MedioDistribucion))).scalars().all()}
         tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
         return {
             "tipo_dataset": tipos_dataset,
             "tipo_de_acceso": tipos_acceso,
-            "medio_distribucion": medios,
             "tipo_periodo": tipos_periodo,
         }
 
     logger.info("Seeding catalogs...")
     tipos_dataset = {nombre: TipoDataset(nombre=nombre) for nombre in TIPOS_DATASET}
     tipos_acceso = {nombre: TipoDeAcceso(nombre=nombre) for nombre in TIPOS_DE_ACCESO}
-    medios = {nombre: MedioDistribucion(nombre=nombre) for nombre in MEDIOS_DISTRIBUCION}
-    db.add_all([*tipos_dataset.values(), *tipos_acceso.values(), *medios.values()])
+    db.add_all([*tipos_dataset.values(), *tipos_acceso.values()])
     await db.flush()
     # tipo_periodo es enumeración fija sembrada por la migración; solo se consulta.
     tipos_periodo = {t.nombre: t for t in (await db.execute(select(TipoPeriodo))).scalars().all()}
@@ -178,7 +187,6 @@ async def seed_catalogos(db: AsyncSession) -> dict[str, dict[str, object]]:
     return {
         "tipo_dataset": tipos_dataset,
         "tipo_de_acceso": tipos_acceso,
-        "medio_distribucion": medios,
         "tipo_periodo": tipos_periodo,
     }
 
@@ -196,7 +204,6 @@ async def seed_catalog(db: AsyncSession) -> None:
 
     tipos_dataset = catalogos["tipo_dataset"]
     tipos_acceso = catalogos["tipo_de_acceso"]
-    medios = catalogos["medio_distribucion"]
     tipos_periodo = catalogos["tipo_periodo"]
 
     # Fuentes
@@ -238,7 +245,7 @@ async def seed_catalog(db: AsyncSession) -> None:
         periodicidad="trimestral",
         vigente=True,
         fuente_id=inegi.id,
-        tipo_dataset_id=tipos_dataset["encuesta"].id,
+        tipo_dataset_id=tipos_dataset["Encuesta"].id,
         etiquetas={"temas": ["empleo"]},
     )
     ds_conapo_proy = Dataset(
@@ -248,7 +255,7 @@ async def seed_catalog(db: AsyncSession) -> None:
         periodicidad="anual",
         vigente=True,
         fuente_id=conapo.id,
-        tipo_dataset_id=tipos_dataset["registro administrativo"].id,
+        tipo_dataset_id=tipos_dataset["Registro administrativo"].id,
         etiquetas={"temas": ["demografía"]},
     )
     ds_siap_prod = Dataset(
@@ -258,7 +265,7 @@ async def seed_catalog(db: AsyncSession) -> None:
         periodicidad="anual",
         vigente=True,
         fuente_id=siap.id,
-        tipo_dataset_id=tipos_dataset["registro administrativo"].id,
+        tipo_dataset_id=tipos_dataset["Registro administrativo"].id,
         etiquetas={"temas": ["agricultura"]},
     )
     ds_denue = Dataset(
@@ -268,7 +275,7 @@ async def seed_catalog(db: AsyncSession) -> None:
         periodicidad="bienal",
         vigente=True,
         fuente_id=inegi.id,
-        tipo_dataset_id=tipos_dataset["directorio"].id,
+        tipo_dataset_id=tipos_dataset["Registro administrativo"].id,
         etiquetas={"temas": ["economía"]},
     )
     db.add_all([ds_enoe, ds_conapo_proy, ds_siap_prod, ds_denue])
@@ -310,32 +317,28 @@ async def seed_catalog(db: AsyncSession) -> None:
         url="https://www.inegi.org.mx/programas/enoe/15ymas/",
         edicion_dataset_id=ed_enoe_2023q4.id,
         dataset_id=ds_enoe.id,
-        tipo_de_acceso_id=tipos_acceso["descarga"].id,
-        medio_distribucion_id=medios["portal web"].id,
+        tipo_de_acceso_id=tipos_acceso["descarga_directa"].id,
     )
     dist_conapo = Distribucion(
         distribucion="Proyecciones CONAPO portal",
         url="https://www.gob.mx/conapo/documentos/proyecciones-de-la-poblacion",
         edicion_dataset_id=ed_conapo_2023.id,
         dataset_id=ds_conapo_proy.id,
-        tipo_de_acceso_id=tipos_acceso["descarga"].id,
-        medio_distribucion_id=medios["portal de datos abiertos"].id,
+        tipo_de_acceso_id=tipos_acceso["descarga_directa"].id,
     )
     dist_siap = Distribucion(
         distribucion="Cifras definitivas SIAP",
         url="https://www.gob.mx/siap/documentos/produccion-agropecuaria",
         edicion_dataset_id=ed_siap_2022.id,
         dataset_id=ds_siap_prod.id,
-        tipo_de_acceso_id=tipos_acceso["descarga"].id,
-        medio_distribucion_id=medios["portal web"].id,
+        tipo_de_acceso_id=tipos_acceso["descarga_directa"].id,
     )
     dist_denue = Distribucion(
         distribucion="Descarga DENUE 2023",
         url="https://www.inegi.org.mx/app/descarga/?ti=6",
         edicion_dataset_id=ed_denue_2023.id,
         dataset_id=ds_denue.id,
-        tipo_de_acceso_id=tipos_acceso["API"].id,
-        medio_distribucion_id=medios["portal de datos abiertos"].id,
+        tipo_de_acceso_id=tipos_acceso["api_servicio"].id,
     )
     db.add_all([dist_enoe, dist_conapo, dist_siap, dist_denue])
     await db.flush()

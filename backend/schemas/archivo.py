@@ -1,9 +1,17 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
+from consts.rol_archivo import ROL_ARCHIVO_VALUES
 from schemas.refs import DistribucionRef
+
+
+def _validate_rol_archivo(value: str | None) -> str | None:
+    """Valida que el rol_archivo pertenezca al catálogo cerrado."""
+    if value is not None and value not in ROL_ARCHIVO_VALUES:
+        raise ValueError(f"rol_archivo inválido: {value}")
+    return value
 
 
 class ArchivoBase(BaseModel):
@@ -16,6 +24,8 @@ class ArchivoBase(BaseModel):
     hash_sha256: str | None = None
     observaciones_archivo: str | None = None
     distribucion_id: uuid.UUID | None = None
+
+    _check_rol_archivo = field_validator("rol_archivo")(_validate_rol_archivo)
 
 
 class ArchivoCreate(ArchivoBase):
@@ -32,6 +42,8 @@ class ArchivoUpdate(BaseModel):
     hash_sha256: str | None = None
     observaciones_archivo: str | None = None
     distribucion_id: uuid.UUID | None = None
+
+    _check_rol_archivo = field_validator("rol_archivo")(_validate_rol_archivo)
 
 
 class ArchivoRead(ArchivoBase):
