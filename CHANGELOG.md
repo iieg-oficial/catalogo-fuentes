@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.1.0...v1.2.0) (2026-07-07)
+
+
+### ✨ Features
+
+* **catalogos:** add dropdown options for tipo_dataset, tipo_de_acceso and rol_archivo ([3c6d300](https://github.com/iieg-oficial/catalogo-fuentes/commit/3c6d30002dff88ca469ba7c6095f739e7b735591))
+
+
+### 🔄 Updates
+
+* **dictamen:** update dictamen catalog to codes A1-A4, B and C ([abf1e86](https://github.com/iieg-oficial/catalogo-fuentes/commit/abf1e8678abafd1b183cc44a6f707b19c120465f))
+* **distribuciones:** remove medio_distribucion attribute ([383b48c](https://github.com/iieg-oficial/catalogo-fuentes/commit/383b48ca346203dc84725a7694ab0ef91f07f36f))
+
+
+### 🔧 Chores
+
+* **config:** ignore dumps directory ([21ec8d4](https://github.com/iieg-oficial/catalogo-fuentes/commit/21ec8d4f1e9f3e407f398321f0d813cd7e7ec0ed))
+
 ## [1.1.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.0.0...v1.1.0) (2026-06-22)
 
 
