@@ -22,6 +22,7 @@ from routes.bases_de_datos import router as bases_de_datos_router
 from routes.informacion_tablas import router as informacion_tablas_router
 from routes.archivos import router as archivos_router
 from routes.entidades import router as entidades_router
+from routes.import_ import router as import_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -53,6 +54,7 @@ app.include_router(bases_de_datos_router)
 app.include_router(informacion_tablas_router)
 app.include_router(archivos_router)
 app.include_router(entidades_router)
+app.include_router(import_router)
 
 
 @app.get("/health")
