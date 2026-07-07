@@ -53,6 +53,9 @@ def upgrade() -> None:
     _seed('tipo_dataset', TIPO_DATASET_VALUES)
     _seed('tipo_de_acceso', TIPO_DE_ACCESO_VALUES)
 
+    # Normaliza rol_archivo (espacios sobrantes, cadenas vacías) antes del CHECK.
+    op.execute("UPDATE archivo SET rol_archivo = NULLIF(trim(rol_archivo), '') WHERE rol_archivo IS NOT NULL")
+
     values = ', '.join(f"'{v}'" for v in ROL_ARCHIVO_VALUES)
     op.create_check_constraint(
         'rol_archivo_values', 'archivo',
