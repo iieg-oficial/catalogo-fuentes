@@ -56,6 +56,7 @@ export interface CatalogGridProps<T> {
   onAddRowSave?: () => void
   search: string
   onSearch: (v: string) => void
+  importSlot?: ReactNode
 }
 
 // ---------------------------------------------------------------------------
@@ -648,6 +649,7 @@ export default function CatalogGrid<T extends { id: string }>({
   onAddRowSave,
   search,
   onSearch,
+  importSlot,
 }: CatalogGridProps<T>) {
   const { openSidebar } = useSidebar()
 
@@ -901,6 +903,7 @@ export default function CatalogGrid<T extends { id: string }>({
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          {importSlot}
           <button
             onClick={exportToCsv}
             aria-label="Exportar a CSV"
