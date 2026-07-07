@@ -1,5 +1,5 @@
 import apiClient from '@/services/apiClient'
-import type { Distribucion, DistribucionDetail, MedioDistribucion, TipoDeAcceso } from '@/types'
+import type { Distribucion, DistribucionDetail, TipoDeAcceso } from '@/types'
 
 interface DistribucionFilters {
   edicion_dataset_id?: string | null
@@ -21,7 +21,6 @@ export async function createDistribucion(payload: {
   edicion_dataset_id?: string
   dataset_id?: string
   tipo_de_acceso_id?: string
-  medio_distribucion_id?: string
   distribucion?: string
   url?: string
   requiere_control_de_acceso?: boolean
@@ -32,7 +31,7 @@ export async function createDistribucion(payload: {
   return data
 }
 
-export async function updateDistribucion(id: string, payload: { distribucion?: string; url?: string; edicion_dataset_id?: string; dataset_id?: string; tipo_de_acceso_id?: string; medio_distribucion_id?: string; requiere_control_de_acceso?: boolean; es_url_persistente?: boolean; observaciones_distribucion?: string }): Promise<Distribucion> {
+export async function updateDistribucion(id: string, payload: { distribucion?: string; url?: string; edicion_dataset_id?: string; dataset_id?: string; tipo_de_acceso_id?: string; requiere_control_de_acceso?: boolean; es_url_persistente?: boolean; observaciones_distribucion?: string }): Promise<Distribucion> {
   const { data } = await apiClient.put<Distribucion>(`/distribuciones/${id}`, payload)
   return data
 }
@@ -46,7 +45,3 @@ export async function getTiposDeAcceso(): Promise<TipoDeAcceso[]> {
   return data
 }
 
-export async function getMediosDistribucion(): Promise<MedioDistribucion[]> {
-  const { data } = await apiClient.get<MedioDistribucion[]>('/medios-distribucion/')
-  return data
-}

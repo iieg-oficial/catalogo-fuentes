@@ -42,7 +42,6 @@ async def get_dataset_detail(db: AsyncSession, dataset_id: uuid.UUID) -> Dataset
             selectinload(Dataset.ediciones),
             selectinload(Dataset.distribuciones).selectinload(Distribucion.edicion_dataset),
             selectinload(Dataset.distribuciones).selectinload(Distribucion.tipo_de_acceso),
-            selectinload(Dataset.distribuciones).selectinload(Distribucion.medio_distribucion),
         )
         .where(Dataset.id == dataset_id)
     )

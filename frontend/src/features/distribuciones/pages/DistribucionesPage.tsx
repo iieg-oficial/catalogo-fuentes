@@ -6,9 +6,9 @@ import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
-import type { Dataset, Distribucion, EdicionDataset, MedioDistribucion, TipoDeAcceso } from '@/types'
+import type { Dataset, Distribucion, EdicionDataset, TipoDeAcceso } from '@/types'
 import { TextCell } from '@/components/TextCell'
-import { getDistribuciones, getTiposDeAcceso, getMediosDistribucion, createDistribucion, updateDistribucion, deleteDistribucion } from '../services/distribucionesService'
+import { getDistribuciones, getTiposDeAcceso, createDistribucion, updateDistribucion, deleteDistribucion } from '../services/distribucionesService'
 import { getEdicionesDataset } from '@/features/ediciones_dataset/services/edicionesDatasetService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { nombreIcon, descripcionIcon, estadoIcon, edicionesIcon, datasetsIcon, urlIcon } from '@/consts/sectionIcons'
@@ -21,7 +21,6 @@ export default function DistribucionesPage() {
   const [ediciones, setEdiciones] = useState<EdicionDataset[]>([])
   const [datasets, setDatasets] = useState<Dataset[]>([])
   const [tiposAcceso, setTiposAcceso] = useState<TipoDeAcceso[]>([])
-  const [medios, setMedios] = useState<MedioDistribucion[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [searchParams] = useSearchParams()
@@ -32,7 +31,6 @@ export default function DistribucionesPage() {
   const [newEdicionId, setNewEdicionId] = useState('')
   const [newDatasetId, setNewDatasetId] = useState('')
   const [newTipoAccesoId, setNewTipoAccesoId] = useState('')
-  const [newMedioId, setNewMedioId] = useState('')
   const [newReqControl, setNewReqControl] = useState('')
   const [newUrlPersistente, setNewUrlPersistente] = useState('')
   const [newObservaciones, setNewObservaciones] = useState('')
@@ -40,14 +38,13 @@ export default function DistribucionesPage() {
   const load = async (silent = false) => {
     if (!silent) setLoading(true); setError(false)
     try {
-      const [dist, eds, ds, tipos, meds] = await Promise.all([
-        getDistribuciones(), getEdicionesDataset(), getDatasets(), getTiposDeAcceso(), getMediosDistribucion(),
+      const [dist, eds, ds, tipos] = await Promise.all([
+        getDistribuciones(), getEdicionesDataset(), getDatasets(), getTiposDeAcceso(),
       ])
       setItems(dist)
       setEdiciones(eds)
       setDatasets(ds)
       setTiposAcceso(tipos)
-      setMedios(meds)
     } catch { setError(true) } finally { if (!silent) setLoading(false) }
   }
 
@@ -55,7 +52,7 @@ export default function DistribucionesPage() {
 
   const resetFields = () => {
     setNewDistribucion(''); setNewUrl(''); setNewEdicionId(''); setNewDatasetId('')
-    setNewTipoAccesoId(''); setNewMedioId(''); setNewReqControl('')
+    setNewTipoAccesoId(''); setNewReqControl('')
     setNewUrlPersistente(''); setNewObservaciones('')
   }
 
@@ -68,7 +65,6 @@ export default function DistribucionesPage() {
         edicion_dataset_id: newEdicionId || undefined,
         dataset_id: newDatasetId || undefined,
         tipo_de_acceso_id: newTipoAccesoId || undefined,
-        medio_distribucion_id: newMedioId || undefined,
         requiere_control_de_acceso: newReqControl ? newReqControl === 'true' : undefined,
         es_url_persistente: newUrlPersistente ? newUrlPersistente === 'true' : undefined,
         observaciones_distribucion: newObservaciones || undefined,
@@ -100,7 +96,6 @@ export default function DistribucionesPage() {
   const edicionOpts = ediciones.map((e) => ({ value: e.id, label: e.edicion }))
   const datasetOpts = datasets.map((d) => ({ value: d.id, label: d.nombre }))
   const tipoAccesoOpts = tiposAcceso.map((t) => ({ value: t.id, label: t.nombre }))
-  const medioOpts = medios.map((m) => ({ value: m.id, label: m.nombre }))
 
   const columns: Column<Distribucion>[] = [
     { header: 'Distribución', icon: nombreIcon(), render: (r) => <TextCell value={r.distribucion ?? r.id.slice(0, 8)} />, className: 'w-48', getValue: (r) => r.distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'distribucion', v) },
@@ -108,7 +103,6 @@ export default function DistribucionesPage() {
     { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasetOpts, onEdit: (r, v) => { updateDistribucion(r.id, { dataset_id: v }); const d = datasets.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: d ? { id: d.id, nombre: d.nombre } : null } : i))) }, getValue: (r) => r.dataset_id ?? '', render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'URL', icon: urlIcon(), render: (r) => <TextCell value={r.url} mono link />, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
     { header: 'Tipo de acceso', icon: estadoIcon(), selectOptions: tipoAccesoOpts, onEdit: (r, v) => { updateDistribucion(r.id, { tipo_de_acceso_id: v }); const t = tiposAcceso.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tipo_de_acceso_id: v || null, tipo_de_acceso: t ? { id: t.id, nombre: t.nombre } : null } : i))) }, getValue: (r) => r.tipo_de_acceso_id ?? '', render: (r) => r.tipo_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.tipo_de_acceso.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
-    { header: 'Medio de distribución', icon: estadoIcon(), selectOptions: medioOpts, onEdit: (r, v) => { updateDistribucion(r.id, { medio_distribucion_id: v }); const m = medios.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, medio_distribucion_id: v || null, medio_distribucion: m ? { id: m.id, nombre: m.nombre } : null } : i))) }, getValue: (r) => r.medio_distribucion_id ?? '', render: (r) => r.medio_distribucion ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.medio_distribucion.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Req. control de acceso', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_control_de_acceso', v === 'true'), getValue: (r) => r.requiere_control_de_acceso ? 'true' : 'false', render: (r) => r.requiere_control_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
     { header: 'Es URL persistente', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'es_url_persistente', v === 'true'), getValue: (r) => r.es_url_persistente ? 'true' : 'false', render: (r) => r.es_url_persistente ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
     { header: 'Observaciones', icon: descripcionIcon(), render: (r) => <TextCell value={r.observaciones_distribucion} />, getValue: (r) => r.observaciones_distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'observaciones_distribucion', v) },
@@ -135,10 +129,6 @@ export default function DistribucionesPage() {
       {/* 5. Tipo de acceso (FK select) */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput value={newTipoAccesoId} onChange={setNewTipoAccesoId} options={tipoAccesoOpts} placeholder="Tipo acceso..." label="Tipo de acceso" />
-      </td>
-      {/* 6. Medio de distribucion (FK select) */}
-      <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <SelectInput value={newMedioId} onChange={setNewMedioId} options={medioOpts} placeholder="Medio..." label="Medio de distribucion" />
       </td>
       {/* 7. Req. control de acceso */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>

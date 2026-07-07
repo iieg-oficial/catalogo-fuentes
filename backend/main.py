@@ -17,7 +17,6 @@ from routes.datasets import router as datasets_router
 from routes.tipos_periodo import router as tipos_periodo_router
 from routes.ediciones_dataset import router as ediciones_dataset_router
 from routes.tipos_de_acceso import router as tipos_de_acceso_router
-from routes.medios_distribucion import router as medios_distribucion_router
 from routes.distribuciones import router as distribuciones_router
 from routes.bases_de_datos import router as bases_de_datos_router
 from routes.informacion_tablas import router as informacion_tablas_router
@@ -49,7 +48,6 @@ app.include_router(datasets_router)
 app.include_router(tipos_periodo_router)
 app.include_router(ediciones_dataset_router)
 app.include_router(tipos_de_acceso_router)
-app.include_router(medios_distribucion_router)
 app.include_router(distribuciones_router)
 app.include_router(bases_de_datos_router)
 app.include_router(informacion_tablas_router)

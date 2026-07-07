@@ -10,7 +10,6 @@ from models.dataset import Dataset
 from models.tipo_periodo import TipoPeriodo
 from models.edicion_dataset import EdicionDataset
 from models.tipo_de_acceso import TipoDeAcceso
-from models.medio_distribucion import MedioDistribucion
 from models.distribucion import Distribucion
 from models.archivo import Archivo
 from models.tabla_caracteristicas_archivo import TablaCaracteristicasArchivo
@@ -30,7 +29,6 @@ __all__ = [
     "TipoPeriodo",
     "EdicionDataset",
     "TipoDeAcceso",
-    "MedioDistribucion",
     "Distribucion",
     "Archivo",
     "TablaCaracteristicasArchivo",

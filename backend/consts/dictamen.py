@@ -3,12 +3,10 @@
 
 DICTAMEN_DESCRIPCIONES: dict[str, str] = {
     "A1": "Apta para uso institucional pleno",
-    "A2": "Apta para uso institucional casi pleno, con nota aclaratoria obligatoria",
+    "A2": "Apta para uso institucional pleno, con nota aclaratoria obligatoria",
     "A3": "Apta para uso institucional pleno, con pendientes de gestión documental o aclaratoria",
     "A4": "Apta para uso institucional pleno, con alto requerimiento laboral",
-    "A5": "Apta para uso específico, colaboración o análisis técnico controlado",
-    "B1": "Apta sólo para respuestas de solicitudes específicas, requiere advertencia",
-    "B2": "Apta sólo para exploración o consumo interno",
+    "B": "Apta para uso específico, colaboración o análisis técnico controlado",
     "C": "No apta para uso institucional",
 }
 

@@ -98,13 +98,6 @@ export interface TipoDeAcceso {
   created_at: string
 }
 
-export interface MedioDistribucion {
-  id: string
-  nombre: string
-  descripcion: string | null
-  created_at: string
-}
-
 export interface Dataset {
   id: string
   nombre: string
@@ -151,11 +144,6 @@ export interface TipoPeriodoRef {
 }
 
 export interface TipoDeAccesoRef {
-  id: string
-  nombre: string
-}
-
-export interface MedioDistribucionRef {
   id: string
   nombre: string
 }
@@ -221,8 +209,6 @@ export interface Distribucion {
   dataset: DatasetRef | null
   tipo_de_acceso_id: string | null
   tipo_de_acceso: TipoDeAccesoRef | null
-  medio_distribucion_id: string | null
-  medio_distribucion: MedioDistribucionRef | null
   created_at: string
   updated_at: string | null
 }
