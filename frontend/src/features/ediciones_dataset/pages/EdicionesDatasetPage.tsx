@@ -4,6 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
+import ImportCsvButton from '@/components/ImportCsvButton'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { EdicionDataset, Dataset, TipoPeriodo } from '@/types'
@@ -17,7 +18,7 @@ import { DICTAMEN_OPTIONS, DICTAMEN_DESCRIPCIONES, dictamenBadgeClass, puntajeBa
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function EdicionesDatasetPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<EdicionDataset[]>([])
   const [datasets, setDatasets] = useState<Dataset[]>([])
   const [tiposPeriodo, setTiposPeriodo] = useState<TipoPeriodo[]>([])
@@ -182,7 +183,7 @@ export default function EdicionesDatasetPage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-auto p-8">
-      <CatalogGrid eyebrow="Catalogo" title="Ediciones de dataset" addLabel="Nueva edicion" entityLabel="ediciones" rows={filtered} columns={columns} getKey={(r) => r.id} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} />
+      <CatalogGrid eyebrow="Catalogo" title="Ediciones de dataset" addLabel="Nueva edicion" entityLabel="ediciones" rows={filtered} columns={columns} getKey={(r) => r.id} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} importSlot={canManageUsers ? <ImportCsvButton entidad="edicion_dataset" onDone={() => load(true)} /> : undefined} />
     </div>
   )
 }

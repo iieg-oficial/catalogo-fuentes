@@ -1,6 +1,15 @@
 import apiClient from '@/services/apiClient'
 
-export type EntidadImportable = 'proyecto' | 'producto'
+export type EntidadImportable =
+  | 'proyecto'
+  | 'producto'
+  | 'fuente'
+  | 'dataset'
+  | 'edicion_dataset'
+  | 'distribucion'
+  | 'archivo'
+  | 'base_de_datos'
+  | 'informacion_tablas'
 
 export interface ImportDetalleOmitido {
   fila: number
