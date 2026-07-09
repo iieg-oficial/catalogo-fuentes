@@ -57,6 +57,7 @@ export interface CatalogGridProps<T> {
   search: string
   onSearch: (v: string) => void
   importSlot?: ReactNode
+  previewRows?: T[]
 }
 
 // ---------------------------------------------------------------------------
@@ -650,6 +651,7 @@ export default function CatalogGrid<T extends { id: string }>({
   search,
   onSearch,
   importSlot,
+  previewRows,
 }: CatalogGridProps<T>) {
   const { openSidebar } = useSidebar()
 
@@ -1214,6 +1216,43 @@ export default function CatalogGrid<T extends { id: string }>({
                   </tr>
                 )
               })}
+
+              {/*
+                Invariante de filas de preview: los FKs anidados en `row` vienen
+                solo con `{ parent_key_field: valor }` (sin `id` ni otros
+                campos). Una `Column.render`/`getValue` que lea `r.<fk>.id` u
+                otro campo distinto del parent_key_field fallaría, pero solo
+                sobre estas filas de preview (son pointer-events-none). Las
+                columns actuales usan el parent_key_field, así que hoy no rompe.
+              */}
+              {previewRows?.map((row, i) => (
+                <tr key={`preview-${i}`} className="opacity-50 pointer-events-none select-none" style={{ background: 'rgba(110,37,139,.04)' }}>
+                  <td
+                    className="border-r border-ink/[5%]"
+                    style={{ width: 40, height: 40, verticalAlign: 'middle', textAlign: 'center', padding: '0 8px', borderBottom: '1px solid rgba(26,22,37,.05)' }}
+                  >
+                    <span
+                      className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-medium bg-amber-400/20 text-amber-700"
+                      title="Fila pendiente de confirmar"
+                    >
+                      pendiente
+                    </span>
+                  </td>
+                  {columns.map((col, ci) => (
+                    <td
+                      key={ci}
+                      className="border-r border-ink/[5%] px-2.5"
+                      style={{ height: 40, verticalAlign: 'middle', borderBottom: '1px solid rgba(26,22,37,.05)', overflow: 'hidden' }}
+                    >
+                      <span className="block truncate">{col.render(row, i, col.header)}</span>
+                    </td>
+                  ))}
+                  {metaColumnDefs?.map((def) => (
+                    <td key={def.key} className="border-r border-ink/[5%]" style={{ height: 40, borderBottom: '1px solid rgba(26,22,37,.05)' }} />
+                  ))}
+                  {onAddColumn && <td style={{ borderBottom: '1px solid rgba(26,22,37,.05)' }} />}
+                </tr>
+              ))}
 
               {addRowCells && (
                 <tr
