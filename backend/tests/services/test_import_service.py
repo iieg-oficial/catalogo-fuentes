@@ -15,6 +15,7 @@ from services.import_service import (
     ImportBlockedError,
     ImportValidationError,
     import_entity,
+    preview_entity,
 )
 
 
@@ -423,6 +424,112 @@ async def test_import_informacion_tablas_fks_dobles_opcionales_ambas_vacias(
     filas = (await db_session.execute(select(InformacionTablas))).scalars().all()
     assert filas[0].base_de_datos_id is None
     assert filas[0].producto_id is None
+
+
+# --- preview_entity (dry-run) ---
+
+
+@pytest.mark.asyncio
+async def test_preview_proyecto_sin_fk_no_persiste(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,descripcion\nProyecto Preview,desc")
+    result = await preview_entity("proyecto", contenido, "proyectos.csv", db_session)
+
+    assert result.entidad == "proyecto"
+    assert len(result.a_crear) == 1
+    assert result.a_crear[0].fila == 2
+    assert result.a_crear[0].datos["nombre"] == "Proyecto Preview"
+    assert result.omitidos_duplicados == []
+
+    proyectos = (await db_session.execute(select(Proyecto))).scalars().all()
+    assert proyectos == []
+
+
+@pytest.mark.asyncio
+async def test_preview_producto_con_fk_resuelve_anidado(db_session: AsyncSession):
+    proyecto = Proyecto(nombre="Censo de Poblacion")
+    db_session.add(proyecto)
+    await db_session.commit()
+
+    contenido = _csv_bytes("nombre,proyecto\nProducto Preview,Censo de Poblacion")
+    result = await preview_entity("producto", contenido, "productos.csv", db_session)
+
+    assert len(result.a_crear) == 1
+    datos = result.a_crear[0].datos
+    assert datos["nombre"] == "Producto Preview"
+    assert datos["proyecto"] == {"nombre": "Censo de Poblacion"}
+    assert "proyecto_id" not in datos
+
+    productos = (await db_session.execute(select(Producto))).scalars().all()
+    assert productos == []
+
+
+@pytest.mark.asyncio
+async def test_preview_con_duplicado_lo_reporta_y_no_lo_incluye(db_session: AsyncSession):
+    existente = Proyecto(nombre="Ya Existe Preview")
+    db_session.add(existente)
+    await db_session.commit()
+
+    contenido = _csv_bytes(
+        "nombre,descripcion\nYa Existe Preview,repetido\nProyecto Nuevo Preview,nuevo"
+    )
+    result = await preview_entity("proyecto", contenido, "proyectos.csv", db_session)
+
+    assert len(result.a_crear) == 1
+    assert result.a_crear[0].datos["nombre"] == "Proyecto Nuevo Preview"
+    assert len(result.omitidos_duplicados) == 1
+    assert result.omitidos_duplicados[0].motivo == "duplicado"
+
+    proyectos = (await db_session.execute(select(Proyecto))).scalars().all()
+    assert len(proyectos) == 1  # solo el existente previo, nada nuevo persistido
+
+
+@pytest.mark.asyncio
+async def test_preview_columna_desconocida_bloquea_igual_que_import(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,sector\nINEGI,publico")
+    with pytest.raises(ImportBlockedError) as exc:
+        await preview_entity("proyecto", contenido, "proyectos.csv", db_session)
+    assert exc.value.motivo == "columnas_desconocidas"
+
+
+@pytest.mark.asyncio
+async def test_preview_fk_no_resuelta_bloquea_igual_que_import(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,proyecto\nProducto A,Proyecto Fantasma")
+    with pytest.raises(ImportBlockedError) as exc:
+        await preview_entity("producto", contenido, "productos.csv", db_session)
+    assert exc.value.motivo == "fk_no_resuelta"
+    assert exc.value.fila == 2
+
+
+@pytest.mark.asyncio
+async def test_preview_ambiguedad_bloquea_igual_que_import(db_session: AsyncSession):
+    db_session.add_all([Proyecto(nombre="Datos Preview"), Proyecto(nombre="datos preview ")])
+    await db_session.commit()
+
+    contenido = _csv_bytes("nombre,proyecto\nProducto A,Datos Preview")
+    with pytest.raises(ImportBlockedError) as exc:
+        await preview_entity("producto", contenido, "productos.csv", db_session)
+    assert exc.value.motivo == "ambiguedad"
+
+
+@pytest.mark.asyncio
+async def test_preview_y_import_real_coinciden(db_session: AsyncSession):
+    proyecto = Proyecto(nombre="Proyecto Paridad")
+    db_session.add(proyecto)
+    await db_session.commit()
+
+    contenido = _csv_bytes(
+        "nombre,proyecto\nProducto Uno,Proyecto Paridad\nProducto Dos,Proyecto Paridad\n"
+    )
+    preview = await preview_entity("producto", contenido, "productos.csv", db_session)
+    assert len(preview.a_crear) == 2
+
+    result = await import_entity("producto", contenido, "productos.csv", db_session)
+    assert result.creados == len(preview.a_crear)
+
+    nombres_preview = {row.datos["nombre"] for row in preview.a_crear}
+    productos = (await db_session.execute(select(Producto))).scalars().all()
+    nombres_creados = {p.nombre for p in productos}
+    assert nombres_preview == nombres_creados
 
 
 @pytest.mark.asyncio
