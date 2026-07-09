@@ -3,6 +3,7 @@ import io
 import logging
 import uuid
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,6 +19,11 @@ LIMITE_MENSAJE = (
     f"El archivo excede el límite de {MAX_ROWS} filas / "
     f"{MAX_BYTES // (1024 * 1024)} MB. Dividilo e intentá de nuevo."
 )
+
+# Mapa de parseo de celdas booleanas de CSV: valores reconocidos tras
+# normalizar() (minúsculas, sin acentos, sin espacios extremos).
+BOOLEANOS_VERDADEROS = {"true", "1", "si", "verdadero"}
+BOOLEANOS_FALSOS = {"false", "0", "no", "falso"}
 
 
 class ImportValidationError(Exception):
@@ -79,6 +85,48 @@ def _validar_columnas_requeridas(filas: list[dict[str, str]], config: EntityImpo
         )
 
 
+def _campos_booleanos(config: EntityImportConfig) -> set[str]:
+    """Determina qué campos del schema Create son booleanos.
+
+    Args:
+        config: configuración declarativa de la entidad.
+
+    Returns:
+        Conjunto de nombres de campo (del schema) cuyo tipo es bool.
+    """
+    return {
+        campo
+        for campo in config.column_to_field.values()
+        if config.create_schema.model_fields[campo].annotation is bool
+    }
+
+
+def _parsear_booleano(valor: str, idx: int, columna: str) -> bool:
+    """Parsea una celda CSV a bool según el mapa de valores reconocidos.
+
+    Args:
+        valor: celda cruda del CSV.
+        idx: número de fila (para el mensaje de error).
+        columna: nombre de columna CSV (para el mensaje de error).
+
+    Returns:
+        Valor booleano interpretado.
+
+    Raises:
+        ImportBlockedError: si el valor no es reconocido.
+    """
+    clave = normalizar(valor)
+    if clave in BOOLEANOS_VERDADEROS:
+        return True
+    if clave in BOOLEANOS_FALSOS:
+        return False
+    raise ImportBlockedError(
+        fila=idx,
+        motivo="valor_booleano_invalido",
+        mensaje=f"Fila {idx}: valor booleano inválido en '{columna}': '{valor}'",
+    )
+
+
 async def _construir_indice_fk(
     db: AsyncSession, entidad_padre: str, fk_resolver: FkResolver
 ) -> dict[str, uuid.UUID]:
@@ -121,7 +169,16 @@ async def _construir_indice_fk(
 async def import_entity(
     entidad: str, file_bytes: bytes, filename: str, db: AsyncSession
 ) -> ImportResult:
-    """Importa un CSV para la entidad dada, en una única transacción todo-o-nada."""
+    """Importa un CSV para la entidad dada, en una única transacción todo-o-nada.
+
+    Nota sobre deduplicación: la clave de duplicados (`natural_key`) puede
+    incluir el `target_field` de una FK opcional. Si esa FK viene vacía en
+    dos filas distintas, ambas normalizan a la misma parte vacía de la
+    clave y, junto con el resto de campos coincidentes, se consideran
+    duplicadas (la segunda se omite). Es un tradeoff conocido del dedup por
+    clave natural compuesta: para evitarlo, importá primero las entidades
+    padre para que las FKs opcionales resuelvan antes del import del hijo.
+    """
     config = IMPORT_CONFIGS[entidad]
 
     _validar_formato_y_limite(file_bytes, filename)
@@ -146,12 +203,23 @@ async def import_entity(
     claves_vistas: set[tuple] = set(claves_existentes)
     nuevos_objetos = []
     omitidos: list[ImportSkipped] = []
+    campos_bool = _campos_booleanos(config)
+    columna_por_campo = {campo: columna for columna, campo in config.column_to_field.items()}
+    columna_display = columna_por_campo.get(config.natural_key[0], config.natural_key[0]) if config.natural_key else ""
 
     for idx, fila in enumerate(filas, start=2):
+        if all(not (valor or "").strip() for valor in fila.values()):
+            continue  # fila completamente vacía: se omite sin crear registro ni bloquear
+
         datos: dict = {}
         for columna, campo in config.column_to_field.items():
             valor = fila.get(columna)
-            datos[campo] = valor if valor else None
+            if valor is None or not valor.strip():
+                continue  # celda vacía: se omite la clave para aplicar el default del schema
+            if campo in campos_bool:
+                datos[campo] = _parsear_booleano(valor, idx, columna)
+            else:
+                datos[campo] = valor
 
         for campo_requerido in config.required_columns:
             valor_crudo = fila.get(campo_requerido)
@@ -165,12 +233,15 @@ async def import_entity(
 
         for fk in config.fks:
             valor_fk = fila.get(fk.csv_column)
-            if not valor_fk or not valor_fk.strip():
-                raise ImportBlockedError(
-                    fila=idx,
-                    motivo="campo_requerido",
-                    mensaje=f"Fila {idx}: falta el campo requerido '{fk.csv_column}'",
-                )
+            vacio = not valor_fk or not valor_fk.strip()
+            if vacio:
+                if fk.required:
+                    raise ImportBlockedError(
+                        fila=idx,
+                        motivo="campo_requerido",
+                        mensaje=f"Fila {idx}: falta el campo requerido '{fk.csv_column}'",
+                    )
+                continue  # FK opcional vacía: no se setea target_field
             clave_fk = normalizar(valor_fk)
             indice = fk_indices[fk.csv_column]
             if clave_fk not in indice:
@@ -187,17 +258,24 @@ async def import_entity(
         )
         if clave_natural in claves_vistas:
             omitidos.append(
-                ImportSkipped(fila=idx, motivo="duplicado", valor=fila.get("nombre", ""))
+                ImportSkipped(
+                    fila=idx, motivo="duplicado", valor=fila.get(columna_display, "") or ""
+                )
             )
             continue
         claves_vistas.add(clave_natural)
 
         try:
             validado = config.create_schema(**datos)
-        except Exception as error:  # noqa: BLE001 — error de validación de Pydantic
-            # Rama defensiva: con las validaciones previas (campos requeridos y FKs
-            # ya resueltas) esta rama hoy no se dispara en los flujos configurados,
-            # pero se mantiene por si un create_schema agrega validaciones propias.
+        except ValidationError as error:
+            primer_error = error.errors()[0]
+            campo_error = ".".join(str(parte) for parte in primer_error["loc"])
+            raise ImportBlockedError(
+                fila=idx,
+                motivo="parseo",
+                mensaje=f"Fila {idx}: {campo_error}: {primer_error['msg']}",
+            ) from error
+        except Exception as error:  # noqa: BLE001 — defensivo ante errores no-Pydantic
             raise ImportBlockedError(
                 fila=idx,
                 motivo="parseo",
