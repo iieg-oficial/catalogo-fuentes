@@ -2,6 +2,13 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from models.archivo import Archivo
+from models.base_de_datos import BaseDeDatos
+from models.dataset import Dataset
+from models.distribucion import Distribucion
+from models.edicion_dataset import EdicionDataset
+from models.fuente import Fuente
+from models.informacion_tablas import InformacionTablas
 from models.producto import Producto
 from models.proyecto import Proyecto
 from services.import_service import (
@@ -195,3 +202,205 @@ async def test_campo_requerido_vacio_aborta_con_mensaje_fijo(db_session: AsyncSe
         await import_entity("proyecto", contenido, "proyectos.csv", db_session)
     assert exc.value.motivo == "campo_requerido"
     assert "nombre" in exc.value.mensaje
+
+
+# --- fuente ---
+
+
+@pytest.mark.asyncio
+async def test_import_fuente_valido_con_bool_coercion(db_session: AsyncSession):
+    contenido = _csv_bytes(
+        "nombre,es_fuente_oficial,es_publicador\n"
+        "INEGI,true,no\n"
+        "IIEG,si,\n"
+    )
+    result = await import_entity("fuente", contenido, "fuentes.csv", db_session)
+    assert result.creados == 2
+
+    fuentes = {f.nombre: f for f in (await db_session.execute(select(Fuente))).scalars().all()}
+    assert fuentes["INEGI"].es_fuente_oficial is True
+    assert fuentes["INEGI"].es_publicador is False
+    assert fuentes["IIEG"].es_fuente_oficial is True
+    assert fuentes["IIEG"].es_publicador is False  # celda vacía -> default del schema
+
+
+@pytest.mark.asyncio
+async def test_bool_invalido_bloquea_con_mensaje_claro(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,es_fuente_oficial\nINEGI,tal_vez")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("fuente", contenido, "fuentes.csv", db_session)
+    assert "valor booleano inválido" in exc.value.mensaje
+    assert "es_fuente_oficial" in exc.value.mensaje
+
+
+# --- dataset ---
+
+
+@pytest.mark.asyncio
+async def test_import_dataset_fk_fuente_opcional_vacia_no_bloquea(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,fuente\nDataset Sin Fuente,")
+    result = await import_entity("dataset", contenido, "datasets.csv", db_session)
+    assert result.creados == 1
+
+    datasets = (await db_session.execute(select(Dataset))).scalars().all()
+    assert datasets[0].fuente_id is None
+
+
+@pytest.mark.asyncio
+async def test_import_dataset_fk_fuente_resuelta(db_session: AsyncSession):
+    fuente = Fuente(nombre="INEGI")
+    db_session.add(fuente)
+    await db_session.commit()
+    await db_session.refresh(fuente)
+
+    contenido = _csv_bytes("nombre,fuente\nDataset A,INEGI")
+    result = await import_entity("dataset", contenido, "datasets.csv", db_session)
+    assert result.creados == 1
+
+    datasets = (await db_session.execute(select(Dataset))).scalars().all()
+    assert datasets[0].fuente_id == fuente.id
+
+
+# --- edicion_dataset ---
+
+
+@pytest.mark.asyncio
+async def test_import_edicion_dataset_dictamen_invalido_bloquea_con_mensaje_claro(
+    db_session: AsyncSession,
+):
+    contenido = _csv_bytes("edicion,dictamen\n2024,Z9")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("edicion_dataset", contenido, "ediciones.csv", db_session)
+    assert exc.value.motivo == "parseo"
+    assert "dictamen" in exc.value.mensaje
+
+
+@pytest.mark.asyncio
+async def test_import_edicion_dataset_fk_dataset_opcional(db_session: AsyncSession):
+    contenido = _csv_bytes("edicion,dataset\n2024,")
+    result = await import_entity("edicion_dataset", contenido, "ediciones.csv", db_session)
+    assert result.creados == 1
+    ediciones = (await db_session.execute(select(EdicionDataset))).scalars().all()
+    assert ediciones[0].dataset_id is None
+
+
+# --- distribucion ---
+
+
+@pytest.mark.asyncio
+async def test_import_distribucion_dedup_clave_compuesta(db_session: AsyncSession):
+    dataset = Dataset(nombre="Dataset X")
+    db_session.add(dataset)
+    await db_session.commit()
+    await db_session.refresh(dataset)
+
+    contenido = _csv_bytes(
+        "distribucion,dataset\n"
+        "CSV,Dataset X\n"
+        "CSV,Dataset X\n"
+    )
+    result = await import_entity("distribucion", contenido, "distribuciones.csv", db_session)
+    assert result.creados == 1
+    assert len(result.omitidos_duplicados) == 1
+
+
+@pytest.mark.asyncio
+async def test_fila_completamente_vacia_se_omite_no_crea_registro(db_session: AsyncSession):
+    contenido = _csv_bytes(
+        "distribucion,url,dataset\n"
+        "CSV,http://a,\n"
+        ",,\n"
+        "JSON,http://b,\n"
+    )
+    result = await import_entity("distribucion", contenido, "distribuciones.csv", db_session)
+    assert result.creados == 2
+    assert result.omitidos_duplicados == []
+
+    filas = (await db_session.execute(select(Distribucion))).scalars().all()
+    assert len(filas) == 2
+
+
+# --- archivo ---
+
+
+@pytest.mark.asyncio
+async def test_import_archivo_rol_archivo_invalido_bloquea_con_mensaje_claro(
+    db_session: AsyncSession,
+):
+    contenido = _csv_bytes("nombre_archivo,rol_archivo\narchivo.csv,rol_inexistente")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("archivo", contenido, "archivos.csv", db_session)
+    assert exc.value.motivo == "parseo"
+    assert "rol_archivo" in exc.value.mensaje
+
+
+@pytest.mark.asyncio
+async def test_import_archivo_fk_distribucion_opcional_no_bloquea(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre_archivo,distribucion\narchivo.csv,")
+    result = await import_entity("archivo", contenido, "archivos.csv", db_session)
+    assert result.creados == 1
+    archivos = (await db_session.execute(select(Archivo))).scalars().all()
+    assert archivos[0].distribucion_id is None
+
+
+# --- base_de_datos ---
+
+
+@pytest.mark.asyncio
+async def test_import_base_de_datos_fk_archivo_ambiguedad_bloquea(db_session: AsyncSession):
+    db_session.add_all(
+        [Archivo(nombre_archivo="Datos"), Archivo(nombre_archivo="datos ")]
+    )
+    await db_session.commit()
+
+    contenido = _csv_bytes("db_nombre,archivo\nBase X,Datos")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("base_de_datos", contenido, "bases.csv", db_session)
+    assert exc.value.motivo == "ambiguedad"
+
+    bases = (await db_session.execute(select(BaseDeDatos))).scalars().all()
+    assert bases == []
+
+
+@pytest.mark.asyncio
+async def test_import_base_de_datos_valido_sin_fk(db_session: AsyncSession):
+    contenido = _csv_bytes("db_nombre\nBase Y")
+    result = await import_entity("base_de_datos", contenido, "bases.csv", db_session)
+    assert result.creados == 1
+
+
+# --- informacion_tablas ---
+
+
+@pytest.mark.asyncio
+async def test_import_informacion_tablas_fks_dobles_opcionales_ambas_vacias(
+    db_session: AsyncSession,
+):
+    contenido = _csv_bytes("nombre,base_de_datos,producto\nTabla A,,")
+    result = await import_entity(
+        "informacion_tablas", contenido, "informacion_tablas.csv", db_session
+    )
+    assert result.creados == 1
+    filas = (await db_session.execute(select(InformacionTablas))).scalars().all()
+    assert filas[0].base_de_datos_id is None
+    assert filas[0].producto_id is None
+
+
+@pytest.mark.asyncio
+async def test_import_informacion_tablas_fk_producto_resuelta(db_session: AsyncSession):
+    proyecto = Proyecto(nombre="Proyecto Padre 2")
+    db_session.add(proyecto)
+    await db_session.commit()
+    await db_session.refresh(proyecto)
+    producto = Producto(nombre="Producto Padre", proyecto_id=proyecto.id)
+    db_session.add(producto)
+    await db_session.commit()
+    await db_session.refresh(producto)
+
+    contenido = _csv_bytes("nombre,producto\nTabla B,Producto Padre")
+    result = await import_entity(
+        "informacion_tablas", contenido, "informacion_tablas.csv", db_session
+    )
+    assert result.creados == 1
+    filas = (await db_session.execute(select(InformacionTablas))).scalars().all()
+    assert filas[0].producto_id == producto.id
