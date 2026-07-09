@@ -5,7 +5,10 @@ import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
 import ImportCsvButton from '@/components/ImportCsvButton'
+import Button from '@/components/Button'
+import Toast from '@/components/Toast'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, Distribucion } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -51,6 +54,8 @@ export default function ArchivosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Archivo>('archivo', () => load(true))
 
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
@@ -257,8 +262,32 @@ export default function ArchivosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
-        importSlot={canManageUsers ? <ImportCsvButton entidad="archivo" onDone={() => load(true)} /> : undefined}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? (
+          <div className="flex items-center gap-2">
+            <ImportCsvButton entidad="archivo" loading={preview.loading} onFileSelected={preview.requestPreview} />
+            {preview.active && !preview.bloqueo && (
+              <span className="text-[12px] text-ink/50">
+                {preview.previewRows.length} a crear, {preview.duplicadosPreview} se omitirían por duplicado
+              </span>
+            )}
+            {preview.active && (
+              <>
+                <Button size="sm" onClick={preview.confirm} disabled={!!preview.bloqueo || preview.loading}>Confirmar import</Button>
+                <Button size="sm" variant="secondary" onClick={preview.cancel}>Cancelar</Button>
+              </>
+            )}
+          </div>
+        ) : undefined}
       />
+      {preview.bloqueo && <p className="text-[13px] text-error-600 mt-2">{preview.bloqueo}</p>}
+      {preview.resultado && (
+        <Toast
+          message={`${preview.resultado.creados} creados, ${preview.resultado.omitidos_duplicados.length} omitidos por duplicado`}
+          variant="success"
+          onClose={preview.clearResultado}
+        />
+      )}
     </div>
   )
 }
