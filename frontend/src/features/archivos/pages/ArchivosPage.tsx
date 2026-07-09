@@ -4,6 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
+import ImportCsvButton from '@/components/ImportCsvButton'
 import { useAuthContext } from '@/context/AuthContext'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, Distribucion } from '@/types'
@@ -17,7 +18,7 @@ import { ROL_ARCHIVO_OPTIONS } from '../consts/rolArchivo'
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function ArchivosPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<Archivo[]>([])
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [loading, setLoading] = useState(true)
@@ -256,6 +257,7 @@ export default function ArchivosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
+        importSlot={canManageUsers ? <ImportCsvButton entidad="archivo" onDone={() => load(true)} /> : undefined}
       />
     </div>
   )
