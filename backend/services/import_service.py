@@ -2,13 +2,15 @@ import csv
 import io
 import logging
 import uuid
+from dataclasses import dataclass
+from typing import Any
 
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from import_config import IMPORT_CONFIGS, EntityImportConfig, FkResolver
-from schemas.import_ import ImportResult, ImportSkipped
+from schemas.import_ import ImportPreviewResult, ImportPreviewRow, ImportResult, ImportSkipped
 from utils.normalize import normalizar
 
 logger = logging.getLogger(__name__)
@@ -158,7 +160,7 @@ def _parsear_booleano(valor: str, idx: int, columna: str) -> bool:
 
 async def _construir_indice_fk(
     db: AsyncSession, entidad_padre: str, fk_resolver: FkResolver
-) -> dict[str, uuid.UUID]:
+) -> dict[str, tuple[uuid.UUID, str]]:
     """Construye el índice normalizado de una entidad padre para resolver FKs.
 
     Args:
@@ -167,7 +169,9 @@ async def _construir_indice_fk(
         fk_resolver: configuración de la FK a resolver.
 
     Returns:
-        Diccionario de clave normalizada a id de la entidad padre.
+        Diccionario de clave normalizada a una tupla (id, valor legible
+        original de la entidad padre), este último usado para construir la
+        fila anidada del preview.
 
     Raises:
         ImportBlockedError: si dos registros distintos normalizan a la misma
@@ -179,10 +183,10 @@ async def _construir_indice_fk(
             getattr(fk_resolver.parent_model, fk_resolver.parent_key_field),
         )
     )
-    indice: dict[str, uuid.UUID] = {}
+    indice: dict[str, tuple[uuid.UUID, str]] = {}
     for parent_id, parent_value in result.all():
         clave = normalizar(parent_value)
-        if clave in indice and indice[clave] != parent_id:
+        if clave in indice and indice[clave][0] != parent_id:
             raise ImportBlockedError(
                 fila=None,
                 motivo="ambiguedad",
@@ -191,14 +195,52 @@ async def _construir_indice_fk(
                     "más de un registro tras normalizar."
                 ),
             )
-        indice[clave] = parent_id
+        indice[clave] = (parent_id, parent_value)
     return indice
 
 
-async def import_entity(
-    entidad: str, file_bytes: bytes, filename: str, db: AsyncSession
-) -> ImportResult:
-    """Importa un CSV para la entidad dada, en una única transacción todo-o-nada.
+@dataclass(frozen=True)
+class FilasProcesadas:
+    """Resultado de validar/resolver/deduplicar un CSV, sin persistir nada.
+
+    Attributes:
+        nuevos_objetos: instancias del modelo listas para `db.add`, aún no
+            agregadas a la sesión.
+        filas_preview: pares (número de fila, datos) de cada fila a crear,
+            con los campos propios más las FKs resueltas anidadas (forma
+            legible para el preview del frontend).
+        omitidos: filas omitidas por duplicado.
+    """
+
+    nuevos_objetos: list[Any]
+    filas_preview: list[tuple[int, dict[str, Any]]]
+    omitidos: list[ImportSkipped]
+
+
+async def _procesar_filas(
+    config: EntityImportConfig, entidad: str, file_bytes: bytes, filename: str, db: AsyncSession
+) -> FilasProcesadas:
+    """Valida, resuelve FKs y deduplica un CSV, sin persistir cambios.
+
+    Función pura compartida entre el import real y el preview (dry-run):
+    ejecuta el mismo pipeline de validación/resolución/dedup y lanza las
+    mismas excepciones, pero no hace `db.add` ni `db.commit`.
+
+    Args:
+        config: configuración declarativa de la entidad destino.
+        entidad: nombre de la entidad destino, usado solo en mensajes de error.
+        file_bytes: contenido crudo del archivo CSV.
+        filename: nombre del archivo, para validar la extensión.
+        db: sesión de base de datos activa (solo lecturas).
+
+    Returns:
+        Estructura con los objetos a crear, sus filas de preview y los
+        omitidos por duplicado.
+
+    Raises:
+        ImportValidationError: error de formato, límite o columnas requeridas.
+        ImportBlockedError: bloqueo a nivel fila o entidad (FK, ambigüedad,
+            columna desconocida, parseo, campo requerido, booleano inválido).
 
     Nota sobre deduplicación: la clave de duplicados (`natural_key`) puede
     incluir el `target_field` de una FK opcional. Si esa FK viene vacía en
@@ -208,15 +250,13 @@ async def import_entity(
     clave natural compuesta: para evitarlo, importá primero las entidades
     padre para que las FKs opcionales resuelvan antes del import del hijo.
     """
-    config = IMPORT_CONFIGS[entidad]
-
     _validar_formato_y_limite(file_bytes, filename)
     texto = _decodificar(file_bytes)
     filas = _parsear_filas(texto)
     _validar_columnas_requeridas(filas, config)
     _validar_columnas_conocidas(filas, config, entidad)
 
-    fk_indices: dict[str, dict[str, uuid.UUID]] = {}
+    fk_indices: dict[str, dict[str, tuple[uuid.UUID, str]]] = {}
     for fk in config.fks:
         fk_indices[fk.csv_column] = await _construir_indice_fk(
             db, fk.parent_model.__name__.lower(), fk
@@ -231,7 +271,8 @@ async def import_entity(
         )
 
     claves_vistas: set[tuple] = set(claves_existentes)
-    nuevos_objetos = []
+    nuevos_objetos: list[Any] = []
+    filas_preview: list[tuple[int, dict[str, Any]]] = []
     omitidos: list[ImportSkipped] = []
     campos_bool = _campos_booleanos(config)
     columna_por_campo = {campo: columna for columna, campo in config.column_to_field.items()}
@@ -261,6 +302,7 @@ async def import_entity(
                         mensaje=f"Fila {idx}: falta el campo requerido '{campo_requerido}'",
                     )
 
+        fk_legibles: dict[str, str] = {}
         for fk in config.fks:
             valor_fk = fila.get(fk.csv_column)
             vacio = not valor_fk or not valor_fk.strip()
@@ -281,7 +323,9 @@ async def import_entity(
                     motivo="fk_no_resuelta",
                     mensaje=f"Fila {idx}: no se encontró {entidad_padre} '{valor_fk}'",
                 )
-            datos[fk.target_field] = indice[clave_fk]
+            parent_id, parent_legible = indice[clave_fk]
+            datos[fk.target_field] = parent_id
+            fk_legibles[fk.target_field] = parent_legible
 
         clave_natural = tuple(
             normalizar(str(datos.get(campo) or "")) for campo in config.natural_key
@@ -314,8 +358,71 @@ async def import_entity(
 
         nuevos_objetos.append(config.model(**validado.model_dump()))
 
-    for obj in nuevos_objetos:
+        campos_fk = {fk.target_field for fk in config.fks}
+        fila_preview: dict[str, Any] = {
+            "id": f"preview-{idx}",
+            **{campo: valor for campo, valor in validado.model_dump().items() if campo not in campos_fk},
+        }
+        for fk in config.fks:
+            if fk.target_field in fk_legibles:
+                relacion = fk.target_field.removesuffix("_id")
+                fila_preview[relacion] = {fk.parent_key_field: fk_legibles[fk.target_field]}
+        filas_preview.append((idx, fila_preview))
+
+    return FilasProcesadas(
+        nuevos_objetos=nuevos_objetos, filas_preview=filas_preview, omitidos=omitidos
+    )
+
+
+async def import_entity(
+    entidad: str, file_bytes: bytes, filename: str, db: AsyncSession
+) -> ImportResult:
+    """Importa un CSV para la entidad dada, en una única transacción todo-o-nada.
+
+    Args:
+        entidad: nombre de la entidad destino (clave en `IMPORT_CONFIGS`).
+        file_bytes: contenido crudo del archivo CSV.
+        filename: nombre del archivo subido.
+        db: sesión de base de datos activa.
+
+    Returns:
+        Resultado con la cantidad de filas creadas y las omitidas por
+        duplicado.
+    """
+    config = IMPORT_CONFIGS[entidad]
+    procesadas = await _procesar_filas(config, entidad, file_bytes, filename, db)
+
+    for obj in procesadas.nuevos_objetos:
         db.add(obj)
     await db.commit()
 
-    return ImportResult(entidad=entidad, creados=len(nuevos_objetos), omitidos_duplicados=omitidos)
+    return ImportResult(
+        entidad=entidad, creados=len(procesadas.nuevos_objetos), omitidos_duplicados=procesadas.omitidos
+    )
+
+
+async def preview_entity(
+    entidad: str, file_bytes: bytes, filename: str, db: AsyncSession
+) -> ImportPreviewResult:
+    """Ejecuta un dry-run del import de un CSV, sin persistir cambios.
+
+    Args:
+        entidad: nombre de la entidad destino (clave en `IMPORT_CONFIGS`).
+        file_bytes: contenido crudo del archivo CSV.
+        filename: nombre del archivo subido.
+        db: sesión de base de datos activa (solo lecturas).
+
+    Returns:
+        Resultado con las filas que se crearían (con FKs anidadas) y las
+        omitidas por duplicado.
+    """
+    config = IMPORT_CONFIGS[entidad]
+    procesadas = await _procesar_filas(config, entidad, file_bytes, filename, db)
+
+    return ImportPreviewResult(
+        entidad=entidad,
+        a_crear=[
+            ImportPreviewRow(fila=idx, datos=datos) for idx, datos in procesadas.filas_preview
+        ],
+        omitidos_duplicados=procesadas.omitidos,
+    )
