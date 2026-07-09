@@ -85,6 +85,35 @@ def _validar_columnas_requeridas(filas: list[dict[str, str]], config: EntityImpo
         )
 
 
+def _validar_columnas_conocidas(
+    filas: list[dict[str, str]], config: EntityImportConfig, entidad: str
+) -> None:
+    """Bloquea el import si el header trae columnas que no pertenecen a la entidad.
+
+    Args:
+        filas: filas parseadas del CSV (se usa el header de la primera).
+        config: configuración declarativa de la entidad destino.
+        entidad: nombre de la entidad, para el mensaje de error.
+
+    Raises:
+        ImportBlockedError: si hay columnas en el header que no están en
+            column_to_field ni son columnas de FK de la entidad.
+    """
+    columnas_validas = set(config.column_to_field.keys()) | {
+        fk.csv_column for fk in config.fks
+    }
+    columnas_presentes = set(filas[0].keys())
+    desconocidas = sorted(columnas_presentes - columnas_validas)
+    if desconocidas:
+        raise ImportBlockedError(
+            fila=None,
+            motivo="columnas_desconocidas",
+            mensaje=(
+                f"Columnas no reconocidas para {entidad}: {', '.join(desconocidas)}"
+            ),
+        )
+
+
 def _campos_booleanos(config: EntityImportConfig) -> set[str]:
     """Determina qué campos del schema Create son booleanos.
 
@@ -185,6 +214,7 @@ async def import_entity(
     texto = _decodificar(file_bytes)
     filas = _parsear_filas(texto)
     _validar_columnas_requeridas(filas, config)
+    _validar_columnas_conocidas(filas, config, entidad)
 
     fk_indices: dict[str, dict[str, uuid.UUID]] = {}
     for fk in config.fks:

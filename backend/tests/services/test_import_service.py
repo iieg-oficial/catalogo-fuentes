@@ -63,6 +63,45 @@ async def test_columna_requerida_faltante_aborta(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
+async def test_columnas_de_otra_entidad_bloquean_import(db_session: AsyncSession):
+    contenido = _csv_bytes(
+        "nombre,descripcion,sector,url\n"
+        "INEGI,Instituto,publico,http://inegi.mx\n"
+    )
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("proyecto", contenido, "proyectos.csv", db_session)
+    assert exc.value.fila is None
+    assert exc.value.motivo == "columnas_desconocidas"
+    assert "Columnas no reconocidas para proyecto" in exc.value.mensaje
+    assert "sector" in exc.value.mensaje
+    assert "url" in exc.value.mensaje
+
+    proyectos = (await db_session.execute(select(Proyecto))).scalars().all()
+    assert proyectos == []
+
+
+@pytest.mark.asyncio
+async def test_columna_desconocida_unica_intercalada_bloquea(db_session: AsyncSession):
+    contenido = _csv_bytes("nombre,columna_rara,descripcion\nProyecto A,valor,desc")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("proyecto", contenido, "proyectos.csv", db_session)
+    assert exc.value.motivo == "columnas_desconocidas"
+    assert "Columnas no reconocidas para proyecto" in exc.value.mensaje
+    assert "columna_rara" in exc.value.mensaje
+
+
+@pytest.mark.asyncio
+async def test_columnas_validas_con_fk_no_bloquean(db_session: AsyncSession):
+    proyecto = Proyecto(nombre="Proyecto Padre 3")
+    db_session.add(proyecto)
+    await db_session.commit()
+
+    contenido = _csv_bytes("nombre,proyecto\nProducto Valido,Proyecto Padre 3")
+    result = await import_entity("producto", contenido, "productos.csv", db_session)
+    assert result.creados == 1
+
+
+@pytest.mark.asyncio
 async def test_csv_con_bom_utf8_se_importa_correctamente(db_session: AsyncSession):
     contenido = "nombre,descripcion\nProyecto BOM,con BOM al inicio".encode("utf-8-sig")
     result = await import_entity("proyecto", contenido, "proyectos.csv", db_session)
