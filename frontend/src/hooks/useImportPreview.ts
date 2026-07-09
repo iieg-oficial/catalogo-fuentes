@@ -115,7 +115,7 @@ export function useImportPreview<T = Record<string, unknown>>(
     previewRows,
     duplicadosPreview,
     bloqueo,
-    active: previewRows.length > 0 || !!bloqueo,
+    active: !!pendingFile,
     resultado,
     requestPreview,
     confirm,
