@@ -3,9 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
-import ImportCsvButton from '@/components/ImportCsvButton'
-import Button from '@/components/Button'
-import Toast from '@/components/Toast'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
 import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
@@ -87,19 +85,19 @@ export default function ProyectosPage() {
 
   const columns: Column<Proyecto>[] = [
     {
+      header: 'Nombre',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.nombre} />,
+      getValue: (r) => r.nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+    },
+    {
       header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
       className: 'w-64',
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
-    },
-    {
-      header: 'Nombre',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.nombre} />,
-      getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
     },
     {
       header: 'Metadata',
@@ -116,20 +114,20 @@ export default function ProyectosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input
           autoFocus
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          onKeyDown={kd}
-          placeholder="Descripcion..."
-          className={inputCls}
-        />
-      </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input
           required
           value={newNombre}
           onChange={(e) => setNewNombre(e.target.value)}
           onKeyDown={kd}
           placeholder="Nombre..."
+          className={inputCls}
+        />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input
+          value={newDesc}
+          onChange={(e) => setNewDesc(e.target.value)}
+          onKeyDown={kd}
+          placeholder="Descripcion..."
           className={inputCls}
         />
       </td>
@@ -165,35 +163,8 @@ export default function ProyectosPage() {
         search={search}
         onSearch={setSearch}
         previewRows={preview.previewRows}
-        importSlot={canManageUsers ? (
-          <div className="flex items-center gap-2">
-            <ImportCsvButton entidad="proyecto" loading={preview.loading} onFileSelected={preview.requestPreview} />
-            {preview.active && !preview.bloqueo && (
-              <span className="text-[12px] text-ink/50">
-                {preview.previewRows.length} a crear, {preview.duplicadosPreview} se omitirían por duplicado
-              </span>
-            )}
-            {preview.active && (
-              <>
-                <Button size="sm" onClick={preview.confirm} disabled={!!preview.bloqueo || preview.loading}>
-                  Confirmar import
-                </Button>
-                <Button size="sm" variant="secondary" onClick={preview.cancel}>
-                  Cancelar
-                </Button>
-              </>
-            )}
-          </div>
-        ) : undefined}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="proyecto" /> : undefined}
       />
-      {preview.bloqueo && <p className="text-[13px] text-error-600 mt-2">{preview.bloqueo}</p>}
-      {preview.resultado && (
-        <Toast
-          message={`${preview.resultado.creados} creados, ${preview.resultado.omitidos_duplicados.length} omitidos por duplicado`}
-          variant="success"
-          onClose={preview.clearResultado}
-        />
-      )}
     </div>
   )
 }

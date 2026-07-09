@@ -4,9 +4,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
-import ImportCsvButton from '@/components/ImportCsvButton'
-import Button from '@/components/Button'
-import Toast from '@/components/Toast'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
 import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
@@ -94,6 +92,13 @@ export default function BasesDeDatosPage() {
 
   const columns: Column<BaseDeDatos>[] = [
     {
+      header: 'Base de datos',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.db_nombre} />,
+      getValue: (r) => r.db_nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
+    },
+    {
       header: 'Descripción esquema',
       icon: descripcionIcon(),
       className: 'w-48',
@@ -101,13 +106,6 @@ export default function BasesDeDatosPage() {
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
       onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
       inputType: 'json',
-    },
-    {
-      header: 'Base de datos',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.db_nombre} />,
-      getValue: (r) => r.db_nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
     },
     {
       header: 'Archivo',
@@ -135,10 +133,10 @@ export default function BasesDeDatosPage() {
   const addRowCells = (
     <>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
+        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
       </td>
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput
@@ -181,31 +179,8 @@ export default function BasesDeDatosPage() {
         search={search}
         onSearch={setSearch}
         previewRows={preview.previewRows}
-        importSlot={canManageUsers ? (
-          <div className="flex items-center gap-2">
-            <ImportCsvButton entidad="base_de_datos" loading={preview.loading} onFileSelected={preview.requestPreview} />
-            {preview.active && !preview.bloqueo && (
-              <span className="text-[12px] text-ink/50">
-                {preview.previewRows.length} a crear, {preview.duplicadosPreview} se omitirían por duplicado
-              </span>
-            )}
-            {preview.active && (
-              <>
-                <Button size="sm" onClick={preview.confirm} disabled={!!preview.bloqueo || preview.loading}>Confirmar import</Button>
-                <Button size="sm" variant="secondary" onClick={preview.cancel}>Cancelar</Button>
-              </>
-            )}
-          </div>
-        ) : undefined}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="base_de_datos" /> : undefined}
       />
-      {preview.bloqueo && <p className="text-[13px] text-error-600 mt-2">{preview.bloqueo}</p>}
-      {preview.resultado && (
-        <Toast
-          message={`${preview.resultado.creados} creados, ${preview.resultado.omitidos_duplicados.length} omitidos por duplicado`}
-          variant="success"
-          onClose={preview.clearResultado}
-        />
-      )}
     </div>
   )
 }
