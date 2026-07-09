@@ -1232,11 +1232,9 @@ export default function CatalogGrid<T extends { id: string }>({
                     style={{ width: 40, height: 40, verticalAlign: 'middle', textAlign: 'center', padding: '0 8px', borderBottom: '1px solid rgba(26,22,37,.05)' }}
                   >
                     <span
-                      className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-medium bg-amber-400/20 text-amber-700"
+                      className="inline-block w-2 h-2 rounded-full bg-amber-500"
                       title="Fila pendiente de confirmar"
-                    >
-                      pendiente
-                    </span>
+                    />
                   </td>
                   {columns.map((col, ci) => (
                     <td
