@@ -17,3 +17,8 @@ frontend/dist/
 # OS
 .DS_Store
 dumps/
+
+#data
+*.csv
+#cache
+*.~lock.*
