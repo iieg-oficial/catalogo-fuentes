@@ -4,8 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
-import ImportCsvButton from '@/components/ImportCsvButton'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, Distribucion } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -51,6 +52,8 @@ export default function ArchivosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Archivo>('archivo', () => load(true))
 
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
@@ -257,7 +260,8 @@ export default function ArchivosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
-        importSlot={canManageUsers ? <ImportCsvButton entidad="archivo" onDone={() => load(true)} /> : undefined}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="archivo" /> : undefined}
       />
     </div>
   )

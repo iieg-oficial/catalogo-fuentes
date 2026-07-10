@@ -4,8 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
-import ImportCsvButton from '@/components/ImportCsvButton'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, BaseDeDatos } from '@/types'
 import { getBasesDeDatos, createBaseDeDatos, updateBaseDeDatos, deleteBaseDeDatos } from '../services/basesDeDatosService'
@@ -46,6 +47,8 @@ export default function BasesDeDatosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<BaseDeDatos>('base_de_datos', () => load(true))
 
   const resetFields = () => { setNewNombre(''); setNewArchivoId(''); setNewDescripcionEsquema({}); setNewEtiquetas({}) }
 
@@ -89,6 +92,13 @@ export default function BasesDeDatosPage() {
 
   const columns: Column<BaseDeDatos>[] = [
     {
+      header: 'Base de datos',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.db_nombre} />,
+      getValue: (r) => r.db_nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
+    },
+    {
       header: 'Descripción esquema',
       icon: descripcionIcon(),
       className: 'w-48',
@@ -96,13 +106,6 @@ export default function BasesDeDatosPage() {
       getValue: (r) => JSON.stringify(r.descripcion_esquema ?? {}),
       onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateBaseDeDatos(r.id, { descripcion_esquema: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, descripcion_esquema: parsed } : i))) } catch {} },
       inputType: 'json',
-    },
-    {
-      header: 'Base de datos',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.db_nombre} />,
-      getValue: (r) => r.db_nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'db_nombre', v),
     },
     {
       header: 'Archivo',
@@ -130,10 +133,10 @@ export default function BasesDeDatosPage() {
   const addRowCells = (
     <>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
+        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
       </td>
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input autoFocus required value={newNombre} onChange={(e) => setNewNombre(e.target.value)} onKeyDown={kd} placeholder="Nombre BD..." className={inputCls} />
+        <JsonEditorInput value={newDescripcionEsquema} onChange={setNewDescripcionEsquema} label="Descripcion esquema" />
       </td>
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput
@@ -175,7 +178,8 @@ export default function BasesDeDatosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
-        importSlot={canManageUsers ? <ImportCsvButton entidad="base_de_datos" onDone={() => load(true)} /> : undefined}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="base_de_datos" /> : undefined}
       />
     </div>
   )

@@ -4,8 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
-import ImportCsvButton from '@/components/ImportCsvButton'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Dataset, Distribucion, EdicionDataset, TipoDeAcceso } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -50,6 +51,8 @@ export default function DistribucionesPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Distribucion>('distribucion', () => load(true))
 
   const resetFields = () => {
     setNewDistribucion(''); setNewUrl(''); setNewEdicionId(''); setNewDatasetId('')
@@ -153,7 +156,7 @@ export default function DistribucionesPage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-auto p-8">
-      <CatalogGrid eyebrow="Catalogo" title="Distribuciones" addLabel="Nueva distribucion" entityLabel="distribuciones" rows={filtered} columns={columns} getKey={(r) => r.id} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} importSlot={canManageUsers ? <ImportCsvButton entidad="distribucion" onDone={() => load(true)} /> : undefined} />
+      <CatalogGrid eyebrow="Catalogo" title="Distribuciones" addLabel="Nueva distribucion" entityLabel="distribuciones" rows={filtered} columns={columns} getKey={(r) => r.id} canWrite={canWrite} onAdd={canWrite ? () => setAddingRow(true) : undefined} addRowCells={canWrite && addingRow ? addRowCells : undefined} addRowActions={canWrite && addingRow ? addRowActions : undefined} onAddRowSave={canWrite && addingRow ? handleSaveRow : undefined} onDeleteRows={canWrite ? handleDeleteRows : undefined} search={search} onSearch={setSearch} previewRows={preview.previewRows} importSlot={canManageUsers ? <ImportControls preview={preview} entidad="distribucion" /> : undefined} />
     </div>
   )
 }

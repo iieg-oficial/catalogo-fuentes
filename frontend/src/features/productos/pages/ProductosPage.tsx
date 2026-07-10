@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
-import ImportCsvButton from '@/components/ImportCsvButton'
 import SelectInput from '@/components/SelectInput'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Producto, Proyecto } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -46,6 +47,8 @@ export default function ProductosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Producto>('producto', () => load(true))
 
   const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta({}) }
 
@@ -172,7 +175,8 @@ export default function ProductosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
-        importSlot={canManageUsers ? <ImportCsvButton entidad="producto" onDone={() => load(true)} /> : undefined}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="producto" /> : undefined}
       />
     </div>
   )

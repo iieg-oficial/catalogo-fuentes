@@ -4,8 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
-import ImportCsvButton from '@/components/ImportCsvButton'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Fuente } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -45,6 +46,8 @@ export default function FuentesPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Fuente>('fuente', () => load(true))
 
   const resetFields = () => {
     setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewSector(''); setNewAmbito('')
@@ -233,7 +236,8 @@ export default function FuentesPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
-        importSlot={canManageUsers ? <ImportCsvButton entidad="fuente" onDone={() => load(true)} /> : undefined}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="fuente" /> : undefined}
       />
     </div>
   )
