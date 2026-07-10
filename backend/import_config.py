@@ -36,6 +36,45 @@ class FkResolver:
 
 
 @dataclass(frozen=True)
+class FkKeyPart:
+    """Una parte de una clave compuesta para resolver una FK.
+
+    Attributes:
+        csv_column: columna en el CSV del hijo que aporta este valor.
+        value_path: ruta de atributos en el modelo padre para leer el valor
+            equivalente, p.ej. ("distribucion",) o ("dataset", "nombre").
+            Permite cruzar relaciones del padre, no solo campos propios.
+    """
+
+    csv_column: str
+    value_path: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class CompositeFkResolver:
+    """Resuelve una FK del hijo contra el padre por una clave compuesta.
+
+    A diferencia de FkResolver (una columna → un campo), identifica el
+    registro padre por la combinación de varias columnas del CSV, lo que
+    permite desambiguar padres con valores repetidos en un solo campo.
+
+    Attributes:
+        parent_model: modelo de la entidad padre.
+        parts: partes de la clave compuesta, en orden.
+        target_field: campo FK a setear en el hijo (p.ej. "distribucion_id").
+        load_relationships: relaciones del padre a precargar para leer los
+            value_path que cruzan otras tablas.
+        required: si la FK es obligatoria (bloquea la fila si viene vacía).
+    """
+
+    parent_model: Any
+    parts: tuple[FkKeyPart, ...]
+    target_field: str
+    load_relationships: tuple[str, ...] = ()
+    required: bool = False
+
+
+@dataclass(frozen=True)
 class EntityImportConfig:
     """Configuración declarativa de import CSV para una entidad."""
 
@@ -44,6 +83,7 @@ class EntityImportConfig:
     required_columns: list[str]
     column_to_field: dict[str, str]
     fks: list[FkResolver] = field(default_factory=list)
+    composite_fks: list[CompositeFkResolver] = field(default_factory=list)
     natural_key: list[str] = field(default_factory=list)
 
 
@@ -181,17 +221,24 @@ IMPORT_CONFIGS: dict[str, EntityImportConfig] = {
                 required=False,
             ),
             FkResolver(
-                csv_column="edicion",
-                parent_model=EdicionDataset,
-                parent_key_field="edicion",
-                target_field="edicion_dataset_id",
-                required=False,
-            ),
-            FkResolver(
                 csv_column="tipo_de_acceso",
                 parent_model=TipoDeAcceso,
                 parent_key_field="nombre",
                 target_field="tipo_de_acceso_id",
+                required=False,
+            ),
+        ],
+        composite_fks=[
+            # La edicion se repite entre datasets (unica por edicion + dataset),
+            # asi que se resuelve por la combinacion, no por el nombre suelto.
+            CompositeFkResolver(
+                parent_model=EdicionDataset,
+                parts=(
+                    FkKeyPart(csv_column="edicion", value_path=("edicion",)),
+                    FkKeyPart(csv_column="dataset", value_path=("dataset", "nombre")),
+                ),
+                target_field="edicion_dataset_id",
+                load_relationships=("dataset",),
                 required=False,
             ),
         ],
@@ -211,12 +258,16 @@ IMPORT_CONFIGS: dict[str, EntityImportConfig] = {
             "hash_sha256": "hash_sha256",
             "observaciones_archivo": "observaciones_archivo",
         },
-        fks=[
-            FkResolver(
-                csv_column="distribucion",
+        composite_fks=[
+            CompositeFkResolver(
                 parent_model=Distribucion,
-                parent_key_field="distribucion",
+                parts=(
+                    FkKeyPart(csv_column="distribucion", value_path=("distribucion",)),
+                    FkKeyPart(csv_column="dataset", value_path=("dataset", "nombre")),
+                    FkKeyPart(csv_column="edicion", value_path=("edicion_dataset", "edicion")),
+                ),
                 target_field="distribucion_id",
+                load_relationships=("dataset", "edicion_dataset"),
                 required=False,
             ),
         ],

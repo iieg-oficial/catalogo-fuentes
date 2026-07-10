@@ -345,6 +345,35 @@ async def test_import_distribucion_dedup_clave_compuesta(db_session: AsyncSessio
 
 
 @pytest.mark.asyncio
+async def test_import_distribucion_edicion_compuesta_desambigua_entre_datasets(
+    db_session: AsyncSession,
+):
+    # Misma edicion "2025" bajo dos datasets distintos: por nombre suelto seria
+    # ambigua; con clave compuesta (edicion + dataset) se resuelve la correcta.
+    dataset_a = Dataset(nombre="Censo")
+    dataset_b = Dataset(nombre="Encuesta")
+    db_session.add_all([dataset_a, dataset_b])
+    await db_session.commit()
+    await db_session.refresh(dataset_a)
+    await db_session.refresh(dataset_b)
+
+    edicion_a = EdicionDataset(edicion="2025", dataset_id=dataset_a.id)
+    edicion_b = EdicionDataset(edicion="2025", dataset_id=dataset_b.id)
+    db_session.add_all([edicion_a, edicion_b])
+    await db_session.commit()
+    await db_session.refresh(edicion_a)
+
+    contenido = _csv_bytes(
+        "distribucion,dataset,edicion\n"
+        "Nacional,Censo,2025\n"
+    )
+    result = await import_entity("distribucion", contenido, "distribuciones.csv", db_session)
+    assert result.creados == 1
+    dist = (await db_session.execute(select(Distribucion))).scalars().all()[0]
+    assert dist.edicion_dataset_id == edicion_a.id
+
+
+@pytest.mark.asyncio
 async def test_fila_completamente_vacia_se_omite_no_crea_registro(db_session: AsyncSession):
     contenido = _csv_bytes(
         "distribucion,url,dataset\n"
@@ -381,6 +410,76 @@ async def test_import_archivo_fk_distribucion_opcional_no_bloquea(db_session: As
     assert result.creados == 1
     archivos = (await db_session.execute(select(Archivo))).scalars().all()
     assert archivos[0].distribucion_id is None
+
+
+@pytest.mark.asyncio
+async def test_import_archivo_fk_distribucion_compuesta_resuelve(db_session: AsyncSession):
+    dataset_censo = Dataset(nombre="Censo")
+    dataset_otro = Dataset(nombre="Otro")
+    db_session.add_all([dataset_censo, dataset_otro])
+    await db_session.commit()
+    await db_session.refresh(dataset_censo)
+    await db_session.refresh(dataset_otro)
+
+    edicion = EdicionDataset(edicion="2024", dataset_id=dataset_censo.id)
+    db_session.add(edicion)
+    await db_session.commit()
+    await db_session.refresh(edicion)
+
+    # Dos distribuciones "Nacional" que solo se distinguen por dataset/edicion.
+    correcta = Distribucion(
+        distribucion="Nacional", dataset_id=dataset_censo.id, edicion_dataset_id=edicion.id
+    )
+    otra = Distribucion(distribucion="Nacional", dataset_id=dataset_otro.id)
+    db_session.add_all([correcta, otra])
+    await db_session.commit()
+    await db_session.refresh(correcta)
+
+    contenido = _csv_bytes(
+        "nombre_archivo,distribucion,dataset,edicion\n"
+        "a.csv,Nacional,Censo,2024\n"
+    )
+    result = await import_entity("archivo", contenido, "archivos.csv", db_session)
+    assert result.creados == 1
+    archivo = (await db_session.execute(select(Archivo))).scalars().all()[0]
+    assert archivo.distribucion_id == correcta.id
+
+
+@pytest.mark.asyncio
+async def test_import_archivo_fk_distribucion_compuesta_no_encontrada_bloquea(
+    db_session: AsyncSession,
+):
+    contenido = _csv_bytes(
+        "nombre_archivo,distribucion,dataset,edicion\n"
+        "a.csv,Nacional,Inexistente,2024\n"
+    )
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("archivo", contenido, "archivos.csv", db_session)
+    assert exc.value.motivo == "fk_no_resuelta"
+
+
+@pytest.mark.asyncio
+async def test_import_archivo_fk_distribucion_compuesta_ambigua_bloquea(
+    db_session: AsyncSession,
+):
+    dataset = Dataset(nombre="Censo")
+    db_session.add(dataset)
+    await db_session.commit()
+    await db_session.refresh(dataset)
+
+    # Dos distribuciones idénticas en la clave compuesta (distribucion + dataset).
+    db_session.add_all(
+        [
+            Distribucion(distribucion="Nacional", dataset_id=dataset.id),
+            Distribucion(distribucion="Nacional", dataset_id=dataset.id),
+        ]
+    )
+    await db_session.commit()
+
+    contenido = _csv_bytes("nombre_archivo,distribucion,dataset\na.csv,Nacional,Censo\n")
+    with pytest.raises(ImportBlockedError) as exc:
+        await import_entity("archivo", contenido, "archivos.csv", db_session)
+    assert exc.value.motivo == "ambiguedad"
 
 
 # --- base_de_datos ---
