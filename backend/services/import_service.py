@@ -8,8 +8,14 @@ from typing import Any
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from import_config import IMPORT_CONFIGS, EntityImportConfig, FkResolver
+from import_config import (
+    IMPORT_CONFIGS,
+    CompositeFkResolver,
+    EntityImportConfig,
+    FkResolver,
+)
 from schemas.import_ import ImportPreviewResult, ImportPreviewRow, ImportResult, ImportSkipped
 from utils.normalize import normalizar
 
@@ -101,9 +107,11 @@ def _validar_columnas_conocidas(
         ImportBlockedError: si hay columnas en el header que no están en
             column_to_field ni son columnas de FK de la entidad.
     """
-    columnas_validas = set(config.column_to_field.keys()) | {
-        fk.csv_column for fk in config.fks
-    }
+    columnas_validas = (
+        set(config.column_to_field.keys())
+        | {fk.csv_column for fk in config.fks}
+        | {parte.csv_column for cfk in config.composite_fks for parte in cfk.parts}
+    )
     columnas_presentes = set(filas[0].keys())
     desconocidas = sorted(columnas_presentes - columnas_validas)
     if desconocidas:
@@ -199,6 +207,67 @@ async def _construir_indice_fk(
     return indice
 
 
+def _leer_ruta(obj: Any, ruta: tuple[str, ...]) -> str:
+    """Lee un valor siguiendo una ruta de atributos, tolerando relaciones nulas.
+
+    Args:
+        obj: instancia raíz (entidad padre).
+        ruta: secuencia de atributos a recorrer, p.ej. ("dataset", "nombre").
+
+    Returns:
+        El valor final como string, o "" si algún tramo de la ruta es None.
+    """
+    valor: Any = obj
+    for atributo in ruta:
+        if valor is None:
+            return ""
+        valor = getattr(valor, atributo, None)
+    return str(valor) if valor is not None else ""
+
+
+async def _construir_indice_fk_compuesto(
+    db: AsyncSession, resolver: CompositeFkResolver
+) -> dict[tuple[str, ...], tuple[uuid.UUID, str]]:
+    """Construye el índice por clave compuesta de una entidad padre.
+
+    Precarga las relaciones necesarias para leer los value_path que cruzan
+    otras tablas y arma un diccionario de tupla-clave normalizada a
+    (id, etiqueta legible).
+
+    Args:
+        db: sesión de base de datos activa.
+        resolver: configuración de la FK compuesta.
+
+    Returns:
+        Diccionario de clave compuesta normalizada a (id, etiqueta legible).
+
+    Raises:
+        ImportBlockedError: si dos registros distintos normalizan a la misma
+            clave compuesta (ambigüedad a nivel entidad).
+    """
+    q = select(resolver.parent_model)
+    for relacion in resolver.load_relationships:
+        q = q.options(selectinload(getattr(resolver.parent_model, relacion)))
+    result = await db.execute(q)
+    entidad_padre = resolver.parent_model.__name__.lower()
+    indice: dict[tuple[str, ...], tuple[uuid.UUID, str]] = {}
+    for padre in result.scalars().all():
+        valores = [_leer_ruta(padre, parte.value_path) for parte in resolver.parts]
+        clave = tuple(normalizar(valor) for valor in valores)
+        legible = " · ".join(valor for valor in valores if valor.strip())
+        if clave in indice and indice[clave][0] != padre.id:
+            raise ImportBlockedError(
+                fila=None,
+                motivo="ambiguedad",
+                mensaje=(
+                    f"Ambigüedad en {entidad_padre}: '{legible}' coincide con "
+                    "más de un registro tras normalizar."
+                ),
+            )
+        indice[clave] = (padre.id, legible)
+    return indice
+
+
 @dataclass(frozen=True)
 class FilasProcesadas:
     """Resultado de validar/resolver/deduplicar un CSV, sin persistir nada.
@@ -261,6 +330,10 @@ async def _procesar_filas(
         fk_indices[fk.csv_column] = await _construir_indice_fk(
             db, fk.parent_model.__name__.lower(), fk
         )
+
+    composite_indices: list[dict[tuple[str, ...], tuple[uuid.UUID, str]]] = [
+        await _construir_indice_fk_compuesto(db, cfk) for cfk in config.composite_fks
+    ]
 
     result_existente = await db.execute(select(config.model))
     existentes = result_existente.scalars().all()
@@ -327,6 +400,33 @@ async def _procesar_filas(
             datos[fk.target_field] = parent_id
             fk_legibles[fk.target_field] = parent_legible
 
+        for cfk, indice_compuesto in zip(config.composite_fks, composite_indices):
+            valores = [(fila.get(parte.csv_column) or "").strip() for parte in cfk.parts]
+            faltantes = [parte.csv_column for parte, valor in zip(cfk.parts, valores) if not valor]
+            if faltantes:
+                # Clave compuesta incompleta: si es requerida, bloquea; si es
+                # opcional, no se resuelve (columnas compartidas con otras FKs
+                # pueden venir llenas sin que esta FK esté especificada).
+                if cfk.required:
+                    raise ImportBlockedError(
+                        fila=idx,
+                        motivo="campo_requerido",
+                        mensaje=f"Fila {idx}: falta el campo requerido '{faltantes[0]}'",
+                    )
+                continue
+            clave_compuesta = tuple(normalizar(valor) for valor in valores)
+            if clave_compuesta not in indice_compuesto:
+                entidad_padre = cfk.parent_model.__name__.lower()
+                combinacion = " · ".join(valor for valor in valores if valor)
+                raise ImportBlockedError(
+                    fila=idx,
+                    motivo="fk_no_resuelta",
+                    mensaje=f"Fila {idx}: no se encontró {entidad_padre} '{combinacion}'",
+                )
+            parent_id, parent_legible = indice_compuesto[clave_compuesta]
+            datos[cfk.target_field] = parent_id
+            fk_legibles[cfk.target_field] = parent_legible
+
         clave_natural = tuple(
             normalizar(str(datos.get(campo) or "")) for campo in config.natural_key
         )
@@ -358,7 +458,9 @@ async def _procesar_filas(
 
         nuevos_objetos.append(config.model(**validado.model_dump()))
 
-        campos_fk = {fk.target_field for fk in config.fks}
+        campos_fk = {fk.target_field for fk in config.fks} | {
+            cfk.target_field for cfk in config.composite_fks
+        }
         fila_preview: dict[str, Any] = {
             "id": f"preview-{idx}",
             **{campo: valor for campo, valor in validado.model_dump().items() if campo not in campos_fk},
@@ -367,6 +469,14 @@ async def _procesar_filas(
             if fk.target_field in fk_legibles:
                 relacion = fk.target_field.removesuffix("_id")
                 fila_preview[relacion] = {fk.parent_key_field: fk_legibles[fk.target_field]}
+        for cfk in config.composite_fks:
+            if cfk.target_field in fk_legibles:
+                relacion = cfk.target_field.removesuffix("_id")
+                legible = fk_legibles[cfk.target_field]
+                atributo_primario = cfk.parts[0].value_path[-1]
+                # atributo_primario: lo que lee el render del grid (p.ej. .edicion,
+                # .distribucion). *_label: la etiqueta compuesta completa.
+                fila_preview[relacion] = {atributo_primario: legible, f"{relacion}_label": legible}
         filas_preview.append((idx, fila_preview))
 
     return FilasProcesadas(

@@ -66,17 +66,28 @@ def test_distribucion_config_sin_required_columns():
     config = IMPORT_CONFIGS["distribucion"]
     assert config.model is Distribucion
     assert config.required_columns == []
-    assert len(config.fks) == 3
+    # dataset y tipo_de_acceso siguen siendo FKs simples; edicion pasa a compuesta.
+    assert len(config.fks) == 2
     assert all(fk.required is False for fk in config.fks)
+    assert len(config.composite_fks) == 1
+    cfk = config.composite_fks[0]
+    assert cfk.parent_model is EdicionDataset
+    assert cfk.target_field == "edicion_dataset_id"
+    assert [parte.csv_column for parte in cfk.parts] == ["edicion", "dataset"]
     assert config.natural_key == ["distribucion", "dataset_id", "edicion_dataset_id"]
 
 
-def test_archivo_config_fk_distribucion_opcional():
+def test_archivo_config_fk_distribucion_compuesta():
     config = IMPORT_CONFIGS["archivo"]
     assert config.model is Archivo
     assert config.required_columns == ["nombre_archivo"]
-    assert len(config.fks) == 1
-    assert config.fks[0].required is False
+    assert config.fks == []
+    assert len(config.composite_fks) == 1
+    cfk = config.composite_fks[0]
+    assert cfk.parent_model is Distribucion
+    assert cfk.target_field == "distribucion_id"
+    assert cfk.required is False
+    assert [parte.csv_column for parte in cfk.parts] == ["distribucion", "dataset", "edicion"]
     assert config.natural_key == ["nombre_archivo", "distribucion_id"]
 
 
