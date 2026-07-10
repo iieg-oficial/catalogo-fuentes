@@ -35,6 +35,7 @@ class DatasetRef(BaseModel):
 
     id: uuid.UUID
     nombre: str
+    nombre_corto: str | None = None
 
     model_config = {"from_attributes": True}
 
