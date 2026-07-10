@@ -77,8 +77,12 @@ export default function DistribucionesPage() {
     } finally {}
   }
 
+  // Patch the server-computed identifier back into local state after an edit.
+  const patchLabel = (id: string, label: string) =>
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, distribucion_label: label } : i)))
+
   const handleEditCell = (row: Distribucion, field: string, value: string | boolean) => {
-    updateDistribucion(row.id, { [field]: value })
+    updateDistribucion(row.id, { [field]: value }).then((u) => patchLabel(row.id, u.distribucion_label))
     setItems((prev) => prev.map((i) => (i.id === row.id ? { ...i, [field]: value } : i)))
   }
 
@@ -102,9 +106,10 @@ export default function DistribucionesPage() {
   const tipoAccesoOpts = tiposAcceso.map((t) => ({ value: t.id, label: t.nombre }))
 
   const columns: Column<Distribucion>[] = [
+    { header: 'Identificador', icon: nombreIcon(), render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.distribucion_label}</span>, className: 'w-56', getValue: (r) => r.distribucion_label },
     { header: 'Distribución', icon: nombreIcon(), render: (r) => <TextCell value={r.distribucion ?? r.id.slice(0, 8)} />, className: 'w-48', getValue: (r) => r.distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'distribucion', v) },
-    { header: 'Edición data set', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => { updateDistribucion(r.id, { edicion_dataset_id: v }); const e = ediciones.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, edicion_dataset_id: v || null, edicion_dataset: e ? { id: e.id, edicion: e.edicion } : null } : i))) }, getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.edicion}</span> : <span className="text-ink/60 text-[13px]">--</span> },
-    { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasetOpts, onEdit: (r, v) => { updateDistribucion(r.id, { dataset_id: v }); const d = datasets.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: d ? { id: d.id, nombre: d.nombre } : null } : i))) }, getValue: (r) => r.dataset_id ?? '', render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
+    { header: 'Edición data set', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => { updateDistribucion(r.id, { edicion_dataset_id: v }).then((u) => patchLabel(r.id, u.distribucion_label)); const e = ediciones.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, edicion_dataset_id: v || null, edicion_dataset: e ? { id: e.id, edicion: e.edicion } : null } : i))) }, getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.edicion}</span> : <span className="text-ink/60 text-[13px]">--</span> },
+    { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasetOpts, onEdit: (r, v) => { updateDistribucion(r.id, { dataset_id: v }).then((u) => patchLabel(r.id, u.distribucion_label)); const d = datasets.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: d ? { id: d.id, nombre: d.nombre } : null } : i))) }, getValue: (r) => r.dataset_id ?? '', render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'URL', icon: urlIcon(), render: (r) => <TextCell value={r.url} mono link />, getValue: (r) => r.url ?? '', onEdit: (r, v) => handleEditCell(r, 'url', v) },
     { header: 'Tipo de acceso', icon: estadoIcon(), selectOptions: tipoAccesoOpts, onEdit: (r, v) => { updateDistribucion(r.id, { tipo_de_acceso_id: v }); const t = tiposAcceso.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, tipo_de_acceso_id: v || null, tipo_de_acceso: t ? { id: t.id, nombre: t.nombre } : null } : i))) }, getValue: (r) => r.tipo_de_acceso_id ?? '', render: (r) => r.tipo_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.tipo_de_acceso.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Req. control de acceso', icon: estadoIcon(), selectOptions: boolOpts, onEdit: (r, v) => handleEditCell(r, 'requiere_control_de_acceso', v === 'true'), getValue: (r) => r.requiere_control_de_acceso ? 'true' : 'false', render: (r) => r.requiere_control_de_acceso ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-green-500/10 text-green-700">Si</span> : <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-red-500/10 text-red-700">No</span> },
@@ -114,11 +119,15 @@ export default function DistribucionesPage() {
 
   const addRowCells = (
     <>
-      {/* 1. Distribucion */}
+      {/* 1. Identificador (derivado, no editable) */}
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <span className="text-ink/40 text-[13px] italic">Se genera al guardar</span>
+      </td>
+      {/* 2. Distribucion */}
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input autoFocus required value={newDistribucion} onChange={(e) => setNewDistribucion(e.target.value)} onKeyDown={kd} placeholder="Distribucion..." className={inputCls} />
       </td>
-      {/* 2. Edicion data set (FK select) */}
+      {/* 3. Edicion data set (FK select) */}
       <td className="px-2.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <SelectInput value={newEdicionId} onChange={setNewEdicionId} options={edicionOpts} placeholder="Edicion data set..." label="Edicion data set" />
       </td>
