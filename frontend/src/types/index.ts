@@ -199,6 +199,7 @@ export interface EdicionDatasetDetail extends EdicionDataset {
 export interface Distribucion {
   id: string
   distribucion: string | null
+  distribucion_label: string
   url: string | null
   requiere_control_de_acceso: boolean
   es_url_persistente: boolean

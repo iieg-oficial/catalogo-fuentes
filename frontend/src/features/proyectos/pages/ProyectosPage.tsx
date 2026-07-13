@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Proyecto } from '@/types'
 import { getProyectos, createProyecto, updateProyecto, deleteProyecto } from '../services/proyectosService'
@@ -15,7 +17,7 @@ import { nombreIcon, descripcionIcon, jsonIcon } from '@/consts/sectionIcons'
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function ProyectosPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<Proyecto[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -39,6 +41,8 @@ export default function ProyectosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Proyecto>('proyecto', () => load(true))
 
   const resetFields = () => {
     setNewNombre('')
@@ -81,19 +85,19 @@ export default function ProyectosPage() {
 
   const columns: Column<Proyecto>[] = [
     {
+      header: 'Nombre',
+      icon: nombreIcon(),
+      render: (r) => <TextCell value={r.nombre} />,
+      getValue: (r) => r.nombre,
+      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
+    },
+    {
       header: 'Descripción',
       icon: descripcionIcon(),
       render: (r) => <TextCell value={r.descripcion} />,
       className: 'w-64',
       getValue: (r) => r.descripcion ?? '',
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
-    },
-    {
-      header: 'Nombre',
-      icon: nombreIcon(),
-      render: (r) => <TextCell value={r.nombre} />,
-      getValue: (r) => r.nombre,
-      onEdit: (r, v) => handleEditPrimaryCell(r, 'nombre', v),
     },
     {
       header: 'Metadata',
@@ -110,20 +114,20 @@ export default function ProyectosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input
           autoFocus
-          value={newDesc}
-          onChange={(e) => setNewDesc(e.target.value)}
-          onKeyDown={kd}
-          placeholder="Descripcion..."
-          className={inputCls}
-        />
-      </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
-        <input
           required
           value={newNombre}
           onChange={(e) => setNewNombre(e.target.value)}
           onKeyDown={kd}
           placeholder="Nombre..."
+          className={inputCls}
+        />
+      </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
+        <input
+          value={newDesc}
+          onChange={(e) => setNewDesc(e.target.value)}
+          onKeyDown={kd}
+          placeholder="Descripcion..."
           className={inputCls}
         />
       </td>
@@ -158,6 +162,8 @@ export default function ProyectosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="proyecto" /> : undefined}
       />
     </div>
   )

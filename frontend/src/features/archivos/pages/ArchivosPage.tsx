@@ -4,7 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Archivo, Distribucion } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -17,7 +19,7 @@ import { ROL_ARCHIVO_OPTIONS } from '../consts/rolArchivo'
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function ArchivosPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<Archivo[]>([])
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,6 +52,8 @@ export default function ArchivosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Archivo>('archivo', () => load(true))
 
   const resetFields = () => {
     setNewNombre(''); setNewRutaRelativa(''); setNewRol('')
@@ -113,7 +117,7 @@ export default function ArchivosPage() {
     try { return new Date(d).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' }) } catch { return d }
   }
 
-  const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.distribucion ?? d.id.slice(0, 8) }))
+  const distribucionOpts = distribuciones.map((d) => ({ value: d.id, label: d.distribucion_label }))
 
   const columns: Column<Archivo>[] = [
     {
@@ -134,7 +138,13 @@ export default function ArchivosPage() {
         setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, distribucion_id: v || null, distribucion: dist ? { id: dist.id, distribucion: dist.distribucion } : null } : i)))
       },
       getValue: (r) => r.distribucion_id ?? '',
-      render: (r) => <TextCell value={r.distribucion ? (r.distribucion.distribucion ?? r.distribucion.id.slice(0, 8)) : null} />,
+      // Filas reales: lookup por id en la lista cargada (trae el label compuesto).
+      // Filas de preview del CSV: la distribucion viene anidada con su label.
+      render: (r) => {
+        const real = distribuciones.find((d) => d.id === r.distribucion_id)?.distribucion_label
+        const anidada = r.distribucion as { distribucion_label?: string; distribucion?: string | null } | null
+        return <TextCell value={real ?? anidada?.distribucion_label ?? anidada?.distribucion ?? null} />
+      },
     },
     {
       header: 'Ruta en distribución',
@@ -256,6 +266,8 @@ export default function ArchivosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="archivo" /> : undefined}
       />
     </div>
   )

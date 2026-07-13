@@ -4,7 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Fuente } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -14,7 +16,7 @@ import { nombreIcon, descripcionIcon, estadoIcon, urlIcon } from '@/consts/secti
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function FuentesPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<Fuente[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -44,6 +46,8 @@ export default function FuentesPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Fuente>('fuente', () => load(true))
 
   const resetFields = () => {
     setNewNombre(''); setNewNombreCorto(''); setNewDesc(''); setNewSector(''); setNewAmbito('')
@@ -232,6 +236,8 @@ export default function FuentesPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="fuente" /> : undefined}
       />
     </div>
   )

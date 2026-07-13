@@ -4,7 +4,9 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import ErrorState from '@/components/ErrorState'
 import CatalogGrid from '@/components/CatalogGrid'
 import SelectInput from '@/components/SelectInput'
+import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
+import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
 import type { Producto, Proyecto } from '@/types'
 import { TextCell } from '@/components/TextCell'
@@ -17,7 +19,7 @@ import { nombreIcon, descripcionIcon, proyectosIcon, jsonIcon } from '@/consts/s
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
 export default function ProductosPage() {
-  const { canWrite } = useAuthContext()
+  const { canWrite, canManageUsers } = useAuthContext()
   const [items, setItems] = useState<Producto[]>([])
   const [proyectos, setProyectos] = useState<Proyecto[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,6 +47,8 @@ export default function ProductosPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  const preview = useImportPreview<Producto>('producto', () => load(true))
 
   const resetFields = () => { setNewNombre(''); setNewProyectoId(''); setNewDesc(''); setNewMeta({}) }
 
@@ -171,6 +175,8 @@ export default function ProductosPage() {
         onDeleteRows={canWrite ? handleDeleteRows : undefined}
         search={search}
         onSearch={setSearch}
+        previewRows={preview.previewRows}
+        importSlot={canManageUsers ? <ImportControls preview={preview} entidad="producto" /> : undefined}
       />
     </div>
   )
