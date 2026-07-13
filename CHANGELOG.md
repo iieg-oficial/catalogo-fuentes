@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.3.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.2.0...v1.3.0) (2026-07-13)
+
+
+### ✨ Features
+
+* **distribucion:** add computed distribucion_label identifier ([4c0a065](https://github.com/iieg-oficial/catalogo-fuentes/commit/4c0a0655a7468e52f697e79a54db397fc2ba62b3))
+* **distribucion:** show composite identifier in distribuciones and archivos views ([3c486da](https://github.com/iieg-oficial/catalogo-fuentes/commit/3c486da76a98e6eea52e07cd8964a3c8784cb7ea))
+* **import:** add CSV import service and reusable ImportCsvButton ([0622e55](https://github.com/iieg-oficial/catalogo-fuentes/commit/0622e55dd1f11f2c8cc5e007e695855568b67474))
+* **import:** add CSV import service with FK resolution and all-or-nothing transaction ([cb4acbe](https://github.com/iieg-oficial/catalogo-fuentes/commit/cb4acbe1444a9bf41f341da13ed833849bb5b2cc))
+* **import:** add CSV preview overlay and useImportPreview hook ([be2290c](https://github.com/iieg-oficial/catalogo-fuentes/commit/be2290cde8b3e20793e63d66002f0c4cc1b77d2e))
+* **import:** add declarative per-entity import config ([7d43ff2](https://github.com/iieg-oficial/catalogo-fuentes/commit/7d43ff28f77acc60b503cb7ac98c4743bd0d09f2))
+* **import:** add name normalizer and CSV import result schemas ([00a39fd](https://github.com/iieg-oficial/catalogo-fuentes/commit/00a39fd6e50980f3f843ec5c4a4a2a4d300137f2))
+* **import:** add optional-FK flag and import configs for the 7 remaining entities ([8e37508](https://github.com/iieg-oficial/catalogo-fuentes/commit/8e3750891f5b5f3c6aa8021bcdd5b71c2ac05a98))
+* **import:** add POST /import/{entidad} endpoint guarded by require_admin ([4a00b30](https://github.com/iieg-oficial/catalogo-fuentes/commit/4a00b304ab73c3ad6b2bf9dd230fe60c251d0c4b))
+* **import:** add POST /import/{entidad}/preview dry-run endpoint ([213f241](https://github.com/iieg-oficial/catalogo-fuentes/commit/213f241cdbfd10a6748a234d54c4a27c39eb2091))
+* **import:** resolve distribucion and edicion foreign keys by composite key ([fc13fd7](https://github.com/iieg-oficial/catalogo-fuentes/commit/fc13fd7ada80ecf9be705a2804f5327b29c01a6d))
+* **import:** support optional FKs, boolean coercion and skip fully-empty rows ([92fb4c1](https://github.com/iieg-oficial/catalogo-fuentes/commit/92fb4c1d563c8d8d4d3618de91afc137ed8d121d))
+* **import:** wire CSV import into proyecto and producto views ([02ba9cb](https://github.com/iieg-oficial/catalogo-fuentes/commit/02ba9cb4c4d50ccf1ac78b96a1a2c61662278dbe))
+* **import:** wire CSV import into the remaining 7 catalog views ([02ae163](https://github.com/iieg-oficial/catalogo-fuentes/commit/02ae16352c1b4e5c8d38f0e3c68069fbc555a5e8))
+* **import:** wire CSV preview flow into all catalog views ([f3e4862](https://github.com/iieg-oficial/catalogo-fuentes/commit/f3e48627f8449f5a8d5ff7f3ad68d7c10647bc78))
+
+
+### 🐛 Bug Fixes
+
+* **catalogos:** lead proyecto and base_de_datos tables with their name column ([3bd7177](https://github.com/iieg-oficial/catalogo-fuentes/commit/3bd7177352ce09f1df6cc1262c95595acf75154d))
+* **catalogos:** normalize rol_archivo whitespace before adding CHECK constraint ([5efde68](https://github.com/iieg-oficial/catalogo-fuentes/commit/5efde688504298a6ae19372b61f50fa2e008f71b))
+* **import:** align frontend ImportResult with backend and add preview service ([ac95570](https://github.com/iieg-oficial/catalogo-fuentes/commit/ac9557079b08f2bbdaff46038417ddaede147f9e))
+* **import:** reject CSV columns that do not belong to the target entity ([a05b8f0](https://github.com/iieg-oficial/catalogo-fuentes/commit/a05b8f0e11f01183a580c2fbad1caafaad126942))
+* **import:** show preview bar when all CSV rows are duplicates ([899d19f](https://github.com/iieg-oficial/catalogo-fuentes/commit/899d19f4aac1b05e00721955a5c46c5fe7a0b7aa))
+
+
+### ♻️ Refactors
+
+* **import:** centralize preview controls in floating ImportControls bar ([af7cb2b](https://github.com/iieg-oficial/catalogo-fuentes/commit/af7cb2b88a231234497df548b55d2909eec9f5be))
+* **import:** extract pure row processing shared by import and preview ([bb8c748](https://github.com/iieg-oficial/catalogo-fuentes/commit/bb8c74812841c867182a3ca72a3c51093c5e48e1))
+
+
+### 🔧 Chores
+
+* **config:** ignore csv files and lock files ([26add02](https://github.com/iieg-oficial/catalogo-fuentes/commit/26add0234e02e0a2a83d10ffeca6af802f76940e))
+
 ## [1.2.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.1.0...v1.2.0) (2026-07-07)
 
 
