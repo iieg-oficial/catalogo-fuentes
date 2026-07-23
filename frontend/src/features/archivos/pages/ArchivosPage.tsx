@@ -143,7 +143,10 @@ export default function ArchivosPage() {
       render: (r) => {
         const real = distribuciones.find((d) => d.id === r.distribucion_id)?.distribucion_label
         const anidada = r.distribucion as { distribucion_label?: string; distribucion?: string | null } | null
-        return <TextCell value={real ?? anidada?.distribucion_label ?? anidada?.distribucion ?? null} />
+        const label = real ?? anidada?.distribucion_label ?? anidada?.distribucion ?? null
+        return label
+          ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{label}</span>
+          : <span className="text-ink/60 text-[13px]">--</span>
       },
     },
     {

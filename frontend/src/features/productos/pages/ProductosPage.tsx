@@ -8,13 +8,15 @@ import ImportControls from '@/components/ImportControls'
 import { useAuthContext } from '@/context/AuthContext'
 import { useImportPreview } from '@/hooks/useImportPreview'
 import type { Column } from '@/components/DataTable'
-import type { Producto, Proyecto } from '@/types'
+import type { Dataset, Producto, Proyecto } from '@/types'
 import { TextCell } from '@/components/TextCell'
+import TagPills from '@/components/TagPills'
 import JsonEditorInput from '@/components/JsonEditorInput'
 import { JsonCell } from '@/components/JsonCell'
-import { getProductos, createProducto, updateProducto, deleteProducto } from '../services/productosService'
+import { getProductos, createProducto, updateProducto, deleteProducto, getAllProductoDatasets } from '../services/productosService'
 import { getProyectos } from '@/features/proyectos/services/proyectosService'
 import { nombreIcon, descripcionIcon, proyectosIcon, jsonIcon } from '@/consts/sectionIcons'
+import { VIEW_ONLY_COLOR } from '@/consts/colors'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -31,14 +33,16 @@ export default function ProductosPage() {
   const [newProyectoId, setNewProyectoId] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newMeta, setNewMeta] = useState<Record<string, unknown>>({})
+  const [datasetsByProducto, setDatasetsByProducto] = useState<Record<string, Dataset[]>>({})
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true)
     setError(false)
     try {
-      const [prods, projs] = await Promise.all([getProductos(), getProyectos()])
+      const [prods, projs, datasets] = await Promise.all([getProductos(), getProyectos(), getAllProductoDatasets()])
       setItems(prods)
       setProyectos(projs)
+      setDatasetsByProducto(datasets)
     } catch {
       setError(true)
     } finally {
@@ -118,6 +122,15 @@ export default function ProductosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },
     {
+      header: 'Datasets',
+      icon: jsonIcon(),
+      render: (r) => {
+        const names = (datasetsByProducto[r.id] ?? []).map((d) => d.nombre)
+        return <TagPills items={names} label="DATASETS" color={VIEW_ONLY_COLOR} />
+      },
+      className: 'w-64',
+    },
+    {
       header: 'Metadata',
       icon: jsonIcon(),
       render: (r) => <JsonCell value={r.meta} />,
@@ -144,6 +157,7 @@ export default function ProductosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>

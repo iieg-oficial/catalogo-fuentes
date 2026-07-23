@@ -14,6 +14,7 @@ import { getDistribuciones, getTiposDeAcceso, createDistribucion, updateDistribu
 import { getEdicionesDataset } from '@/features/ediciones_dataset/services/edicionesDatasetService'
 import { getDatasets } from '@/features/datasets/services/datasetsService'
 import { nombreIcon, descripcionIcon, estadoIcon, edicionesIcon, datasetsIcon, urlIcon } from '@/consts/sectionIcons'
+import { VIEW_ONLY_COLOR } from '@/consts/colors'
 
 const inputCls = 'w-full px-2.5 py-1.5 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-400 bg-white placeholder-neutral-300 transition-colors duration-150'
 
@@ -106,7 +107,7 @@ export default function DistribucionesPage() {
   const tipoAccesoOpts = tiposAcceso.map((t) => ({ value: t.id, label: t.nombre }))
 
   const columns: Column<Distribucion>[] = [
-    { header: 'Identificador', icon: nombreIcon(), render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.distribucion_label}</span>, className: 'w-56', getValue: (r) => r.distribucion_label },
+    { header: 'Identificador', icon: nombreIcon(), render: (r) => <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium" style={{ backgroundColor: `${VIEW_ONLY_COLOR}1a`, color: VIEW_ONLY_COLOR }}>{r.distribucion_label}</span>, className: 'w-56', getValue: (r) => r.distribucion_label },
     { header: 'Distribución', icon: nombreIcon(), render: (r) => <TextCell value={r.distribucion ?? r.id.slice(0, 8)} />, className: 'w-48', getValue: (r) => r.distribucion ?? '', onEdit: (r, v) => handleEditCell(r, 'distribucion', v) },
     { header: 'Edición data set', icon: edicionesIcon(), selectOptions: edicionOpts, onEdit: (r, v) => { updateDistribucion(r.id, { edicion_dataset_id: v }).then((u) => patchLabel(r.id, u.distribucion_label)); const e = ediciones.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, edicion_dataset_id: v || null, edicion_dataset: e ? { id: e.id, edicion: e.edicion } : null } : i))) }, getValue: (r) => r.edicion_dataset_id ?? '', render: (r) => r.edicion_dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.edicion_dataset.edicion}</span> : <span className="text-ink/60 text-[13px]">--</span> },
     { header: 'Dataset', icon: datasetsIcon(), selectOptions: datasetOpts, onEdit: (r, v) => { updateDistribucion(r.id, { dataset_id: v }).then((u) => patchLabel(r.id, u.distribucion_label)); const d = datasets.find((x) => x.id === v); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, dataset_id: v || null, dataset: d ? { id: d.id, nombre: d.nombre } : null } : i))) }, getValue: (r) => r.dataset_id ?? '', render: (r) => r.dataset ? <span className="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-medium bg-brand-500/10 text-brand-700">{r.dataset.nombre}</span> : <span className="text-ink/60 text-[13px]">--</span> },
