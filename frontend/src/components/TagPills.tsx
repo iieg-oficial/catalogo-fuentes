@@ -11,9 +11,10 @@ interface TagPillsProps {
   items: string[]
   label?: string
   maxVisible?: number
+  color?: string
 }
 
-export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }: TagPillsProps) {
+export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2, color: fixedColor }: TagPillsProps) {
   const [hovered, setHovered] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const [copied, setCopied] = useState(false)
@@ -58,7 +59,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
       onMouseLeave={scheduleHide}
     >
       {visible.map((item, i) => {
-        const color = LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
+        const color = fixedColor ?? LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
         return (
           <span
             key={item}
@@ -114,7 +115,7 @@ export default function TagPills({ items, label = 'ELEMENTOS', maxVisible = 2 }:
           </div>
           <div className="flex flex-col gap-1">
             {items.map((item, i) => {
-              const color = LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
+              const color = fixedColor ?? LIST_COLOR_PALETTE[i % LIST_COLOR_PALETTE.length]
               return (
                 <span
                   key={item}

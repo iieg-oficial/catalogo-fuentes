@@ -1,5 +1,10 @@
 import apiClient from '@/services/apiClient'
-import type { Producto, ProductoDetail } from '@/types'
+import type { Dataset, Producto, ProductoDetail } from '@/types'
+
+export async function getAllProductoDatasets(): Promise<Record<string, Dataset[]>> {
+  const { data } = await apiClient.get<Record<string, Dataset[]>>('/productos/datasets')
+  return data
+}
 
 export async function getProductos(proyectoId?: string | null): Promise<Producto[]> {
   const params = proyectoId ? { proyecto_id: proyectoId } : {}
