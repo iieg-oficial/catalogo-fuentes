@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.3.0...v1.4.0) (2026-07-23)
+
+
+### ✨ Features
+
+* **distribuciones:** add shared view-only color for identificador chip ([3da6f32](https://github.com/iieg-oficial/catalogo-fuentes/commit/3da6f329cc5ea99205c995f8b7d88a38e3b786ce))
+* **productos:** add datasets-by-product endpoint over physical chain ([a2b86f3](https://github.com/iieg-oficial/catalogo-fuentes/commit/a2b86f390f9bbde9546ba665faaddafc8de5c554))
+* **productos:** show feeding datasets column with view-only color ([03b84ab](https://github.com/iieg-oficial/catalogo-fuentes/commit/03b84aba537f7286da715fd1699978d4240bebd7))
+
+
+### 🔄 Updates
+
+* **archivos:** show distribucion as brand chip for direct relation ([4a59974](https://github.com/iieg-oficial/catalogo-fuentes/commit/4a59974b4a0a3fa68b0ed4111fdaaef1506960c9))
+* **productos:** move datasets column next to descripcion ([9969626](https://github.com/iieg-oficial/catalogo-fuentes/commit/996962600a3208b333c35c6662ac7ecc3faef648))
+
 ## [1.3.0](https://github.com/iieg-oficial/catalogo-fuentes/compare/v1.2.0...v1.3.0) (2026-07-13)
 
 
