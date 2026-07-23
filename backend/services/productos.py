@@ -5,6 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from models.archivo import Archivo
+from models.base_de_datos import BaseDeDatos
+from models.dataset import Dataset
+from models.distribucion import Distribucion
 from models.informacion_tablas import InformacionTablas
 from models.producto import Producto
 from schemas.producto import ProductoCreate, ProductoUpdate
@@ -43,6 +47,57 @@ async def get_producto_detail(db: AsyncSession, producto_id: uuid.UUID) -> Produ
         .where(Producto.id == producto_id)
     )
     return result.scalar_one_or_none()
+
+
+async def list_producto_datasets(
+    db: AsyncSession, producto_id: uuid.UUID
+) -> list[Dataset]:
+    """Read-only list of datasets that feed a producto through the physical chain.
+
+    producto -> informacion_tablas -> base_de_datos -> archivo -> distribucion -> dataset.
+    Each foreign key is optional, so only datasets reachable through the complete
+    chain are returned. DISTINCT collapses the many-to-many fan-out of that path.
+    """
+    q = (
+        select(Dataset)
+        .join(Distribucion, Distribucion.dataset_id == Dataset.id)
+        .join(Archivo, Archivo.distribucion_id == Distribucion.id)
+        .join(BaseDeDatos, BaseDeDatos.archivo_id == Archivo.id)
+        .join(InformacionTablas, InformacionTablas.base_de_datos_id == BaseDeDatos.id)
+        .where(InformacionTablas.producto_id == producto_id)
+        .options(selectinload(Dataset.fuente), selectinload(Dataset.tipo_dataset))
+        .distinct()
+        .order_by(Dataset.nombre.asc())
+    )
+    result = await db.execute(q)
+    return list(result.scalars().all())
+
+
+async def list_all_producto_datasets(
+    db: AsyncSession,
+) -> dict[str, list[Dataset]]:
+    """Datasets feeding every producto, grouped by producto id.
+
+    Single query over the physical chain so the productos grid can render the
+    dataset list inline without one request per row. Same chain and DISTINCT
+    semantics as ``list_producto_datasets``.
+    """
+    q = (
+        select(InformacionTablas.producto_id, Dataset)
+        .join(BaseDeDatos, BaseDeDatos.id == InformacionTablas.base_de_datos_id)
+        .join(Archivo, Archivo.id == BaseDeDatos.archivo_id)
+        .join(Distribucion, Distribucion.id == Archivo.distribucion_id)
+        .join(Dataset, Dataset.id == Distribucion.dataset_id)
+        .where(InformacionTablas.producto_id.is_not(None))
+        .options(selectinload(Dataset.fuente), selectinload(Dataset.tipo_dataset))
+        .distinct()
+        .order_by(Dataset.nombre.asc())
+    )
+    result = await db.execute(q)
+    grouped: dict[str, list[Dataset]] = {}
+    for producto_id, dataset in result.all():
+        grouped.setdefault(str(producto_id), []).append(dataset)
+    return grouped
 
 
 async def create_producto(db: AsyncSession, data: ProductoCreate) -> Producto:

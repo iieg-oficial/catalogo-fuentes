@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db import get_db
 from exceptions.http import not_found
 from routes.dependencies import get_current_user, require_write
+from schemas.dataset import DatasetRead
 from schemas.detail import ProductoDetail
 from schemas.producto import ProductoCreate, ProductoRead, ProductoUpdate
 from services import productos as svc
@@ -26,6 +27,14 @@ async def list_productos(
     return await svc.list_productos(db, skip=skip, limit=limit, proyecto_id=proyecto_id)
 
 
+@router.get("/datasets", response_model=dict[str, list[DatasetRead]])
+async def list_all_producto_datasets(
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await svc.list_all_producto_datasets(db)
+
+
 @router.get("/{producto_id}", response_model=ProductoDetail)
 async def get_producto(
     producto_id: uuid.UUID,
@@ -36,6 +45,15 @@ async def get_producto(
     if not obj:
         raise not_found("Producto")
     return obj
+
+
+@router.get("/{producto_id}/datasets", response_model=list[DatasetRead])
+async def list_producto_datasets(
+    producto_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return await svc.list_producto_datasets(db, producto_id)
 
 
 @router.post("/", response_model=ProductoRead, status_code=201)
