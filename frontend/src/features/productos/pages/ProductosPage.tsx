@@ -122,14 +122,6 @@ export default function ProductosPage() {
       onEdit: (r, v) => handleEditPrimaryCell(r, 'descripcion', v),
     },
     {
-      header: 'Metadata',
-      icon: jsonIcon(),
-      render: (r) => <JsonCell value={r.meta} />,
-      getValue: (r) => JSON.stringify(r.meta ?? {}),
-      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProducto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
-      inputType: 'json',
-    },
-    {
       header: 'Datasets',
       icon: jsonIcon(),
       render: (r) => {
@@ -137,6 +129,14 @@ export default function ProductosPage() {
         return <TagPills items={names} label="DATASETS" color={VIEW_ONLY_COLOR} />
       },
       className: 'w-64',
+    },
+    {
+      header: 'Metadata',
+      icon: jsonIcon(),
+      render: (r) => <JsonCell value={r.meta} />,
+      getValue: (r) => JSON.stringify(r.meta ?? {}),
+      onEdit: (r, v) => { try { const parsed = JSON.parse(v); updateProducto(r.id, { meta: parsed }); setItems((prev) => prev.map((i) => (i.id === r.id ? { ...i, meta: parsed } : i))) } catch {} },
+      inputType: 'json',
     },
   ]
 
@@ -157,10 +157,10 @@ export default function ProductosPage() {
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <input value={newDesc} onChange={(e) => setNewDesc(e.target.value)} onKeyDown={kd} placeholder="Descripcion..." className={inputCls} />
       </td>
+      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
       <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }}>
         <JsonEditorInput value={newMeta} onChange={setNewMeta} label="Meta" />
       </td>
-      <td className="px-2.5 py-1.5 border-r border-ink/[5%]" style={{ height: 40 }} />
     </>
   )
 
