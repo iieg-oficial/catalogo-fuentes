@@ -30,25 +30,25 @@ cp .env.example .env   # ajustar SUPERADMIN_EMAIL y SUPERADMIN_PASSWORD si se de
 ### Levantar todo
 
 ```bash
-just dev-seed   # DB + migraciones + seed + backend + frontend
+just dev seed   # DB + migraciones + seed + backend + frontend
 ```
 
 O si ya hay datos y solo quieres levantar los servicios:
 
 ```bash
-just dev
+just dev start
 ```
 
 ### Comandos útiles
 
 | Comando | Descripción |
 |---|---|
-| `just dev-seed` | DB + migraciones + seed completo + backend + frontend |
-| `just dev` | DB + backend + frontend (sin seed) |
-| `just dev-init` | Solo migraciones + superadmin (sin datos dummy) |
-| `just dev-stop` | Detiene backend y frontend |
-| `just dev-status` | Estado de los tres servicios |
-| `just dev-roles` | Muestra usuarios de prueba y contraseñas |
+| `just dev seed` | DB + migraciones + seed completo + backend + frontend |
+| `just dev start` | DB + backend + frontend (sin seed) |
+| `just dev init` | Solo migraciones + superadmin (sin datos dummy) |
+| `just dev stop` | Detiene backend y frontend |
+| `just dev status` | Estado de los tres servicios |
+| `just dev roles` | Muestra usuarios de prueba y contraseñas |
 
 App disponible en `http://localhost:5173`, API en `http://localhost:8000`.
 
@@ -70,26 +70,26 @@ cp .env.example .env.prod   # completar todas las variables con valores reales
 ### Primer deploy
 
 ```bash
-just prod   # construye imágenes, levanta servicios, aplica migraciones y crea superadmin
+just prod deploy-full   # construye imágenes, levanta servicios, aplica migraciones y crea superadmin
 ```
 
 ### Deploys posteriores
 
 | Escenario | Comando |
 |---|---|
-| Cambio de UI o lógica (sin schema nuevo) | `just prod-deploy` |
-| Nuevo schema (nueva migración SQL) | `just prod-migrate` |
-| Reset completo (destruye datos) | `just prod` |
+| Cambio de UI o lógica (sin schema nuevo) | `just prod deploy` |
+| Nuevo schema (nueva migración SQL) | `just prod migrate` |
+| Reset completo (puede destruir datos) | `just prod deploy-full` |
 
 ### Otros comandos de producción
 
 | Comando | Descripción |
 |---|---|
-| `just prod-stop` | Detiene y elimina los contenedores |
-| `just db-shell-prod` | Shell de psql contra la BD de producción |
-| `just db-dump-prod` | Backup comprimido de la BD de producción |
-| `just db-insert-prod <archivo>` | Restaura un backup en producción |
-| `just logs-prod` | Sigue los logs de todos los servicios |
+| `just prod stop` | Detiene y elimina los contenedores |
+| `just prod shell` | Shell de psql contra la BD de producción |
+| `just prod dump [archivo]` | Backup comprimido de la BD de producción |
+| `just prod insert <archivo>` | Restaura un backup en producción |
+| `just logs prod` | Sigue los logs de los contenedores |
 
 Ver referencia completa en [`docs/justfile.md`](docs/justfile.md).
 
